@@ -1608,3 +1608,805 @@
   </script>
 </body>
 </html>
+</main>
+  <!-- ==================== PAGE 4: 엑셀 및 구글시트 관리 (UTM 카드형 가독성 뷰) ==================== -->
+  <main id="page-googlesheet" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden flex-1 pb-12 w-full">
+    <!-- UTM Readable Dashboard Section -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap justify-between items-center gap-3 border-b border-pink-50 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-table text-pink-500"></i> 구글 시트 / UTM 트래킹 링크 요약 뷰어
+          </h2>
+          <p class="text-xs text-slate-500">구글 스프레드시트의 복잡하고 딱딱한 수식 데이터를 보기 편한 카드형 표와 복사 가능한 트래킹 URL로 변환하여 관리합니다.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openUtmModal()" class="px-3.5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i> UTM 링크 생성/추가
+          </button>
+          <a href="https://docs.google.com/spreadsheets/d/1tSwJJ0m3blIVf37HtZL72eEZOYIQzNIM/edit?usp=sharing" target="_blank" class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-xl transition flex items-center gap-1">
+            <i class="fa-solid fa-external-link-alt"></i> 원본 구글시트 열기
+          </a>
+        </div>
+      </div>
+
+      <!-- UTM Filter & Search -->
+      <div class="flex flex-wrap gap-3 justify-between items-center bg-pink-50/40 p-3 rounded-xl border border-pink-100">
+        <div class="flex items-center gap-2 flex-1 min-w-[240px]">
+          <i class="fa-solid fa-search text-slate-400"></i>
+          <input type="text" id="utmSearchInput" oninput="renderUtmDashboard()" placeholder="인플루언서 이름, 캠페인명 또는 소스 검색..." class="w-full bg-transparent text-xs outline-none font-semibold text-slate-700">
+        </div>
+        <div class="flex gap-2">
+          <select id="utmBrandFilter" onchange="renderUtmDashboard()" class="px-3 py-1.5 text-xs border border-pink-200 rounded-lg bg-white font-bold text-pink-600">
+            <option value="전체">전체 브랜드</option>
+            <option value="온살">온살</option>
+            <option value="루메아카이브">루메아카이브</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Readable UTM Table -->
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-pink-50/50 text-slate-600 font-semibold border-y border-pink-100">
+            <tr>
+              <th class="py-3 px-3">브랜드 / 인플루언서</th>
+              <th class="py-3 px-3">UTM 캠페인명</th>
+              <th class="py-3 px-3">매체 (Source)</th>
+              <th class="py-3 px-3">생성된 UTM 트래킹 URL</th>
+              <th class="py-3 px-3 text-center">클립보드 복사</th>
+              <th class="py-3 px-3 text-right">관리</th>
+            </tr>
+          </thead>
+          <tbody id="utmTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Embedded Google Sheet View -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex justify-between items-center border-b border-pink-50 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-file-excel text-pink-500"></i> 구글 스프레드시트 원본 화면
+          </h2>
+          <p class="text-xs text-slate-500">실시간 연동 중인 원본 구글 시트입니다.</p>
+        </div>
+      </div>
+      <div class="w-full h-[450px] border border-pink-100 rounded-2xl overflow-hidden bg-slate-50 shadow-inner">
+        <iframe 
+          src="https://docs.google.com/spreadsheets/d/1tSwJJ0m3blIVf37HtZL72eEZOYIQzNIM/edit?usp=sharing&embedded=true" 
+          class="w-full h-full border-0">
+        </iframe>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- MODAL 1: 새 PPL 등록 모달 -->
+  <div id="pplModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-md w-full space-y-4">
+      <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-rectangle-list text-pink-500"></i> 새 PPL 및 인플루언서 컨택 등록
+      </h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">브랜드</label>
+          <select id="pplModalBrand" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold text-pink-600">
+            <option value="온살">온살</option>
+            <option value="루메아카이브">루메아카이브</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">인플루언서명 / 채널</label>
+          <input type="text" id="pplModalName" placeholder="예: 김민지 (@pink_life)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">매칭 제품명</label>
+          <input type="text" id="pplModalProduct" placeholder="예: 온살 시그니처 수분크림" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">컨택 일자</label>
+          <input type="date" id="pplModalDate" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">진행 상태</label>
+          <select id="pplModalStatus" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold">
+            <option value="컨택대기">컨택대기</option>
+            <option value="제품발송완료">제품발송완료</option>
+            <option value="콘텐츠 업로드 완료">콘텐츠 업로드 완료</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closePplModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+        <button onclick="savePplModal()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl">등록하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: 재고 입고/소진 기록 모달 (자유로운 기록구분 입력 & +/- 수량 지원) -->
+  <div id="stockLogModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-md w-full space-y-4">
+      <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-truck-ramp-box text-pink-500"></i> 재고 입고 및 변동 기록 (직접 입력 가능)
+      </h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">기록 구분 (직접 타이핑 입력 가능)</label>
+          <input type="text" id="logType" list="logTypeSuggestions" value="입고" placeholder="예: 입고, 촬영용, 시딩발송, 이벤트경품 등 직접 입력" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold bg-white">
+          <datalist id="logTypeSuggestions">
+            <option value="입고">
+            <option value="촬영용">
+            <option value="시딩발송">
+            <option value="이벤트경품">
+            <option value="불량반품">
+            <option value="기타조정">
+          </datalist>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">대상 제품 선택</label>
+          <select id="logProductSelect" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold text-pink-600"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">수량 (<span class="text-blue-600 font-bold">+ 숫자 입력시 추가</span>, <span class="text-rose-600 font-bold">- 숫자 입력시 차감</span>)</label>
+          <input type="text" id="logQuantity" value="10" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold" placeholder="예: 10 또는 -5">
+          <p class="text-[10px] text-slate-400 mt-1">* + 또는 숫자를 적으면 재고가 증가하며, - (예: -5)를 적으면 재고가 자동으로 차감됩니다.</p>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">사유 / 메모</label>
+          <input type="text" id="logReason" placeholder="예: 유튜브 인플루언서 2명 발송 소진" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeStockLogModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+        <button onclick="saveStockLogModal()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl">기록 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: 신규 제품 등록 모달 -->
+  <div id="productModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-md w-full space-y-4">
+      <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-boxes-stacked text-pink-500"></i> 신규 시딩 샘플 제품 등록
+      </h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">브랜드</label>
+          <select id="prodModalBrand" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold text-pink-600">
+            <option value="온살">온살</option>
+            <option value="루메아카이브">루메아카이브</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">제품명</label>
+          <input type="text" id="prodModalName" placeholder="예: 신규 수분 에센스 50ml" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">초기 입고 수량</label>
+          <input type="number" id="prodModalStock" value="50" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeProductModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+        <button onclick="saveProductModal()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl">등록하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: 인플루언서 제안 추가 모달 -->
+  <div id="proposalModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-md w-full space-y-4">
+      <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-user-plus text-pink-500"></i> 제안 인플루언서 등록
+      </h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">실명 / 담당자</label>
+          <input type="text" id="propModalRealName" placeholder="예: 이수진" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">채널명 및 핸들명</label>
+          <input type="text" id="propModalTitle" placeholder="예: @sujin_Vlog / 유튜브 뷰티 크리에이터" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">채널 URL</label>
+          <input type="url" id="propModalUrl" placeholder="https://youtube.com/..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">상세 특징 / 구독자 규모</label>
+          <input type="text" id="propModalDesc" placeholder="예: 구독자 12만, 뷰티/라이프스타일 전문" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeProposalModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+        <button onclick="saveProposalModal()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl">제안 등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: UTM 링크 추가/생성 모달 -->
+  <div id="utmModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-md w-full space-y-4">
+      <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-link text-pink-500"></i> 새 UTM 링크 생성 및 등록
+      </h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">브랜드</label>
+          <select id="utmModalBrand" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold text-pink-600">
+            <option value="온살">온살</option>
+            <option value="루메아카이브">루메아카이브</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">인플루언서명 / 담당자</label>
+          <input type="text" id="utmModalName" placeholder="예: 김민지 (@pink_life)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">UTM 캠페인명 (utm_campaign)</label>
+          <input type="text" id="utmModalCampaign" placeholder="예: 2026_spring_ppl" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">매체 / 소스 (utm_source)</label>
+          <input type="text" id="utmModalSource" placeholder="예: instagram / youtube" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">기본 랜딩 페이지 URL</label>
+          <input type="url" id="utmModalUrl" value="https://onssal.co.kr/product/detail" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeUtmModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+        <button onclick="saveUtmModal()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl">생성 및 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCRIPT ==================== -->
+  <script>
+    // --- Mock Data & LocalStorage ---
+    let products = JSON.parse(localStorage.getItem('dash_products')) || [
+      { id: 1, brand: '온살', name: '시그니처 수분크림 50ml', stock: 120 },
+      { id: 2, brand: '온살', name: '약산성 진정 토너 200ml', stock: 85 },
+      { id: 3, brand: '루메아카이브', name: '글로우 래스팅 틴트 01호', stock: 42 },
+      { id: 4, brand: '루메아카이브', name: '베일 커버 쿠션 21호', stock: 60 }
+    ];
+
+    let pplList = JSON.parse(localStorage.getItem('dash_pplList')) || [
+      { id: 1, brand: '온살', name: '김지현 (@jihyun_beauty)', product: '시그니처 수분크림 50ml', contactDate: '2026-03-05', isContacted: true, status: '제품발송완료' },
+      { id: 2, brand: '루메아카이브', name: '이수진 (@sujin_Vlog)', product: '글로우 래스팅 틴트 01호', contactDate: '2026-03-12', isContacted: false, status: '컨택대기' }
+    ];
+
+    let stockLogs = JSON.parse(localStorage.getItem('dash_stockLogs')) || [
+      { id: 1, date: '2026-03-01', type: '입고', brand: '온살', product: '시그니처 수분크림 50ml', qty: 150, reason: '정기 물류 입고' },
+      { id: 2, date: '2026-03-02', type: '촬영용', brand: '온살', product: '시그니처 수분크림 50ml', qty: -30, reason: '유튜브 리뷰 촬영 소진' }
+    ];
+
+    let proposals = JSON.parse(localStorage.getItem('dash_proposals')) || [
+      { id: 1, realName: '이수진', title: '@sujin_Vlog / 유튜브 뷰티 크리에이터', url: 'https://youtube.com', desc: '구독자 12만, 뷰티/라이프스타일 전문' }
+    ];
+
+    let utmList = JSON.parse(localStorage.getItem('dash_utmList')) || [
+      { id: 1, brand: '온살', name: '김지현 (@jihyun_beauty)', campaign: '2026_sig_cream_ppl', source: 'instagram', url: 'https://onssal.co.kr/product/detail?utm_source=instagram&utm_medium=ppl&utm_campaign=2026_sig_cream_ppl' },
+      { id: 2, brand: '루메아카이브', name: '이수진 (@sujin_Vlog)', campaign: 'lume_tint_launch', source: 'youtube', url: 'https://lumearchive.co.kr/item?utm_source=youtube&utm_medium=ppl&utm_campaign=lume_tint_launch' }
+    ];
+
+    let currentBrandTab = '전체';
+    let calendarDate = new Date(2026, 2, 1); // 2026년 3월 기준
+
+    window.onload = function() {
+      let savedMemo = localStorage.getItem('dash_memo');
+      if(savedMemo) document.getElementById('memoTextarea').value = savedMemo;
+      renderAll();
+    };
+
+    function saveMemo() {
+      let val = document.getElementById('memoTextarea').value;
+      localStorage.setItem('dash_memo', val);
+    }
+
+    function switchTab(tabId) {
+      ['dashboard', 'ppl', 'inventory', 'googlesheet'].forEach(t => {
+        document.getElementById('page-' + t).classList.add('hidden');
+        let btn = document.getElementById('nav-' + t);
+        if(btn) btn.className = 'px-4 py-2 text-xs font-semibold rounded-xl transition text-slate-600 hover:text-pink-600';
+        let mobBtn = document.getElementById('mob-nav-' + t);
+        if(mobBtn) mobBtn.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 whitespace-nowrap';
+      });
+
+      document.getElementById('page-' + tabId).classList.remove('hidden');
+      let activeBtn = document.getElementById('nav-' + tabId);
+      if(activeBtn) activeBtn.className = 'px-4 py-2 text-xs font-bold rounded-xl transition bg-white text-pink-600 shadow-xs';
+      let activeMob = document.getElementById('mob-nav-' + tabId);
+      if(activeMob) activeMob.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-pink-500 text-white whitespace-nowrap';
+    }
+
+    function setBrandTab(brand) {
+      currentBrandTab = brand;
+      ['all', 'onssal', 'lume'].forEach(b => {
+        let el = document.getElementById('brand-tab-' + b);
+        if(el) el.className = 'px-3 py-1 text-xs font-semibold rounded-lg text-slate-600 hover:text-pink-600 transition';
+      });
+      if(brand === '전체') document.getElementById('brand-tab-all').className = 'px-3 py-1 text-xs font-bold rounded-lg bg-white text-pink-600 shadow-xs transition';
+      if(brand === '온살') document.getElementById('brand-tab-onssal').className = 'px-3 py-1 text-xs font-bold rounded-lg bg-white text-pink-600 shadow-xs transition';
+      if(brand === '루메아카이브') document.getElementById('brand-tab-lume').className = 'px-3 py-1 text-xs font-bold rounded-lg bg-white text-pink-600 shadow-xs transition';
+      renderAll();
+    }
+
+    function renderAll() {
+      renderProducts();
+      updateProductSelect();
+      renderPPLTable();
+      renderCalendar();
+      renderInfluencerCards();
+      renderSeedingInventory();
+      renderUtmDashboard();
+      saveToLocalStorage();
+    }
+
+    function saveToLocalStorage() {
+      localStorage.setItem('dash_products', JSON.stringify(products));
+      localStorage.setItem('dash_pplList', JSON.stringify(pplList));
+      localStorage.setItem('dash_stockLogs', JSON.stringify(stockLogs));
+      localStorage.setItem('dash_proposals', JSON.stringify(proposals));
+      localStorage.setItem('dash_utmList', JSON.stringify(utmList));
+    }
+
+    // --- KPI & Dashboard Render ---
+    function renderProducts() {
+      let filteredPpl = pplList.filter(p => currentBrandTab === '전체' || p.brand === currentBrandTab);
+      let filteredProds = products.filter(p => currentBrandTab === '전체' || p.brand === currentBrandTab);
+
+      document.getElementById('kpi-total-ppl').innerText = filteredPpl.length + '건';
+      
+      let contactedCount = filteredPpl.filter(p => p.isContacted).length;
+      let contactRate = filteredPpl.length > 0 ? Math.round((contactedCount / filteredPpl.length) * 100) : 0;
+      document.getElementById('kpi-contact-rate').innerText = contactRate + '%';
+      document.getElementById('kpi-contact-count').innerText = `완료 ${contactedCount}건 / 전체 ${filteredPpl.length}건`;
+
+      let totalStock = filteredProds.reduce((sum, p) => sum + p.stock, 0);
+      document.getElementById('kpi-total-stock').innerText = totalStock + '개';
+
+      document.getElementById('kpi-proposal-count').innerText = proposals.length + '명';
+
+      // Dash PPL Table
+      let dashTbody = document.getElementById('dash-ppl-tbody');
+      dashTbody.innerHTML = '';
+      if(filteredPpl.length === 0) {
+        dashTbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400">등록된 PPL 항목이 없습니다.</td></tr>`;
+      } else {
+        filteredPpl.slice(0, 5).forEach(item => {
+          let badgeColor = item.status === '제품발송완료' ? 'bg-blue-50 text-blue-700' : (item.status === '콘텐츠 업로드 완료' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700');
+          let brandBadge = item.brand === '온살' ? 'bg-pink-50 text-pink-600 border-pink-200' : 'bg-sky-50 text-sky-600 border-sky-200';
+          dashTbody.innerHTML += `
+            <tr class="hover:bg-pink-50/30 transition">
+              <td class="py-2.5 px-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${brandBadge}">${item.brand}</span>
+                <span class="font-bold text-slate-900 ml-1">${item.name}</span>
+              </td>
+              <td class="py-2.5 px-3 font-semibold text-slate-700">${item.product}</td>
+              <td class="py-2.5 px-3 text-slate-500">${item.contactDate || '-'}</td>
+              <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeColor}">${item.status}</span></td>
+            </tr>
+          `;
+        });
+      }
+    }
+
+    // --- PPL Table & Management ---
+    function renderPPLTable() {
+      let tbody = document.getElementById('pplTableBody');
+      tbody.innerHTML = '';
+
+      let search = document.getElementById('pplSearchInput').value.toLowerCase();
+      let brandFilter = document.getElementById('pplBrandFilter').value;
+
+      let filtered = pplList.filter(item => {
+        let matchBrand = brandFilter === '전체' || item.brand === brandFilter;
+        let matchSearch = item.name.toLowerCase().includes(search) || item.product.toLowerCase().includes(search);
+        return matchBrand && matchSearch;
+      });
+
+      if(filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">조건에 맞는 PPL 데이터가 없습니다.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach((item) => {
+        let badgeColor = item.status === '제품발송완료' ? 'bg-blue-50 text-blue-700' : (item.status === '콘텐츠 업로드 완료' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700');
+        let brandBadge = item.brand === '온살' ? 'bg-pink-50 text-pink-600 border-pink-200' : 'bg-sky-50 text-sky-600 border-sky-200';
+        tbody.innerHTML += `
+          <tr class="hover:bg-pink-50/20 transition">
+            <td class="py-3 px-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${brandBadge}">${item.brand}</span>
+              <div class="font-bold text-slate-900 mt-1">${item.name}</div>
+            </td>
+            <td class="py-3 px-3 font-semibold text-slate-700">${item.product}</td>
+            <td class="py-3 px-3">
+              <input type="date" value="${item.contactDate}" onchange="updatePplDate(${item.id}, this.value)" class="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs font-semibold text-slate-700">
+            </td>
+            <td class="py-3 px-3 text-center">
+              <input type="checkbox" ${item.isContacted ? 'checked' : ''} onchange="togglePplContact(${item.id}, this.checked)" class="w-4 h-4 accent-pink-500 rounded cursor-pointer">
+            </td>
+            <td class="py-3 px-3">
+              <select onchange="updatePplStatus(${item.id}, this.value)" class="px-2 py-1 rounded text-xs font-bold border border-slate-200 ${badgeColor}">
+                <option value="컨택대기" ${item.status==='컨택대기'?'selected':''}>컨택대기</option>
+                <option value="제품발송완료" ${item.status==='제품발송완료'?'selected':''}>제품발송완료</option>
+                <option value="콘텐츠 업로드 완료" ${item.status==='콘텐츠 업로드 완료'?'selected':''}>콘텐츠 업로드 완료</option>
+              </select>
+            </td>
+            <td class="py-3 px-3 text-right">
+              <button onclick="deletePpl(${item.id})" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function updatePplDate(id, val) {
+      let item = pplList.find(p => p.id === id);
+      if(item) { item.contactDate = val; renderAll(); }
+    }
+
+    function togglePplContact(id, checked) {
+      let item = pplList.find(p => p.id === id);
+      if(item) {
+        item.isContacted = checked;
+        if(checked && item.status === '컨택대기') item.status = '제품발송완료';
+        renderAll();
+      }
+    }
+
+    function updatePplStatus(id, val) {
+      let item = pplList.find(p => p.id === id);
+      if(item) {
+        item.status = val;
+        if(val === '제품발송완료' || val === '콘텐츠 업로드 완료') item.isContacted = true;
+        renderAll();
+      }
+    }
+
+    function openPplModal() { document.getElementById('pplModal').classList.remove('hidden'); }
+    function closePplModal() { document.getElementById('pplModal').classList.add('hidden'); }
+    function savePplModal() {
+      let brand = document.getElementById('pplModalBrand').value;
+      let name = document.getElementById('pplModalName').value;
+      let product = document.getElementById('pplModalProduct').value;
+      let contactDate = document.getElementById('pplModalDate').value || new Date().toISOString().split('T')[0];
+      let status = document.getElementById('pplModalStatus').value;
+
+      if(!name || !product) {
+        alert('인플루언서 이름과 제품명을 입력해주세요.');
+        return;
+      }
+
+      pplList.unshift({ id: Date.now(), brand, name, product, contactDate, isContacted: status !== '컨택대기', status });
+      closePplModal();
+      renderAll();
+    }
+
+    function deletePpl(id) {
+      if(confirm('해당 PPL 항목을 삭제하시겠습니까?')) {
+        pplList = pplList.filter(p => p.id !== id);
+        renderAll();
+      }
+    }
+
+    // --- Calendar Render ---
+    function changeMonth(diff) {
+      calendarDate.setMonth(calendarDate.getMonth() + diff);
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      let year = calendarDate.getFullYear();
+      let month = calendarDate.getMonth();
+      document.getElementById('calendar-month-title').innerText = `${year}년 ${month + 1}월`;
+
+      let grid = document.getElementById('calendar-grid');
+      grid.innerHTML = '';
+
+      let firstDay = new Date(year, month, 1).getDay();
+      let lastDate = new Date(year, month + 1, 0).getDate();
+
+      for(let i = 0; i < firstDay; i++) {
+        grid.innerHTML += `<div class="h-20 bg-slate-50/50 rounded-xl border border-transparent"></div>`;
+      }
+
+      for(let d = 1; d <= lastDate; d++) {
+        let dateStr = `${year}-${String(month+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        let matched = pplList.filter(p => p.contactDate === dateStr);
+
+        let badgesHtml = '';
+        matched.forEach(m => {
+          let dotColor = m.isContacted ? 'bg-emerald-500' : 'bg-pink-500';
+          badgesHtml += `<div class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-pink-50 text-pink-700 truncate flex items-center gap-1 mt-0.5"><span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span>${m.name.split(' ')[0]}</div>`;
+        });
+
+        grid.innerHTML += `
+          <div class="h-20 bg-white p-1.5 rounded-xl border border-pink-100 flex flex-col justify-between overflow-hidden shadow-2xs hover:border-pink-300 transition">
+            <div class="text-[11px] font-bold text-slate-700">${d}</div>
+            <div class="overflow-y-auto custom-scrollbar flex-1">${badgesHtml}</div>
+          </div>
+        `;
+      }
+    }
+
+    // --- Seeding Inventory & Logs (+/- feature & custom type) ---
+    function renderSeedingInventory() {
+      let grid = document.getElementById('inventory-cards-grid');
+      grid.innerHTML = '';
+
+      let filteredProds = products.filter(p => currentBrandTab === '전체' || p.brand === currentBrandTab);
+      filteredProds.forEach(prod => {
+        let brandBadge = prod.brand === '온살' ? 'bg-pink-50 text-pink-600 border-pink-200' : 'bg-sky-50 text-sky-600 border-sky-200';
+        let stockColor = prod.stock > 30 ? 'text-slate-900' : (prod.stock > 0 ? 'text-amber-600' : 'text-rose-600 font-black');
+
+        grid.innerHTML += `
+          <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-sm flex flex-col justify-between space-y-3">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${brandBadge}">${prod.brand}</span>
+                <h3 class="text-xs font-bold text-slate-900 mt-1.5">${prod.name}</h3>
+              </div>
+              <button onclick="deleteProduct(${prod.id})" class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div class="flex justify-between items-end bg-pink-50/30 p-3 rounded-xl border border-pink-50">
+              <div>
+                <span class="text-[10px] text-slate-400 font-semibold">잔여 샘플 수량</span>
+                <div class="text-xl font-bold ${stockColor}">${prod.stock}개</div>
+              </div>
+              <button onclick="quickStockAdjust('${prod.brand}', '${prod.name}')" class="px-2.5 py-1 bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-semibold rounded-lg shadow-xs transition">
+                수량조정
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      // Stock Logs Table
+      let logBody = document.getElementById('stockLogTableBody');
+      logBody.innerHTML = '';
+      if(stockLogs.length === 0) {
+        logBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">재고 변동 히스토리가 없습니다.</td></tr>`;
+        return;
+      }
+
+      stockLogs.forEach((log, idx) => {
+        let isPlus = log.qty > 0;
+        let typeBadge = 'bg-slate-100 text-slate-700';
+        if(log.type.includes('입고') || isPlus) typeBadge = 'bg-blue-50 text-blue-700';
+        else if(log.type.includes('촬영') || log.type.includes('소진') || log.type.includes('발송') || !isPlus) typeBadge = 'bg-amber-50 text-amber-700';
+
+        logBody.innerHTML += `
+          <tr class="hover:bg-pink-50/20 transition">
+            <td class="py-3 px-3">${log.date}</td>
+            <td class="py-3 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${typeBadge}">${log.type}</span></td>
+            <td class="py-3 px-3 font-bold text-slate-900">[${log.brand}] ${log.product}</td>
+            <td class="py-3 px-3 font-black ${isPlus ? 'text-blue-600' : 'text-rose-600'}">${isPlus ? '+' + log.qty : log.qty}개</td>
+            <td class="py-3 px-3 text-slate-600">${log.reason || '-'}</td>
+            <td class="py-3 px-3 text-right">
+              <button onclick="deleteStockLog(${idx})" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function updateProductSelect() {
+      let sel = document.getElementById('logProductSelect');
+      sel.innerHTML = '';
+      products.forEach(p => {
+        sel.innerHTML += `<option value="${p.brand}|${p.name}">[${p.brand}] ${p.name} (현재잔여: ${p.stock}개)</option>`;
+      });
+    }
+
+    function quickStockAdjust(brand, name) {
+      openStockLogModal();
+      let sel = document.getElementById('logProductSelect');
+      for(let i=0; i<sel.options.length; i++) {
+        if(sel.options[i].value === `${brand}|${name}`) {
+          sel.selectedIndex = i;
+          break;
+        }
+      }
+    }
+
+    function openStockLogModal() { document.getElementById('stockLogModal').classList.remove('hidden'); }
+    function closeStockLogModal() { document.getElementById('stockLogModal').classList.add('hidden'); }
+    
+    function saveStockLogModal() {
+      let type = document.getElementById('logType').value.trim() || '직접조정';
+      let prodVal = document.getElementById('logProductSelect').value.split('|');
+      let brand = prodVal[0];
+      let name = prodVal[1];
+      let qtyInput = document.getElementById('logQuantity').value.trim();
+      let qty = Number(qtyInput);
+
+      if(isNaN(qty)) {
+        alert('올바른 숫자를 입력해주세요. (예: 10 또는 -5)');
+        return;
+      }
+
+      let reason = document.getElementById('logReason').value;
+
+      let targetProd = products.find(p => p.brand === brand && p.name === name);
+      if(targetProd) {
+        // Automatically add or subtract from stock based on signed number (+/-)
+        targetProd.stock = Math.max(0, targetProd.stock + qty);
+      }
+
+      stockLogs.unshift({
+        id: Date.now(),
+        date: new Date().toISOString().split('T')[0],
+        type, brand, product: name, qty, reason
+      });
+
+      closeStockLogModal();
+      renderAll();
+    }
+
+    function deleteStockLog(idx) {
+      if(confirm('해당 재고 히스토리를 삭제하시겠습니까?')) {
+        stockLogs.splice(idx, 1);
+        renderAll();
+      }
+    }
+
+    function openProductModal() { document.getElementById('productModal').classList.remove('hidden'); }
+    function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
+    function saveProductModal() {
+      let brand = document.getElementById('prodModalBrand').value;
+      let name = document.getElementById('prodModalName').value;
+      let stock = Number(document.getElementById('prodModalStock').value) || 0;
+
+      if(!name) { alert('제품명을 입력해주세요.'); return; }
+
+      products.push({ id: Date.now(), brand, name, stock });
+      closeProductModal();
+      renderAll();
+    }
+
+    function deleteProduct(id) {
+      if(confirm('해당 제품을 삭제하시겠습니까?')) {
+        products = products.filter(p => p.id !== id);
+        renderAll();
+      }
+    }
+
+    // --- Proposals Render ---
+    function renderInfluencerCards() {
+      let list = document.getElementById('dash-proposal-list');
+      list.innerHTML = '';
+      if(proposals.length === 0) {
+        list.innerHTML = `<div class="text-xs text-slate-400 text-center py-4">제안 대기 중인 인플루언서가 없습니다.</div>`;
+        return;
+      }
+
+      proposals.forEach(p => {
+        list.innerHTML += `
+          <div class="p-3 rounded-xl bg-pink-50/40 border border-pink-100 flex items-center justify-between">
+            <div>
+              <div class="font-bold text-slate-900 text-xs">${p.realName} <span class="text-[10px] text-pink-600 font-normal">(${p.title})</span></div>
+              <div class="text-[11px] text-slate-500 mt-0.5">${p.desc}</div>
+            </div>
+            <button onclick="deleteProposal(${p.id})" class="text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `;
+      });
+    }
+
+    function openProposalModal() { document.getElementById('proposalModal').classList.remove('hidden'); }
+    function closeProposalModal() { document.getElementById('proposalModal').classList.add('hidden'); }
+    function saveProposalModal() {
+      let realName = document.getElementById('propModalRealName').value;
+      let title = document.getElementById('propModalTitle').value;
+      let url = document.getElementById('propModalUrl').value;
+      let desc = document.getElementById('propModalDesc').value;
+
+      if(!realName || !title) { alert('이름과 채널명을 입력해주세요.'); return; }
+
+      proposals.unshift({ id: Date.now(), realName, title, url, desc });
+      closeProposalModal();
+      renderAll();
+    }
+
+    function deleteProposal(id) {
+      proposals = proposals.filter(p => p.id !== id);
+      renderAll();
+    }
+
+    // --- UTM & Google Sheet Readable Dashboard ---
+    function renderUtmDashboard() {
+      let tbody = document.getElementById('utmTableBody');
+      tbody.innerHTML = '';
+
+      let search = document.getElementById('utmSearchInput').value.toLowerCase();
+      let brandFilter = document.getElementById('utmBrandFilter').value;
+
+      let filtered = utmList.filter(item => {
+        let matchBrand = brandFilter === '전체' || item.brand === brandFilter;
+        let matchSearch = (item.name && item.name.toLowerCase().includes(search)) || 
+                          (item.campaign && item.campaign.toLowerCase().includes(search)) || 
+                          (item.source && item.source.toLowerCase().includes(search));
+        return matchBrand && matchSearch;
+      });
+
+      if(filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">조건에 맞는 UTM 링크 데이터가 없습니다.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach((item) => {
+        let brandBadge = item.brand === '온살' ? 'bg-pink-50 text-pink-600 border-pink-200' : 'bg-sky-50 text-sky-600 border-sky-200';
+        tbody.innerHTML += `
+          <tr class="hover:bg-pink-50/20 transition">
+            <td class="py-3 px-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${brandBadge}">${item.brand}</span>
+              <div class="font-bold text-slate-900 mt-1">${item.name}</div>
+            </td>
+            <td class="py-3 px-3 font-bold text-purple-700">${item.campaign}</td>
+            <td class="py-3 px-3 font-semibold text-slate-700">
+              <span class="px-2 py-0.5 bg-slate-100 rounded text-[11px]">${item.source}</span>
+            </td>
+            <td class="py-3 px-3">
+              <input type="text" readonly value="${item.url}" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-600 select-all font-mono" />
+            </td>
+            <td class="py-3 px-3 text-center">
+              <button onclick="copyUtmUrl('${item.url}')" class="px-2.5 py-1 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-lg transition shadow-xs">
+                <i class="fa-solid fa-copy"></i> 복사
+              </button>
+            </td>
+            <td class="py-3 px-3 text-right">
+              <button onclick="deleteUtmItem(${item.id})" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function openUtmModal() { document.getElementById('utmModal').classList.remove('hidden'); }
+    function closeUtmModal() { document.getElementById('utmModal').classList.add('hidden'); }
+    
+    function saveUtmModal() {
+      let brand = document.getElementById('utmModalBrand').value;
+      let name = document.getElementById('utmModalName').value;
+      let campaign = document.getElementById('utmModalCampaign').value;
+      let source = document.getElementById('utmModalSource').value;
+      let baseUrl = document.getElementById('utmModalUrl').value;
+
+      if(!campaign) { alert('UTM 캠페인명을 입력해주세요.'); return; }
+
+      let finalUrl = `${baseUrl}?utm_source=${source || 'instagram'}&utm_medium=ppl&utm_campaign=${campaign}`;
+
+      utmList.unshift({
+        id: Date.now(),
+        brand, name: name || '미지정 인플루언서', campaign, source: source || 'instagram', url: finalUrl
+      });
+
+      closeUtmModal();
+      renderUtmDashboard();
+    }
+
+    function deleteUtmItem(id) {
+      if(confirm('해당 UTM 항목을 삭제하시겠습니까?')) {
+        utmList = utmList.filter(x => x.id !== id);
+        renderUtmDashboard();
+      }
+    }
+
+    function copyUtmUrl(url) {
+      const el = document.createElement('textarea');
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      alert('UTM 트래킹 URL이 클립보드에 복사되었습니다!');
+    }
+  </script>
+</body>
+</html>
