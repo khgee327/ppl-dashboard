@@ -1608,3 +1608,88 @@
   </script>
 </body>
 </html>
+<!-- ==================== PAGE 3: UTM 관리 페이지 (신규 추가) ==================== -->
+  <main id="page-utm" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+    
+    <section class="bg-white p-6 rounded-2xl border border-pink-100 shadow-sm space-y-6">
+      <div class="border-b border-pink-50 pb-4">
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-link text-pink-500"></i> 인플루언서별 UTM 파라미터 링크 생성기
+        </h2>
+        <p class="text-xs text-slate-500 mt-1">
+          제공해주신 스프레드시트 수식 구조 (<code class="bg-pink-50 px-1.5 py-0.5 rounded text-pink-600 font-semibold">URL / 제품명 / 인플루언서 / 유형</code>)를 바탕으로, 네이버 스마트스토어 및 자사몰 URL에 트래킹 파라미터를 자동으로 인코딩하여 생성합니다.
+        </p>
+      </div>
+
+      <!-- UTM 생성 입력 폼 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 bg-pink-50/40 p-4 rounded-xl border border-pink-100">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">내 네이버/자사몰 상품 URL <span class="text-pink-500">*</span></label>
+          <input type="url" id="utmInputUrl" placeholder="https://smartstore.naver.com/..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white" oninput="generateUTMLink()">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">캠페인 이름 (nt_source) <span class="text-pink-500">*</span></label>
+          <input type="text" id="utmInputSource" placeholder="예: 시카세럼 / 추석" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white" oninput="generateUTMLink()">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">광고 세트 (nt_medium) <span class="text-pink-500">*</span></label>
+          <input type="text" id="utmInputMedium" placeholder="예: 레뷰 / 크리에이터" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white" oninput="generateUTMLink()">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">광고/소재 (nt_detail) <span class="text-pink-500">*</span></label>
+          <input type="text" id="utmInputDetail" placeholder="예: 블로그 / 8월" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white" oninput="generateUTMLink()">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">상품명, 혹은 나만의 키워드 (nt_keyword)</label>
+          <input type="text" id="utmInputKeyword" placeholder="예: 캠핑용품추천 / 히알루론" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white" oninput="generateUTMLink()">
+        </div>
+        <div class="flex items-end">
+          <button type="button" onclick="saveUTMRecord()" class="w-full py-2.5 bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-bookmark"></i> 생성된 UTM 링크 저장하기
+          </button>
+        </div>
+      </div>
+
+      <!-- 결과 미리보기 박스 -->
+      <div class="bg-slate-900 text-white p-4 rounded-xl space-y-2">
+        <div class="flex justify-between items-center text-xs text-slate-400">
+          <span>(NT 파라미터 적용된) 최종 URL 결과 미리보기</span>
+          <button onclick="copyUTMResult()" class="px-2.5 py-1 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-[11px] font-bold transition flex items-center gap-1">
+            <i class="fa-solid fa-copy"></i> 복사하기
+          </button>
+        </div>
+        <div id="utmResultPreview" class="text-xs font-mono text-pink-300 break-all bg-slate-800 p-3 rounded-lg min-h-[40px] flex items-center">
+          좌측 입력칸에 URL과 파라미터를 작성해주세요.
+        </div>
+      </div>
+    </section>
+
+    <!-- 저장된 UTM 링크 목록 테이블 -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-list-check text-pink-500"></i> 생성된 UTM 링크 관리 목록
+      </h3>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-pink-50/50 text-slate-600 font-semibold border-y border-pink-100">
+            <tr>
+              <th class="py-3 px-3">원본 URL</th>
+              <th class="py-3 px-3">캠페인(source)</th>
+              <th class="py-3 px-3">세트(medium)</th>
+              <th class="py-3 px-3">소재(detail)</th>
+              <th class="py-3 px-3">키워드(keyword)</th>
+              <th class="py-3 px-3">최종 URL</th>
+              <th class="py-3 px-3 text-right">관리</th>
+            </tr>
+          </thead>
+          <tbody id="utmTableBody" class="divide-y divide-slate-100">
+            <!-- JS 로딩 -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
