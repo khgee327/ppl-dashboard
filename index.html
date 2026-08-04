@@ -355,9 +355,8 @@
       <div class="flex justify-between items-center">
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-users-viewfinder text-pink-500"></i> 인플루언서 프로필 카드 목록 (장기 관리)
+            <i class="fa-solid fa-users-viewfinder text-pink-500"></i> 인플루언서 리스트
           </h2>
-          <p class="text-xs text-slate-500">인플루언서 본명이 가장 위쪽에 표기되며 구독자 수, 단가, 협업 진행 횟수 및 다중 채널 링크가 관리됩니다.</p>
         </div>
       </div>
 
@@ -371,12 +370,12 @@
       <div class="flex flex-wrap justify-between items-center gap-3 border-b border-pink-50 pb-3">
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-folder-open text-pink-500"></i> 인플루언서 소개서 & MCN 소속사 인력풀
+            <i class="fa-solid fa-folder-open text-pink-500"></i> 인플루언서 & MCN 소개서
           </h2>
-          <p class="text-xs text-slate-500">소개서 링크 입력 시 드라이브/웹문서 정보를 불러와 최신 상태로 정리합니다.</p>
+          <p class="text-xs text-slate-500">공개된 구글 스프레드시트 링크를 넣으면 인플루언서 명단·단가를 표로 자동 정리합니다.</p>
         </div>
         <button onclick="openProposalModal()" class="px-3.5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 shadow-xs">
-          <i class="fa-solid fa-file-circle-plus"></i> 새 소개서/소속사 인플루언서 등록
+          <i class="fa-solid fa-file-circle-plus"></i> 새 소개서 등록
         </button>
       </div>
 
@@ -675,14 +674,33 @@
           </div>
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">소개서 파일 링크 (구글 드라이브 / 노션 URL)</label>
-          <input type="url" id="propFileUrl" onchange="autoSyncDriveProposal(this.value)" placeholder="https://drive.google.com/... 또는 https://notion.so/..." class="w-full px-3 py-2 text-xs border border-pink-200 rounded-xl font-medium text-pink-600 bg-pink-50/30">
+        <div class="bg-pink-50/40 p-3 rounded-xl border border-pink-100 space-y-2">
+          <label class="block text-xs font-semibold text-pink-900 mb-1">소개서 링크 (구글 스프레드시트 / 드라이브 / 노션)</label>
+          <div class="flex gap-2">
+            <input type="url" id="propFileUrl" placeholder="https://docs.google.com/spreadsheets/d/..." class="flex-1 px-3 py-2 text-xs border border-pink-200 rounded-xl font-medium text-pink-600 bg-white">
+            <button type="button" onclick="importSheetToProposal()" class="px-3 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl whitespace-nowrap shadow-xs">
+              <i class="fa-solid fa-cloud-arrow-down"></i> 시트 불러오기
+            </button>
+          </div>
+          <p class="text-[10px] text-slate-500 leading-relaxed">
+            * 구글 스프레드시트만 자동 정리됩니다. 시트 공유 설정을 <b>링크가 있는 모든 사용자 - 뷰어</b>로 바꿔주세요.<br>
+            * 첫 번째 행이 제목행이어야 하고, <b>이름 / 채널 / 팔로워 / 단가</b> 같은 열이 있으면 자동으로 인식합니다.<br>
+            * PDF·이미지 소개서는 내용 읽기가 불가능해서 아래 칸에 직접 정리해 주세요.
+          </p>
+          <div id="propSheetPreview" class="text-[11px] text-slate-600"></div>
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">소속 인플루언서 명단 및 링크</label>
-          <textarea id="propInfluencers" rows="3" placeholder="예: 김민지 (@creator1, 인스타 5만), 이서연 (@creator2, 유튜브 12만)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></textarea>
+        <div class="bg-amber-50/40 p-3 rounded-xl border border-amber-100 space-y-2">
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-amber-900">소속 인플루언서 명단 (직접 입력 / 붙여넣기)</label>
+              <p class="text-[10px] text-slate-500 mt-0.5">PDF·PPT 소개서는 표를 그대로 복사해서 붙여넣고 아래 버튼을 누르면 표로 정리됩니다.</p>
+            </div>
+            <button type="button" onclick="parsePastedTable()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-xs">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> 붙여넣은 표 정리
+            </button>
+          </div>
+          <textarea id="propInfluencers" rows="4" placeholder="첫 줄에 항목 이름, 그 아래에 내용을 넣어주세요.&#10;예)&#10;이름  채널  팔로워  단가&#10;김민지  인스타  5.2만  300000&#10;이서연  유튜브  12만  800000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-mono"></textarea>
         </div>
 
         <div>
@@ -793,6 +811,90 @@
           <button type="submit" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">생성 및 저장</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL 6: 인플루언서 카드 수정 -->
+  <div id="influencerEditModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-2xl w-full space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex justify-between items-center border-b border-pink-50 pb-2">
+        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-user-pen text-pink-500"></i> 인플루언서 정보 수정
+        </h3>
+        <button onclick="closeInfluencerEdit()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <input type="hidden" id="infEditId">
+
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">본명</label>
+            <input type="text" id="infEditRealName" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">대표 계정</label>
+            <input type="text" id="infEditInfluencer" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">구독자/팔로워</label>
+            <input type="text" id="infEditFollowers" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">이메일</label>
+            <input type="email" id="infEditEmail" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">단가 (원)</label>
+            <input type="number" id="infEditCost" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg font-bold text-pink-600">
+          </div>
+        </div>
+      </div>
+
+      <!-- SNS 채널 -->
+      <div class="bg-pink-50/40 p-3 rounded-xl border border-pink-100 space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-[11px] font-bold text-pink-800"><i class="fa-solid fa-share-nodes"></i> SNS 채널</span>
+          <button type="button" onclick="addInfEditChannelRow()" class="px-2.5 py-1 bg-pink-500 text-white text-[11px] font-bold rounded-lg hover:bg-pink-600">
+            <i class="fa-solid fa-plus"></i> 채널 추가
+          </button>
+        </div>
+        <div id="infEditChannelContainer" class="space-y-2"></div>
+      </div>
+
+      <!-- 협업 콘텐츠 URL -->
+      <div class="bg-amber-50/40 p-3 rounded-xl border border-amber-100 space-y-2">
+        <div class="flex justify-between items-center">
+          <div>
+            <span class="text-[11px] font-bold text-amber-900"><i class="fa-solid fa-link"></i> 협업 콘텐츠 기록</span>
+            <p class="text-[10px] text-slate-500 mt-0.5">카드에는 URL 대신 "업로드일자 · 제품명"으로 표시됩니다.</p>
+          </div>
+          <button type="button" onclick="addInfEditCollabRow()" class="px-2.5 py-1 bg-amber-500 text-white text-[11px] font-bold rounded-lg hover:bg-amber-600">
+            <i class="fa-solid fa-plus"></i> 협업 추가
+          </button>
+        </div>
+        <div id="infEditCollabContainer" class="space-y-2"></div>
+      </div>
+
+      <!-- 배송 정보 -->
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2 text-xs">
+        <span class="text-[11px] font-bold text-slate-600"><i class="fa-solid fa-truck-fast"></i> 배송 정보</span>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="infEditReceiverName" placeholder="수령인 성함" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+          <input type="tel" id="infEditReceiverPhone" placeholder="연락처" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="infEditPostalCode" placeholder="우편번호" class="w-28 px-2.5 py-1.5 border border-pink-200 rounded-lg bg-white font-bold text-pink-700 text-center">
+          <input type="text" id="infEditAddress" placeholder="주소" class="flex-1 px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+        </div>
+        <input type="text" id="infEditNotes" placeholder="메모 / 특이사항" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button onclick="closeInfluencerEdit()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+        <button onclick="saveInfluencerEdit()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">수정 내용 저장</button>
+      </div>
     </div>
   </div>
 
@@ -972,11 +1074,120 @@
       container.appendChild(div);
     }
 
-    function autoSyncDriveProposal(url) {
-      if (!url) return;
-      if (url.includes('drive.google.com') || url.includes('notion.so') || url.includes('docs.google.com')) {
-        if (!document.getElementById('propTitle').value) document.getElementById('propTitle').value = "클라우드 연동 크리에이터 제휴서";
-        alert("드라이브/노션 링크가 확인되었습니다. 명단은 아래 칸에 붙여넣어 주세요.");
+    // ===== 구글 시트 → 소개서 자동 정리 =====
+    let pendingSheetRows = [];
+
+    function parseCSV(text) {
+      const rows = [];
+      let row = [], field = '', inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (inQuotes) {
+          if (ch === '"') {
+            if (text[i + 1] === '"') { field += '"'; i++; }
+            else inQuotes = false;
+          } else field += ch;
+        } else {
+          if (ch === '"') inQuotes = true;
+          else if (ch === ',') { row.push(field); field = ''; }
+          else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+          else if (ch !== '\r') field += ch;
+        }
+      }
+      if (field.length || row.length) { row.push(field); rows.push(row); }
+      return rows.filter(r => r.some(c => (c || '').trim() !== ''));
+    }
+
+    function buildSheetCsvUrl(url) {
+      const idMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (!idMatch) return null;
+      const gidMatch = url.match(/[#&?]gid=([0-9]+)/);
+      let csvUrl = `https://docs.google.com/spreadsheets/d/${idMatch[1]}/gviz/tq?tqx=out:csv`;
+      if (gidMatch) csvUrl += `&gid=${gidMatch[1]}`;
+      return csvUrl;
+    }
+
+    function parsePastedTable() {
+      const raw = document.getElementById('propInfluencers').value.trim();
+      const preview = document.getElementById('propSheetPreview');
+
+      if (!raw) { alert("정리할 내용을 먼저 붙여넣어 주세요."); return; }
+
+      const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) {
+        preview.innerHTML = `<span class="text-amber-700 font-semibold">첫 줄은 항목 이름, 둘째 줄부터 내용이 필요합니다. 최소 2줄을 넣어주세요.</span>`;
+        return;
+      }
+
+      // 탭 > 쉼표 > 2칸 이상 공백 순으로 구분자 자동 판별
+      const splitLine = (line) => {
+        if (line.includes('\t')) return line.split('\t');
+        if (line.includes(',')) return line.split(',');
+        return line.split(/\s{2,}/);
+      };
+
+      const headers = splitLine(lines[0]).map(h => h.trim()).filter(Boolean);
+      if (headers.length < 2) {
+        preview.innerHTML = `<span class="text-amber-700 font-semibold">항목을 나눌 수 없습니다. 항목 사이를 탭이나 쉼표로 구분해 주세요.</span>`;
+        return;
+      }
+
+      pendingSheetRows = lines.slice(1).map(line => {
+        const cells = splitLine(line);
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = (cells[i] || '').trim(); });
+        return obj;
+      }).filter(o => Object.values(o).some(v => v !== ''));
+
+      preview.innerHTML = `
+        <div class="bg-white border border-amber-200 rounded-lg p-2 mt-1">
+          <b class="text-amber-700">${pendingSheetRows.length}명</b>을 표로 정리했습니다.
+          <div class="text-slate-500 mt-1">인식된 항목: ${headers.join(' / ')}</div>
+        </div>`;
+    }
+
+    async function importSheetToProposal() {
+      const url = document.getElementById('propFileUrl').value.trim();
+      const preview = document.getElementById('propSheetPreview');
+
+      if (!url) { alert("소개서 링크를 먼저 입력해 주세요."); return; }
+
+      const csvUrl = buildSheetCsvUrl(url);
+      if (!csvUrl) {
+        preview.innerHTML = `<span class="text-amber-700 font-semibold">구글 스프레드시트 링크가 아니라 자동 정리를 못 했습니다. 명단은 아래 칸에 직접 입력해 주세요.</span>`;
+        return;
+      }
+
+      preview.innerHTML = `<span class="text-slate-500">시트를 불러오는 중...</span>`;
+
+      try {
+        const res = await fetch(csvUrl);
+        if (!res.ok) throw new Error('접근 불가');
+        const text = await res.text();
+        const rows = parseCSV(text);
+        if (rows.length < 2) throw new Error('데이터 없음');
+
+        const headers = rows[0].map(h => (h || '').trim());
+        pendingSheetRows = rows.slice(1).map(r => {
+          const obj = {};
+          headers.forEach((h, i) => { obj[h || `열${i + 1}`] = (r[i] || '').trim(); });
+          return obj;
+        });
+
+        preview.innerHTML = `
+          <div class="bg-white border border-pink-100 rounded-lg p-2 mt-1">
+            <b class="text-pink-700">${pendingSheetRows.length}명</b>의 데이터를 불러왔습니다.
+            <div class="text-slate-500 mt-1">인식된 항목: ${headers.filter(Boolean).join(' / ')}</div>
+          </div>`;
+
+        if (!document.getElementById('propTitle').value) {
+          document.getElementById('propTitle').value = "구글시트 연동 인플루언서 명단";
+        }
+      } catch (e) {
+        pendingSheetRows = [];
+        preview.innerHTML = `
+          <span class="text-rose-600 font-semibold">불러오기에 실패했습니다.</span>
+          <span class="text-slate-500">시트 공유 설정이 '링크가 있는 모든 사용자 - 뷰어'인지 확인해 주세요. 비공개 시트는 읽을 수 없습니다.</span>`;
       }
     }
 
@@ -1480,12 +1691,13 @@
     function renderInfluencerCards() {
       const grid = document.getElementById('influencerCardGrid');
       if (pplList.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">등록된 인플루언서 카드가 없습니다.</div>`;
+        grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">등록된 인플루언서가 없습니다.</div>`;
         return;
       }
 
       grid.innerHTML = pplList.map(p => {
-        let totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.sample||0);
+        const totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.sample||0);
+
         let channelsHtml = '';
         if (p.channels && p.channels.length > 0) {
           channelsHtml = p.channels.map(c => `
@@ -1495,27 +1707,146 @@
           `).join('');
         }
 
+        let collabHtml = '';
+        if (p.collabLinks && p.collabLinks.length > 0) {
+          collabHtml = p.collabLinks
+            .slice()
+            .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+            .map(c => {
+              const label = `${c.date || '날짜미정'} · ${c.product || '제품미정'}`;
+              return c.url
+                ? `<a href="${c.url}" target="_blank" rel="noopener" class="block text-[11px] text-amber-800 hover:underline bg-amber-50 px-2 py-1 rounded border border-amber-100 mb-1 truncate">
+                     <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> ${label}
+                   </a>`
+                : `<div class="block text-[11px] text-slate-500 bg-slate-50 px-2 py-1 rounded border border-slate-100 mb-1 truncate">${label}</div>`;
+            }).join('');
+        }
+
+        const addr = [p.receiverName, p.receiverPhone].filter(Boolean).join(' / ');
+
         return `
           <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs space-y-3 flex flex-col justify-between">
             <div class="space-y-1.5">
               <div class="flex justify-between items-center">
                 <span class="text-[10px] font-bold px-2 py-0.5 ${p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700'} rounded-full">${p.brand}</span>
-                <span class="text-xs font-bold text-pink-600">진행횟수: ${p.collabCount || 1}회</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-pink-600">진행횟수: ${p.collabCount || 1}회</span>
+                  <button onclick="openInfluencerEdit(${p.id})" class="text-slate-400 hover:text-pink-600 text-xs" title="수정"><i class="fa-solid fa-pen"></i></button>
+                </div>
               </div>
               <h3 class="text-base font-black text-slate-900">${p.realName || '무명'} <span class="text-xs font-normal text-slate-500">(${p.influencer})</span></h3>
               <div class="text-xs text-slate-500 space-y-0.5 pt-1">
                 <div>구독자: <b>${p.followers || '-'}</b></div>
                 <div>이메일: <b>${p.email || '-'}</b></div>
                 <div>단가(비용): <b class="text-pink-600">${totalCost.toLocaleString()}원</b></div>
+                ${addr ? `<div class="truncate">배송: <b>${addr}</b></div>` : ''}
               </div>
             </div>
+
             <div class="space-y-1 pt-2 border-t border-slate-100">
               <span class="text-[10px] font-bold text-slate-400">등록된 SNS 채널 목록</span>
-              ${channelsHtml || '<span class="text-[11px] text-slate-400">채널 링크 없음</span>'}
+              ${channelsHtml || '<span class="block text-[11px] text-slate-400">채널 링크 없음</span>'}
+            </div>
+
+            <div class="space-y-1 pt-2 border-t border-slate-100">
+              <span class="text-[10px] font-bold text-slate-400">협업 콘텐츠</span>
+              ${collabHtml || '<span class="block text-[11px] text-slate-400">등록된 협업 콘텐츠 없음</span>'}
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    // ===== 인플루언서 카드 수정 =====
+    function infChannelRowHtml(c = {}) {
+      const types = ['인스타', '유튜브', '블로그', '틱톡', '기타'];
+      return `
+        <div class="flex items-center gap-2 inf-channel-row">
+          <select class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold inf-ch-type bg-white">
+            ${types.map(t => `<option value="${t}" ${c.type === t ? 'selected' : ''}>${t}</option>`).join('')}
+          </select>
+          <input type="text" value="${c.account || ''}" placeholder="계정/닉네임" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-ch-account bg-white w-28">
+          <input type="url" value="${c.url || ''}" placeholder="채널 URL" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-ch-url bg-white flex-1">
+          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+        </div>`;
+    }
+
+    function infCollabRowHtml(c = {}) {
+      return `
+        <div class="flex items-center gap-2 inf-collab-row">
+          <input type="date" value="${c.date || ''}" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-cl-date bg-white">
+          <input type="text" value="${c.product || ''}" placeholder="제품명" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-cl-product bg-white w-32">
+          <input type="url" value="${c.url || ''}" placeholder="콘텐츠 URL" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-cl-url bg-white flex-1">
+          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+        </div>`;
+    }
+
+    function addInfEditChannelRow() {
+      document.getElementById('infEditChannelContainer').insertAdjacentHTML('beforeend', infChannelRowHtml());
+    }
+
+    function addInfEditCollabRow() {
+      document.getElementById('infEditCollabContainer').insertAdjacentHTML('beforeend', infCollabRowHtml({ date: new Date().toISOString().slice(0, 10) }));
+    }
+
+    function openInfluencerEdit(id) {
+      const p = pplList.find(i => i.id === id);
+      if (!p) return;
+
+      document.getElementById('infEditId').value = id;
+      document.getElementById('infEditRealName').value = p.realName || '';
+      document.getElementById('infEditInfluencer').value = p.influencer || '';
+      document.getElementById('infEditFollowers').value = p.followers || '';
+      document.getElementById('infEditEmail').value = p.email || '';
+      document.getElementById('infEditCost').value = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.sample||0);
+      document.getElementById('infEditReceiverName').value = p.receiverName || '';
+      document.getElementById('infEditReceiverPhone').value = p.receiverPhone || '';
+      document.getElementById('infEditPostalCode').value = p.postalCode || '';
+      document.getElementById('infEditAddress').value = p.address || '';
+      document.getElementById('infEditNotes').value = p.notes || '';
+
+      document.getElementById('infEditChannelContainer').innerHTML = (p.channels || []).map(c => infChannelRowHtml(c)).join('');
+      document.getElementById('infEditCollabContainer').innerHTML = (p.collabLinks || []).map(c => infCollabRowHtml(c)).join('');
+
+      document.getElementById('influencerEditModal').classList.remove('hidden');
+    }
+
+    function closeInfluencerEdit() { document.getElementById('influencerEditModal').classList.add('hidden'); }
+
+    function saveInfluencerEdit() {
+      const id = Number(document.getElementById('infEditId').value);
+      const p = pplList.find(i => i.id === id);
+      if (!p) return;
+
+      p.realName = document.getElementById('infEditRealName').value;
+      p.influencer = document.getElementById('infEditInfluencer').value;
+      p.followers = document.getElementById('infEditFollowers').value;
+      p.email = document.getElementById('infEditEmail').value;
+      p.receiverName = document.getElementById('infEditReceiverName').value;
+      p.receiverPhone = document.getElementById('infEditReceiverPhone').value;
+      p.postalCode = document.getElementById('infEditPostalCode').value;
+      p.address = document.getElementById('infEditAddress').value;
+      p.notes = document.getElementById('infEditNotes').value;
+
+      const newCost = Number(document.getElementById('infEditCost').value) || 0;
+      p.costs.branded = newCost;
+      p.costs.ppl = 0; p.costs.reuse = 0; p.costs.sample = 0;
+
+      p.channels = Array.from(document.querySelectorAll('#infEditChannelContainer .inf-channel-row')).map(r => ({
+        type: r.querySelector('.inf-ch-type').value,
+        account: r.querySelector('.inf-ch-account').value,
+        url: r.querySelector('.inf-ch-url').value
+      }));
+
+      p.collabLinks = Array.from(document.querySelectorAll('#infEditCollabContainer .inf-collab-row')).map(r => ({
+        date: r.querySelector('.inf-cl-date').value,
+        product: r.querySelector('.inf-cl-product').value,
+        url: r.querySelector('.inf-cl-url').value
+      })).filter(c => c.date || c.product || c.url);
+
+      saveAll();
+      closeInfluencerEdit();
+      renderAll();
     }
 
     function openProposalModal() { document.getElementById('proposalModal').classList.remove('hidden'); }
@@ -1532,8 +1863,11 @@
         agentEmail: document.getElementById('propAgentEmail').value,
         influencers: document.getElementById('propInfluencers').value,
         fileUrl: document.getElementById('propFileUrl').value,
+        rows: pendingSheetRows,
         notes: document.getElementById('propNotes').value
       });
+      pendingSheetRows = [];
+      document.getElementById('propSheetPreview').innerHTML = '';
       saveAll();
       renderProposals();
       closeProposalModal();
@@ -1543,31 +1877,86 @@
     function renderProposals() {
       const grid = document.getElementById('proposalListGrid');
       if (proposals.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">등록된 소개서/소속사 인력풀이 없습니다.</div>`;
+        grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">등록된 소개서가 없습니다.</div>`;
         return;
       }
 
-      grid.innerHTML = proposals.map(prop => `
-        <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs space-y-3 flex flex-col justify-between">
-          <div class="space-y-1">
-            <div class="flex justify-between items-center">
-              <span class="text-[10px] font-bold px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">${prop.company}</span>
-              <button onclick="deleteProposal(${prop.id})" class="text-slate-400 hover:text-rose-600 text-xs"><i class="fa-solid fa-trash"></i></button>
-            </div>
-            <h3 class="text-sm font-bold text-slate-900 mt-1">${prop.title}</h3>
-            <div class="text-xs text-slate-500 space-y-0.5 pt-1">
-              <div>담당자: <b>${prop.agentName || '-'} (${prop.agentPhone || '-'})</b></div>
-              <div>이메일: ${prop.agentEmail || '-'}</div>
-            </div>
-          </div>
-
-          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs whitespace-pre-line text-slate-700">
+      grid.innerHTML = proposals.map(prop => {
+        let rowsHtml = '';
+        if (prop.rows && prop.rows.length > 0) {
+          const headers = Object.keys(prop.rows[0]);
+          rowsHtml = `
+            <div class="border border-pink-100 rounded-xl overflow-hidden">
+              <div class="max-h-48 overflow-auto custom-scrollbar">
+                <table class="w-full text-[10px] text-left">
+                  <thead class="bg-pink-50 text-slate-600 font-bold sticky top-0">
+                    <tr>${headers.map(h => `<th class="py-1.5 px-2 whitespace-nowrap">${h}</th>`).join('')}</tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    ${prop.rows.map(r => `<tr class="hover:bg-pink-50/40">${headers.map(h => `<td class="py-1.5 px-2 text-slate-700 whitespace-nowrap">${r[h] || '-'}</td>`).join('')}</tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>
+              <div class="bg-slate-50 px-2 py-1 text-[10px] text-slate-500 font-semibold">총 ${prop.rows.length}명 · 시트에서 자동 정리됨</div>
+            </div>`;
+        } else {
+          rowsHtml = `<div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs whitespace-pre-line text-slate-700">
             <b>소속 인플루언서</b><br>${prop.influencers || '-'}
-          </div>
+          </div>`;
+        }
 
-          ${prop.fileUrl ? `<a href="${prop.fileUrl}" target="_blank" rel="noopener" class="block text-center py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-semibold rounded-lg shadow-xs"><i class="fa-solid fa-cloud-arrow-down"></i> 소개서 문서 열기</a>` : ''}
-        </div>
-      `).join('');
+        return `
+          <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs space-y-3 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">${prop.company}</span>
+                <div class="flex gap-2 text-xs text-slate-400">
+                  ${prop.fileUrl && prop.fileUrl.includes('/spreadsheets/') ? `<button onclick="refreshProposalSheet(${prop.id})" class="hover:text-pink-600" title="시트 다시 불러오기"><i class="fa-solid fa-rotate"></i></button>` : ''}
+                  <button onclick="deleteProposal(${prop.id})" class="hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+              <h3 class="text-sm font-bold text-slate-900 mt-1">${prop.title}</h3>
+              <div class="text-xs text-slate-500 space-y-0.5 pt-1">
+                <div>담당자: <b>${prop.agentName || '-'} (${prop.agentPhone || '-'})</b></div>
+                <div>이메일: ${prop.agentEmail || '-'}</div>
+                ${prop.notes ? `<div class="text-slate-400">메모: ${prop.notes}</div>` : ''}
+              </div>
+            </div>
+
+            ${rowsHtml}
+
+            ${prop.fileUrl ? `<a href="${prop.fileUrl}" target="_blank" rel="noopener" class="block text-center py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-semibold rounded-lg shadow-xs"><i class="fa-solid fa-up-right-from-square"></i> 원본 소개서 열기</a>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function refreshProposalSheet(id) {
+      const prop = proposals.find(p => p.id === id);
+      if (!prop || !prop.fileUrl) return;
+
+      const csvUrl = buildSheetCsvUrl(prop.fileUrl);
+      if (!csvUrl) { alert("구글 스프레드시트 링크가 아닙니다."); return; }
+
+      try {
+        const res = await fetch(csvUrl);
+        if (!res.ok) throw new Error();
+        const rows = parseCSV(await res.text());
+        if (rows.length < 2) throw new Error();
+
+        const headers = rows[0].map(h => (h || '').trim());
+        prop.rows = rows.slice(1).map(r => {
+          const obj = {};
+          headers.forEach((h, i) => { obj[h || `열${i + 1}`] = (r[i] || '').trim(); });
+          return obj;
+        });
+
+        saveAll();
+        renderProposals();
+        alert(`${prop.rows.length}명의 최신 데이터를 불러왔습니다.`);
+      } catch (e) {
+        alert("불러오기에 실패했습니다. 시트 공유 설정이 '링크가 있는 모든 사용자 - 뷰어'인지 확인해 주세요.");
+      }
     }
 
     function deleteProposal(id) {
