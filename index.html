@@ -57,6 +57,9 @@
         <button onclick="exportToCSV()" class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-xl transition flex items-center gap-1 shadow-xs">
           <i class="fa-solid fa-file-excel"></i> CSV 내보내기
         </button>
+        <button id="syncStatus" onclick="syncNow()" title="눌러서 다시 동기화" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
+          <i class="fa-solid fa-cloud"></i> <span id="syncStatusText">연결 확인 중...</span>
+        </button>
       </div>
     </div>
   </header>
@@ -912,6 +915,106 @@
 
   <!-- ==================== SCRIPT ==================== -->
   <script>
+    // ===== 구글 시트 동기화 설정 =====
+    const SYNC_URL = 'https://script.google.com/macros/s/AKfycbzs_d-DicqnJ8hsuwg_wKHfM5s8ojit9HAzGM_M5WGxsugyUZBUOUzXAyIXCwu7wBsBmQ/exec';
+    const SYNC_KEY = 'khj327';
+
+    let syncReady = false;
+    let syncTimer = null;
+
+    function setSyncStatus(state, text) {
+      const btn = document.getElementById('syncStatus');
+      const label = document.getElementById('syncStatusText');
+      if (!btn || !label) return;
+
+      const styles = {
+        ok: 'px-3 py-2 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5',
+        saving: 'px-3 py-2 bg-amber-100 text-amber-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5',
+        error: 'px-3 py-2 bg-rose-100 text-rose-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5',
+        idle: 'px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5'
+      };
+      btn.className = styles[state] || styles.idle;
+      label.innerText = text;
+    }
+
+    function collectSyncData() {
+      return {
+        onsal_products: products,
+        onsal_pplList: pplList,
+        onsal_proposals: proposals,
+        onsal_stockLogs: stockLogs,
+        onsal_utmList: utmList,
+        onsal_categories: categories
+      };
+    }
+
+    async function pushToSheet() {
+      setSyncStatus('saving', '저장 중...');
+      try {
+        const res = await fetch(SYNC_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ key: SYNC_KEY, data: collectSyncData() })
+        });
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'save failed');
+
+        const t = new Date();
+        setSyncStatus('ok', `저장됨 ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`);
+      } catch (e) {
+        setSyncStatus('error', '저장 실패 (다시 시도하려면 클릭)');
+      }
+    }
+
+    function queueSync() {
+      if (!syncReady) return;
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(pushToSheet, 1200);
+    }
+
+    async function syncNow() {
+      await pullFromSheet();
+      renderAll();
+      await pushToSheet();
+    }
+
+    async function pullFromSheet() {
+      setSyncStatus('saving', '불러오는 중...');
+      try {
+        const res = await fetch(`${SYNC_URL}?key=${encodeURIComponent(SYNC_KEY)}&t=${Date.now()}`);
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'load failed');
+
+        const d = json.data || {};
+        const hasRemote = Object.keys(d).length > 0;
+
+        if (hasRemote) {
+          if (Array.isArray(d.onsal_products)) products = d.onsal_products;
+          if (Array.isArray(d.onsal_pplList)) pplList = d.onsal_pplList;
+          if (Array.isArray(d.onsal_proposals)) proposals = d.onsal_proposals;
+          if (Array.isArray(d.onsal_stockLogs)) stockLogs = d.onsal_stockLogs;
+          if (Array.isArray(d.onsal_utmList)) utmList = d.onsal_utmList;
+          if (Array.isArray(d.onsal_categories)) categories = d.onsal_categories;
+
+          localStorage.setItem('onsal_products', JSON.stringify(products));
+          localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
+          localStorage.setItem('onsal_proposals', JSON.stringify(proposals));
+          localStorage.setItem('onsal_stockLogs', JSON.stringify(stockLogs));
+          localStorage.setItem('onsal_utmList', JSON.stringify(utmList));
+          localStorage.setItem('onsal_categories', JSON.stringify(categories));
+        }
+
+        syncReady = true;
+        setSyncStatus('ok', hasRemote ? '시트 연결됨' : '시트 연결됨 (첫 저장 대기)');
+        if (!hasRemote) queueSync();
+        return true;
+      } catch (e) {
+        syncReady = false;
+        setSyncStatus('error', '시트 연결 실패 (클릭해서 재시도)');
+        return false;
+      }
+    }
+
     const STAGES = [
       "컨택중", "협의중", "테스트제품전달", "테스트중", "진행확정",
       "계약서작성", "가이드전달", "기획안전달", "기획안피드백",
@@ -996,6 +1099,8 @@
       document.getElementById('contactDate').valueAsDate = new Date();
       document.getElementById('logDate').valueAsDate = new Date();
       renderAll();
+
+      pullFromSheet().then(() => renderAll());
     });
 
     function saveAll() {
@@ -1005,6 +1110,7 @@
       localStorage.setItem('onsal_stockLogs', JSON.stringify(stockLogs));
       localStorage.setItem('onsal_utmList', JSON.stringify(utmList));
       localStorage.setItem('onsal_categories', JSON.stringify(categories));
+      queueSync();
     }
 
     function renderCategoryOptions() {
