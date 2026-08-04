@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PPL & 협찬 진행 관리 대시보드</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    body { font-family: 'Pretendard', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="bg-indigo-600 text-white p-2 rounded-lg">
+          <i class="fa-solid fa-box-open text-xl"></i>
+        </div>
+        <h1 class="text-xl font-bold text-slate-900">PPL & 협찬 진행 대시보드</h1>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="exportToCSV()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition flex items-center gap-2">
+          <i class="fa-solid fa-download"></i> CSV 내보내기
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- 좌측: PPL 등록 폼 -->
+      <section class="lg:col-span-1 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit sticky top-24">
+        <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-indigo-600"></i> 신규 PPL/협찬 등록
+        </h2>
+        
+        <form id="pplForm" class="space-y-4">
+          <!-- 인플루언서 정보 -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">인플루언서 이름 / 계정</label>
+            <input type="text" id="influencer" required placeholder="예: @marketer_kim / 김마케" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+
+          <!-- SNS 채널 & 협찬 유형 -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">SNS 채널</label>
+              <select id="channel" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <option value="인스타">인스타</option>
+                <option value="블로그">블로그</option>
+                <option value="유튜브">유튜브</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">협찬 유형</label>
+              <select id="type" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <option value="브랜디드">브랜디드</option>
+                <option value="PPL">PPL</option>
+                <option value="제품단순제공">제품단순제공</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 브랜드 및 동적 제품 선택 -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">브랜드</label>
+              <select id="brand" onchange="updateProductOptions()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium text-indigo-700">
+                <option value="온살">온살</option>
+                <option value="루메아카이브">루메아카이브</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">제품명</label>
+              <select id="product" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <!-- JS로 자동 업데이트됨 -->
+              </select>
+            </div>
+          </div>
+
+          <hr class="border-slate-100 my-2">
+
+          <!-- 배송 정보 -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">배송지 정보</h3>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">수령인 성함</label>
+                <input type="text" id="receiverName" required placeholder="홍길동" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">연락처</label>
+                <input type="tel" id="receiverPhone" required placeholder="010-0000-0000" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">배송지 주소</label>
+              <textarea id="address" rows="2" required placeholder="상세주소까지 입력" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+            </div>
+          </div>
+
+          <!-- 진행 상태 선택 -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">진행 상태</label>
+            <select id="status" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+              <option value="배송대기">🚚 배송대기</option>
+              <option value="배송완료">📦 배송완료</option>
+              <option value="콘텐츠작성중">✍️ 콘텐츠 작성중</option>
+              <option value="업로드완료">✅ 업로드 완료</option>
+            </select>
+          </div>
+
+          <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
+            등록하기
+          </button>
+        </form>
+      </section>
+
+      <!-- 우측: 대시보드 리스트 & 필터 -->
+      <section class="lg:col-span-2 space-y-4">
+        
+        <!-- 필터 & 검색 바 -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-3 justify-between items-center">
+          <div class="flex gap-2">
+            <button onclick="filterByBrand('전체')" class="filter-btn active px-3 py-1.5 text-xs font-semibold rounded-full bg-indigo-600 text-white">전체</button>
+            <button onclick="filterByBrand('온살')" class="filter-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200">온살만 보기</button>
+            <button onclick="filterByBrand('루메아카이브')" class="filter-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200">루메아카이브만 보기</button>
+          </div>
+          <span id="totalCount" class="text-xs text-slate-500 font-medium">총 0건</span>
+        </div>
+
+        <!-- 카드 리스트 -->
+        <div id="pplList" class="space-y-3">
+          <!-- JS로 카드가 여기에 뿌려집니다 -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    // 1. 브랜드별 제품 목록 설정 (추후 필요시 제품명을 추가/수정하세요)
+    const productData = {
+      "온살": ["온살 메인 세트 A", "온살 시그니처 팩", "온살 데일리 케어", "기타 (온살 커스텀)"],
+      "루메아카이브": ["루메 에센셜 키트", "루메 아카이브 에디션", "루메 캡슐 컬렉션", "기타 (루메 커스텀)"]
+    };
+
+    let items = JSON.parse(localStorage.getItem('ppl_items')) || [];
+    let currentBrandFilter = '전체';
+
+    // 브랜드 선택 시 제품 목록 업데이트
+    function updateProductOptions() {
+      const brandSelect = document.getElementById('brand');
+      const productSelect = document.getElementById('product');
+      const selectedBrand = brandSelect.value;
+
+      productSelect.innerHTML = '';
+      productData[selectedBrand].forEach(prod => {
+        const option = document.createElement('option');
+        option.value = prod;
+        option.textContent = prod;
+        productSelect.appendChild(option);
+      });
+    }
+
+    // 초기화
+    updateProductOptions();
+    renderList();
+
+    // 2. Form 등록
+    document.getElementById('pplForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const newItem = {
+        id: Date.now(),
+        influencer: document.getElementById('influencer').value,
+        channel: document.getElementById('channel').value,
+        type: document.getElementById('type').value,
+        brand: document.getElementById('brand').value,
+        product: document.getElementById('product').value,
+        receiverName: document.getElementById('receiverName').value,
+        receiverPhone: document.getElementById('receiverPhone').value,
+        address: document.getElementById('address').value,
+        status: document.getElementById('status').value,
+        date: new Date().toLocaleDateString('ko-KR')
+      };
+
+      items.unshift(newItem);
+      saveAndRender();
+      document.getElementById('pplForm').reset();
+      updateProductOptions();
+    });
+
+    // 3. 리스트 렌더링
+    function renderList() {
+      const container = document.getElementById('pplList');
+      container.innerHTML = '';
+
+      const filteredItems = currentBrandFilter === '전체' 
+        ? items 
+        : items.filter(i => i.brand === currentBrandFilter);
+
+      document.getElementById('totalCount').textContent = `총 ${filteredItems.length}건`;
+
+      if (filteredItems.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white p-12 text-center rounded-2xl border border-slate-200 text-slate-400">
+            <i class="fa-regular fa-folder-open text-4xl mb-3"></i>
+            <p class="text-sm">등록된 PPL 진행 건이 없습니다.</p>
+          </div>`;
+        return;
+      }
+
+      filteredItems.forEach(item => {
+        const channelBadge = {
+          '인스타': 'bg-pink-100 text-pink-700',
+          '블로그': 'bg-green-100 text-green-700',
+          '유튜브': 'bg-red-100 text-red-700'
+        }[item.channel] || 'bg-slate-100 text-slate-700';
+
+        const brandBadge = item.brand === '온살' ? 'bg-indigo-100 text-indigo-800' : 'bg-purple-100 text-purple-800';
+
+        const card = document.createElement('div');
+        card.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 relative hover:border-slate-300 transition";
+        card.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-lg ${brandBadge}">${item.brand}</span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-lg ${channelBadge}">${item.channel}</span>
+              <span class="px-2 py-0.5 text-xs bg-slate-100 text-slate-600 rounded">${item.type}</span>
+            </div>
+            <button onclick="deleteItem(${item.id})" class="text-slate-300 hover:text-red-500 text-sm transition">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+
+          <div class="flex justify-between items-baseline">
+            <h3 class="text-base font-bold text-slate-900">${item.influencer}</h3>
+            <span class="text-sm font-semibold text-indigo-600">${item.product}</span>
+          </div>
+
+          <!-- 배송지 정보 박스 -->
+          <div class="bg-slate-50 p-3 rounded-xl text-xs space-y-1 text-slate-600 border border-slate-100">
+            <div class="flex justify-between">
+              <span class="font-semibold text-slate-800">${item.receiverName} (${item.receiverPhone})</span>
+              <span class="text-slate-400">${item.date}</span>
+            </div>
+            <p class="text-slate-500 truncate">${item.address}</p>
+          </div>
+
+          <!-- 상태 변경 -->
+          <div class="flex justify-between items-center pt-1">
+            <span class="text-xs text-slate-400">상태 변경:</span>
+            <select onchange="updateStatus(${item.id}, this.value)" class="text-xs font-semibold px-2.5 py-1 rounded-lg border border-slate-200 bg-white">
+              <option value="배송대기" ${item.status === '배송대기' ? 'selected' : ''}>🚚 배송대기</option>
+              <option value="배송완료" ${item.status === '배송완료' ? 'selected' : ''}>📦 배송완료</option>
+              <option value="콘텐츠작성중" ${item.status === '콘텐츠작성중' ? 'selected' : ''}>✍️ 콘텐츠 작성중</option>
+              <option value="업로드완료" ${item.status === '업로드완료' ? 'selected' : ''}>✅ 업로드 완료</option>
+            </select>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 4. 브랜드 필터링
+    function filterByBrand(brand) {
+      currentBrandFilter = brand;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        if (btn.textContent.includes(brand)) {
+          btn.className = "filter-btn active px-3 py-1.5 text-xs font-semibold rounded-full bg-indigo-600 text-white";
+        } else {
+          btn.className = "filter-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200";
+        }
+      });
+      renderList();
+    }
+
+    // 5. 상태 변경 & 삭제
+    function updateStatus(id, newStatus) {
+      items = items.map(item => item.id === id ? { ...item, status: newStatus } : item);
+      saveAndRender();
+    }
+
+    function deleteItem(id) {
+      if (confirm('정말 삭제하시겠습니까?')) {
+        items = items.filter(item => item.id !== id);
+        saveAndRender();
+      }
+    }
+
+    function saveAndRender() {
+      localStorage.setItem('ppl_items', JSON.stringify(items));
+      renderList();
+    }
+
+    // 6. CSV 내보내기 (엑셀 연동)
+    function exportToCSV() {
+      if (items.length === 0) return alert('내보낼 데이터가 없습니다.');
+      
+      let csvContent = "\uFEFF"; // UTF-8 BOM
+      csvContent += "등록일,브랜드,채널,협찬유형,인플루언서,제품명,수령인,연락처,배송지,상태\n";
+
+      items.forEach(i => {
+        csvContent += `"${i.date}","${i.brand}","${i.channel}","${i.type}","${i.influencer}","${i.product}","${i.receiverName}","${i.receiverPhone}","${i.address.replace(/"/g, '""')}","${i.status}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `PPL_협찬진행현황_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
