@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PPL & Seeding Management Dashboard</title>
+  <title>온살 & 루메아카이브 PPL 및 시딩 재고 통합 관리 대시보드</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23ec4899%22><path d=%22M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z%22/></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -27,351 +28,2305 @@
     .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #fbcfe8; border-radius: 4px; }
   </style>
 </head>
-<body class="bg-pink-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-pink-50/40 text-slate-800 min-h-screen pb-16">
 
-  <!-- Header -->
-  <header class="bg-white border-b border-pink-100 shadow-sm sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="bg-pink-500 text-white p-2 rounded-xl shadow-md">
-          <i class="fa-solid fa-chart-line text-lg"></i>
+  <header class="bg-white/90 backdrop-blur-md border-b border-pink-100 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="bg-pink-500 text-white p-2.5 rounded-2xl shadow-sm shadow-pink-200">
+          <i class="fa-solid fa-heart text-lg"></i>
         </div>
         <div>
-          <h1 class="text-lg font-bold text-slate-900 tracking-tight">PPL & Seeding Dashboard</h1>
-          <p class="text-xs text-pink-600 font-medium">Onssal & Lume Archive Management</p>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">온살 & 루메아카이브 마케팅 대시보드</h1>
+          <p class="text-xs text-slate-500">PPL 진행, 시딩 샘플 재고, UTM 트래킹 링크 통합 관리</p>
         </div>
       </div>
-      <div class="flex items-center space-x-3">
-        <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition flex items-center space-x-1.5">
-          <i class="fa-solid fa-file-excel"></i>
-          <span>엑셀 내보내기</span>
-        </button>
-        <button onclick="openAddModal()" class="bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition flex items-center space-x-1.5">
-          <i class="fa-solid fa-plus"></i>
-          <span>새 항목 추가</span>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold">
+          <button onclick="switchMainPage('ppl')" id="nav-ppl" class="px-4 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-bullhorn"></i> PPL & 협찬 관리
+          </button>
+          <button onclick="switchMainPage('seeding')" id="nav-seeding" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-boxes-stacked"></i> 시딩 샘플 & 재고 관리
+          </button>
+          <button onclick="switchMainPage('utm')" id="nav-utm" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-link"></i> UTM
+          </button>
+        </div>
+        <button onclick="exportToCSV()" class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-xl transition flex items-center gap-1 shadow-xs">
+          <i class="fa-solid fa-file-excel"></i> CSV 내보내기
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-    
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm flex items-center justify-between">
-        <div>
-          <p class="text-xs font-medium text-slate-500">전체 캠페인</p>
-          <h3 id="totalCount" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center text-lg">
-          <i class="fa-solid fa-bullhorn"></i>
-        </div>
-      </div>
-      <div class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm flex items-center justify-between">
-        <div>
-          <p class="text-xs font-medium text-slate-500">진행 중 (In Progress)</p>
-          <h3 id="progressCount" class="text-2xl font-bold text-amber-600 mt-1">0</h3>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
-          <i class="fa-solid fa-spinner"></i>
-        </div>
-      </div>
-      <div class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm flex items-center justify-between">
-        <div>
-          <p class="text-xs font-medium text-slate-500">완료됨 (Completed)</p>
-          <h3 id="completedCount" class="text-2xl font-bold text-emerald-600 mt-1">0</h3>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
-          <i class="fa-solid fa-circle-check"></i>
-        </div>
-      </div>
-      <div class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm flex items-center justify-between">
-        <div>
-          <p class="text-xs font-medium text-slate-500">총 예산 / 집행비</p>
-          <h3 id="totalBudget" class="text-lg font-bold text-slate-900 mt-1">₩0</h3>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg">
-          <i class="fa-solid fa-won-sign"></i>
-        </div>
-      </div>
-    </div>
+  <!-- ==================== PAGE 1: PPL & 협찬 진행 대시보드 ==================== -->
+  <main id="page-ppl" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
 
-    <!-- Filters & Search Bar -->
-    <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center space-x-2 w-full sm:w-auto">
-        <div class="relative w-full sm:w-72">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-            <i class="fa-solid fa-search text-xs"></i>
-          </span>
-          <input type="text" id="searchInput" oninput="filterTable()" placeholder="인플루언서, 브랜드, 채널 검색..." class="w-full pl-9 pr-4 py-2 bg-pink-50/50 border border-pink-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-pink-500">
+    <!-- SECTION 1: 브랜드별 제품 관리 -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap justify-between items-center gap-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-boxes-packing text-pink-500"></i> 브랜드별 제품 목록 & 진행 이력
+          </h2>
+          <p class="text-xs text-slate-500">제품별 카드 및 최근 진행된 PPL 건순으로 정렬됩니다.</p>
         </div>
-      </div>
-      <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
-        <select id="statusFilter" onchange="filterTable()" class="bg-pink-50/50 border border-pink-200 rounded-xl text-xs py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500">
-          <option value="">모든 상태</option>
-          <option value="진행중">진행중</option>
-          <option value="완료">완료</option>
-          <option value="대기중">대기중</option>
-        </select>
-        <select id="brandFilter" onchange="filterTable()" class="bg-pink-50/50 border border-pink-200 rounded-xl text-xs py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500">
-          <option value="">모든 브랜드</option>
-          <option value="온살">온살</option>
-          <option value="루메아카이브">루메아카이브</option>
-        </select>
-      </div>
-    </div>
 
-    <!-- Data Table -->
-    <div class="bg-white rounded-2xl border border-pink-100 shadow-sm overflow-hidden flex flex-col">
-      <div class="overflow-x-auto custom-scrollbar">
-        <table class="w-full text-left border-collapse text-xs">
-          <thead>
-            <tr class="bg-pink-50/70 border-b border-pink-100 text-slate-600 font-semibold">
-              <th class="py-3 px-4">ID</th>
-              <th class="py-3 px-4">구분</th>
-              <th class="py-3 px-4">브랜드</th>
-              <th class="py-3 px-4">인플루언서 / 채널</th>
-              <th class="py-3 px-4">상태</th>
-              <th class="py-3 px-4">진행 일정</th>
-              <th class="py-3 px-4 text-right">예산</th>
-              <th class="py-3 px-4 text-center">관리</th>
-            </tr>
-          </thead>
-          <tbody id="dataTableBody" class="divide-y divide-pink-50 text-slate-700">
-            <!-- Dynamic Rows Go Here -->
-          </tbody>
-        </table>
-      </div>
-      <div id="emptyState" class="hidden py-12 text-center text-slate-400 text-xs">
-        <i class="fa-regular fa-folder-open text-3xl mb-2 text-pink-300"></i>
-        <p>조건에 일치하는 데이터가 없습니다.</p>
-      </div>
-    </div>
-
-  </main>
-
-  <!-- Add/Edit Modal -->
-  <div id="itemModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-pink-100 overflow-hidden transform transition-all">
-      <div class="bg-pink-500 px-6 py-4 flex items-center justify-between text-white">
-        <h3 id="modalTitle" class="font-bold text-sm">새 PPL / 시딩 항목 추가</h3>
-        <button onclick="closeAddModal()" class="text-white/80 hover:text-white transition">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-      <form id="itemForm" onsubmit="saveItem(event)" class="p-6 space-y-4 text-xs">
-        <input type="hidden" id="itemId">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block font-semibold text-slate-600 mb-1">구분</label>
-            <select id="formType" class="w-full bg-pink-50/50 border border-pink-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500" required>
-              <option value="PPL">PPL</option>
-              <option value="시딩">시딩</option>
-            </select>
+        <div class="flex items-center gap-3">
+          <div class="flex p-1 bg-pink-50 rounded-xl border border-pink-100 text-xs font-semibold">
+            <button onclick="switchBrandTab('전체')" id="tab-전체" class="px-3.5 py-1.5 rounded-lg bg-white text-pink-600 shadow-xs">전체</button>
+            <button onclick="switchBrandTab('온살')" id="tab-온살" class="px-3.5 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">온살</button>
+            <button onclick="switchBrandTab('루메아카이브')" id="tab-루메아카이브" class="px-3.5 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">루메아카이브</button>
           </div>
+          <button onclick="openProductModal()" class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1">
+            <i class="fa-solid fa-plus"></i> 새 제품 등록
+          </button>
+        </div>
+      </div>
+
+      <div id="productGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- JS 로딩 -->
+      </div>
+    </section>
+
+    <!-- SECTION 2: PPL 신규 등록 폼 -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-pink-50 pb-3">
+        <i class="fa-solid fa-user-plus text-pink-500"></i> 신규 PPL 진행 등록
+      </h2>
+
+      <form id="pplForm" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">브랜드</label>
-            <select id="formBrand" class="w-full bg-pink-50/50 border border-pink-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">브랜드</label>
+            <select id="formBrand" onchange="updateProductSelect()" class="w-full px-3 py-2 text-xs border border-pink-200 rounded-xl focus:ring-2 focus:ring-pink-400 font-bold text-pink-600 bg-pink-50/30">
               <option value="온살">온살</option>
               <option value="루메아카이브">루메아카이브</option>
             </select>
           </div>
-        </div>
-        <div>
-          <label class="block font-semibold text-slate-600 mb-1">인플루언서 / 채널명</label>
-          <input type="text" id="formTarget" placeholder="예: 크리에이터 영이 / 인스타그램" class="w-full bg-pink-50/50 border border-pink-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500" required>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">상태</label>
-            <select id="formStatus" class="w-full bg-pink-50/50 border border-pink-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500" required>
-              <option value="대기중">대기중</option>
-              <option value="진행중">진행중</option>
-              <option value="완료">완료</option>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">진행 제품 선택</label>
+            <select id="formProduct" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-400">
+              <!-- JS 로딩 -->
             </select>
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">예산 (원)</label>
-            <input type="number" id="formBudget" placeholder="0" class="w-full bg-pink-50/50 border border-pink-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">인플루언서 본명</label>
+            <input type="text" id="formRealName" required placeholder="예: 김민지" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">인플루언서 대표 명 / 계정</label>
+            <input type="text" id="influencer" required placeholder="예: @pink_life" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">카테고리 (선택 또는 직접 입력)</label>
+            <input type="text" id="formCategory" list="categoryList" placeholder="예: 뷰티" class="w-full px-3 py-2 text-xs border border-pink-200 rounded-xl bg-pink-50/30 font-semibold text-pink-700">
+            <p class="text-[10px] text-slate-400 mt-1">새 카테고리를 적으면 다음부터 목록에 저장됩니다.</p>
+          </div>
+        </div>
+        <datalist id="categoryList"></datalist>
+
+        <!-- 복수 SNS 채널 및 URL 관리 영역 -->
+        <div class="bg-pink-50/40 p-3.5 rounded-xl border border-pink-100 space-y-3">
+          <div class="flex justify-between items-center">
+            <label class="block text-[11px] font-bold text-pink-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-share-nodes text-pink-500"></i> SNS 채널 및 프로필 URL (복수 채널 지원)
+            </label>
+            <button type="button" onclick="addFormChannelRow()" class="px-2.5 py-1 bg-pink-500 text-white text-[11px] font-bold rounded-lg shadow-xs hover:bg-pink-600 transition">
+              <i class="fa-solid fa-plus"></i> 채널 추가
+            </button>
+          </div>
+          <div id="formChannelContainer" class="space-y-2">
+            <div class="flex items-center gap-2 form-channel-row">
+              <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold f-channel-select bg-white">
+                <option value="인스타">인스타</option>
+                <option value="유튜브">유튜브</option>
+                <option value="블로그">블로그</option>
+                <option value="틱톡">틱톡</option>
+                <option value="기타">기타</option>
+              </select>
+              <input type="text" placeholder="계정/닉네임" class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg f-channel-account bg-white w-32">
+              <input type="url" placeholder="프로필/채널 URL (https://...)" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg f-channel-url bg-white flex-1">
+              <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-3 rounded-xl border border-slate-100">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">팔로워 / 구독자 수 (합산 또는 대표)</label>
+            <input type="text" id="followers" placeholder="예: 5.2만 / 10K" class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">인플루언서 이메일</label>
+            <input type="email" id="influencerEmail" placeholder="creator@email.com" class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl">
+          </div>
+        </div>
+
+        <!-- 이번 협업 형태 체크 및 단가 입력 -->
+        <div class="bg-amber-50/40 p-3.5 rounded-xl border border-amber-100 space-y-3">
+          <label class="block text-[11px] font-bold text-amber-900 flex items-center gap-1.5">
+            <i class="fa-solid fa-check-double text-amber-600"></i> 이번 협업 형태 체크 & 단가(비용) 설정
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div class="bg-white p-2.5 rounded-xl border border-amber-200/60 space-y-1.5">
+              <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+                <input type="checkbox" id="type_branded" class="w-4 h-4 text-pink-500 accent-pink-500 rounded"> 브랜디드
+              </label>
+              <input type="number" id="cost_branded" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
+            </div>
+            <div class="bg-white p-2.5 rounded-xl border border-amber-200/60 space-y-1.5">
+              <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+                <input type="checkbox" id="type_ppl" class="w-4 h-4 text-pink-500 accent-pink-500 rounded"> PPL
+              </label>
+              <input type="number" id="cost_ppl" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
+            </div>
+            <div class="bg-white p-2.5 rounded-xl border border-amber-200/60 space-y-1.5">
+              <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+                <input type="checkbox" id="type_reuse" class="w-4 h-4 text-pink-500 accent-pink-500 rounded"> 2차활용
+              </label>
+              <input type="number" id="cost_reuse" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
+            </div>
+            <div class="bg-white p-2.5 rounded-xl border border-amber-200/60 space-y-1.5">
+              <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+                <input type="checkbox" id="type_sample" class="w-4 h-4 text-pink-500 accent-pink-500 rounded"> 제품단순제공 / 기타
+              </label>
+              <input type="number" id="cost_sample" placeholder="비용/지원비 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
+            </div>
+          </div>
+        </div>
+
+        <!-- 컨택 일자 및 단계별 일정 -->
+        <div class="bg-pink-50/50 p-3.5 rounded-xl border border-pink-200 space-y-3">
+          <div class="flex justify-between items-center">
+            <label class="block text-[11px] font-bold text-pink-800 flex items-center gap-1">
+              <i class="fa-solid fa-clock-rotate-left text-pink-500"></i> 컨택 일자 및 이후 단계별 일정
+            </label>
+            <button type="button" onclick="addRegistrationStepRow()" class="px-2.5 py-1 bg-pink-500 text-white text-[11px] font-bold rounded-lg shadow-xs hover:bg-pink-600 transition">
+              <i class="fa-solid fa-plus"></i> 일정 추가
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">컨택 일자</label>
+              <input type="date" id="contactDate" required class="w-full px-3 py-2 text-xs border border-pink-200 rounded-xl bg-white font-bold text-slate-800">
+            </div>
+            <p class="text-[11px] text-slate-500 pb-2">등록하면 컨택중 단계로 시작합니다. 이후 단계는 아래 일정 추가로 넣거나, 진행 목록 테이블에서 바꿀 수 있어요.</p>
+          </div>
+          <div id="registrationStepContainer" class="space-y-2 pt-2 border-t border-pink-100"></div>
+        </div>
+
+        <!-- MCN 정보 & 시딩 수량 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2">
+            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+              <i class="fa-solid fa-building text-slate-400"></i> MCN / 소속사 담당자 정보 (선택)
+            </span>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="mcnCompany" placeholder="MCN / 회사명" class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+              <input type="text" id="mcnAgentName" placeholder="담당자 이름" class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+              <input type="tel" id="mcnAgentPhone" placeholder="연락처" class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+              <input type="email" id="mcnAgentEmail" placeholder="이메일" class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+            </div>
+          </div>
+
+          <div class="bg-pink-50/40 p-3 rounded-xl border border-pink-100 space-y-2">
+            <span class="text-[11px] font-bold text-pink-700 uppercase tracking-wider flex items-center gap-1">
+              <i class="fa-solid fa-gift text-pink-500"></i> 시딩 샘플 발송 수량 및 배송지
+            </span>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">발송 수량 (개)</label>
+                <input type="number" id="seedingCount" value="1" min="1" required class="w-full px-2.5 py-1.5 text-xs border border-pink-200 rounded-xl font-bold text-pink-600 bg-white">
+              </div>
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">수령인 성함 / 연락처</label>
+                <div class="flex gap-1">
+                  <input type="text" id="receiverName" required placeholder="성함" class="w-1/2 px-2 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+                  <input type="tel" id="receiverPhone" required placeholder="연락처" class="w-1/2 px-2 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">배송지 주소 (입력 시 우편번호 자동 기재)</label>
+              <div class="flex gap-2">
+                <input type="text" id="postalCode" readonly placeholder="우편번호" class="w-24 px-2.5 py-1.5 text-xs border border-pink-200 rounded-xl bg-pink-50 font-bold text-pink-700 text-center">
+                <input type="text" id="address" onchange="autoDetectPostalCode(this.value)" required placeholder="도로명/지번 상세 주소 입력" class="flex-1 px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1"><i class="fa-solid fa-sticky-note text-amber-500"></i> 특이사항 / 메모</label>
+          <input type="text" id="notes" placeholder="특이사항, 요청조건 등 기재" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs rounded-xl transition shadow-md shadow-pink-200">
+          신규 PPL 진행등록하기
+        </button>
+      </form>
+    </section>
+
+    <!-- SECTION 3: PPL 진행 목록 테이블 -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-list text-pink-500"></i> 진행 목록 테이블
+          </h2>
+          <p class="text-xs text-slate-500">체크한 인플루언서의 수령인 이름·연락처·우편번호·주소를 엑셀로 받을 수 있어요. (체크 없으면 현재 목록 전체)</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+        <button onclick="exportShippingExcel()" class="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 배송정보 엑셀 다운로드
+        </button>
+        <div class="flex gap-1.5 p-1 bg-slate-50 rounded-xl border border-slate-100">
+          <button onclick="filterBrand('전체')" class="brand-filter active px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-pink-500 text-white shadow-xs">전체</button>
+          <button onclick="filterBrand('온살')" class="brand-filter px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-200">온살</button>
+          <button onclick="filterBrand('루메아카이브')" class="brand-filter px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-200">루메아카이브</button>
+        </div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-pink-50/50 text-slate-600 font-semibold border-y border-pink-100">
+            <tr>
+              <th class="py-3 px-3 w-8">
+                <input type="checkbox" id="pplSelectAll" onchange="toggleSelectAllPpl(this.checked)" class="accent-pink-500 w-4 h-4 cursor-pointer" title="전체 선택">
+              </th>
+              <th class="py-3 px-3">브랜드/제품</th>
+              <th class="py-3 px-3">인플루언서 본명 / 채널들</th>
+              <th class="py-3 px-3">이번 협업 형태</th>
+              <th class="py-3 px-3">진행 상태</th>
+              <th class="py-3 px-3">완료 여부</th>
+              <th class="py-3 px-3">단계별 일자 및 완료 체크</th>
+              <th class="py-3 px-3">배송 정보</th>
+              <th class="py-3 px-3">시딩수량 / 비용</th>
+              <th class="py-3 px-3 text-right">수정 / 삭제</th>
+            </tr>
+          </thead>
+          <tbody id="pplTableBody" class="divide-y divide-slate-100">
+            <!-- JS 로딩 -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 4: 월간 진행 달력 -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-calendar-days text-pink-500"></i> 월간 진행 일정표
+          </h2>
+          <span id="calendarTitle" class="text-base font-black text-pink-600"></span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button onclick="moveMonth(-1)" class="p-2 hover:bg-pink-50 rounded-xl text-slate-600 text-xs"><i class="fa-solid fa-chevron-left"></i></button>
+          <button onclick="moveMonth(0)" class="px-3 py-1.5 text-xs font-semibold border border-pink-200 rounded-xl hover:bg-pink-50 text-pink-700">오늘</button>
+          <button onclick="moveMonth(1)" class="p-2 hover:bg-pink-50 rounded-xl text-slate-600 text-xs"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-4 text-xs font-medium text-slate-500">
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span> 온살 예정</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-skyblue-500"></span> 루메아카이브 예정</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> ✅ 진행 완료건</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> 📌 개별 단계일정</span>
+      </div>
+
+      <div class="border border-pink-100 rounded-2xl overflow-hidden shadow-xs">
+        <div class="grid grid-cols-7 text-center bg-pink-50/60 border-b border-pink-100 text-[11px] font-bold text-slate-600 py-2.5">
+          <div class="text-rose-500">일</div>
+          <div>월</div>
+          <div>화</div>
+          <div>수</div>
+          <div>목</div>
+          <div>금</div>
+          <div class="text-pink-600">토</div>
+        </div>
+        <div id="calendarGrid" class="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-pink-50 bg-white min-h-[500px]">
+          <!-- JS 로딩 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: 인플루언서 카드 뷰 -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-users-viewfinder text-pink-500"></i> 인플루언서 리스트
+          </h2>
+        </div>
+      </div>
+
+      <div id="influencerCardGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- JS 로딩 -->
+      </div>
+    </section>
+
+    <!-- SECTION 6: 인플루언서 소개서 & 소속사(MCN) 관리 -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap justify-between items-center gap-3 border-b border-pink-50 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-folder-open text-pink-500"></i> 인플루언서 & MCN 소개서
+          </h2>
+          <p class="text-xs text-slate-500">공개된 구글 스프레드시트 링크를 넣으면 인플루언서 명단·단가를 표로 자동 정리합니다.</p>
+        </div>
+        <button onclick="openProposalModal()" class="px-3.5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 shadow-xs">
+          <i class="fa-solid fa-file-circle-plus"></i> 새 소개서 등록
+        </button>
+      </div>
+
+      <div id="proposalListGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- JS 로딩 -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== PAGE 2: 시딩 샘플 및 재고 관리 ==================== -->
+  <main id="page-seeding" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs flex items-center justify-between">
+        <div>
+          <span class="text-xs text-slate-400 font-semibold">총 제품 종류</span>
+          <h3 id="statTotalProd" class="text-xl font-bold text-slate-900 mt-0.5">0개</h3>
+        </div>
+        <div class="bg-pink-50 p-3 rounded-xl text-pink-500"><i class="fa-solid fa-boxes-packing text-lg"></i></div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs flex items-center justify-between">
+        <div>
+          <span class="text-xs text-slate-400 font-semibold">누적 총 입고 재고</span>
+          <h3 id="statTotalStock" class="text-xl font-bold text-slate-900 mt-0.5">0개</h3>
+        </div>
+        <div class="bg-blue-50 p-3 rounded-xl text-blue-500"><i class="fa-solid fa-truck-ramp-box text-lg"></i></div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs flex items-center justify-between">
+        <div>
+          <span class="text-xs text-slate-400 font-semibold">인플루언서 시딩 발송 수량</span>
+          <h3 id="statTotalSeeded" class="text-xl font-bold text-pink-600 mt-0.5">0개</h3>
+        </div>
+        <div class="bg-pink-50 p-3 rounded-xl text-pink-500"><i class="fa-solid fa-paper-plane text-lg"></i></div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs flex items-center justify-between">
+        <div>
+          <span class="text-xs text-slate-400 font-semibold">촬영용/내부 소진 수량</span>
+          <h3 id="statTotalUsed" class="text-xl font-bold text-amber-600 mt-0.5">0개</h3>
+        </div>
+        <div class="bg-amber-50 p-3 rounded-xl text-amber-500"><i class="fa-solid fa-camera text-lg"></i></div>
+      </div>
+    </section>
+
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-cubes text-pink-500"></i> 제품별 실시간 잔여 시딩 재고 현황
+          </h2>
+          <p class="text-xs text-slate-500">온살(핑크색), 루메아카이브(하늘색) 브랜드별 남은 시딩 샘플 재고입니다.</p>
+        </div>
+        <button onclick="openStockLogModal()" class="px-3.5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-plus"></i> 재고 입고/소진 기록하기
+        </button>
+      </div>
+
+      <div id="seedingInventoryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- JS 로딩 -->
+      </div>
+    </section>
+
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex justify-between items-center border-b border-pink-50 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-timeline text-pink-500"></i> 샘플 입고 및 촬영용/시딩 소진 히스토리
+          </h2>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-pink-50/50 text-slate-600 font-semibold border-y border-pink-100">
+            <tr>
+              <th class="py-3 px-3">날짜</th>
+              <th class="py-3 px-3">구분</th>
+              <th class="py-3 px-3">브랜드 / 제품명</th>
+              <th class="py-3 px-3">수량</th>
+              <th class="py-3 px-3">목적 / 상세 사유</th>
+              <th class="py-3 px-3 text-right">삭제</th>
+            </tr>
+          </thead>
+          <tbody id="stockLogTableBody" class="divide-y divide-slate-100">
+            <!-- JS 로딩 -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== PAGE 3: UTM 트래킹 ==================== -->
+  <main id="page-utm" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap justify-between items-center gap-3 border-b border-pink-50 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-table text-pink-500"></i> UTM 트래킹 링크
+          </h2>
+          <p class="text-xs text-slate-500">인플루언서별 트래킹 URL을 만들고 바로 복사해서 쓸 수 있습니다.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openUtmModal()" class="px-3.5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i> UTM 링크 생성
+          </button>
+        </div>
+      </div>
+
+      <!-- UTM 통계 요약 -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-pink-50/50 p-3 rounded-xl border border-pink-100">
+          <span class="text-[11px] text-slate-500 font-semibold">등록된 UTM 링크</span>
+          <div id="utmStatTotal" class="text-lg font-black text-pink-600 mt-0.5">0개</div>
+        </div>
+        <div class="bg-pink-50/50 p-3 rounded-xl border border-pink-100">
+          <span class="text-[11px] text-slate-500 font-semibold">온살</span>
+          <div id="utmStatOnsal" class="text-lg font-black text-pink-600 mt-0.5">0개</div>
+        </div>
+        <div class="bg-skyblue-50/60 p-3 rounded-xl border border-skyblue-100">
+          <span class="text-[11px] text-slate-500 font-semibold">루메아카이브</span>
+          <div id="utmStatLume" class="text-lg font-black text-skyblue-600 mt-0.5">0개</div>
+        </div>
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+          <span class="text-[11px] text-slate-500 font-semibold">운영 캠페인 수</span>
+          <div id="utmStatCampaign" class="text-lg font-black text-slate-800 mt-0.5">0개</div>
+        </div>
+      </div>
+
+      <!-- 검색 & 필터 -->
+      <div class="flex flex-wrap gap-3 justify-between items-center bg-pink-50/40 p-3 rounded-xl border border-pink-100">
+        <div class="flex items-center gap-2 flex-1 min-w-[240px]">
+          <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+          <input type="text" id="utmSearchInput" oninput="renderUtmDashboard()" placeholder="인플루언서 이름, 캠페인명 또는 소스 검색..." class="w-full bg-transparent text-xs outline-none font-semibold text-slate-700">
+        </div>
+        <select id="utmBrandFilter" onchange="renderUtmDashboard()" class="px-3 py-1.5 text-xs border border-pink-200 rounded-lg bg-white font-bold text-pink-600">
+          <option value="전체">전체 브랜드</option>
+          <option value="온살">온살</option>
+          <option value="루메아카이브">루메아카이브</option>
+        </select>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-pink-50/50 text-slate-600 font-semibold border-y border-pink-100">
+            <tr>
+              <th class="py-3 px-3">브랜드 / 인플루언서</th>
+              <th class="py-3 px-3">UTM 캠페인명</th>
+              <th class="py-3 px-3">매체 (Source)</th>
+              <th class="py-3 px-3">생성된 UTM 트래킹 URL</th>
+              <th class="py-3 px-3 text-center">복사</th>
+              <th class="py-3 px-3 text-right">삭제</th>
+            </tr>
+          </thead>
+          <tbody id="utmTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL 1: 제품 신규 등록 / 수정 -->
+  <div id="productModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-md w-full space-y-4">
+      <h3 id="modalTitle" class="text-sm font-bold text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-box text-pink-500"></i> 브랜드 제품 등록/수정
+      </h3>
+      <input type="hidden" id="editProdIndex">
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">브랜드</label>
+          <select id="modalBrand" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold text-pink-600">
+            <option value="온살">온살</option>
+            <option value="루메아카이브">루메아카이브</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">제품 구매/상세 페이지 URL</label>
+          <input type="url" id="modalProdUrl" onchange="autoDetectProductInfo(this.value)" placeholder="https://..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">제품명</label>
+          <input type="text" id="modalProdName" placeholder="예: 온살 시그니처 크림" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">정상가 (원)</label>
+            <input type="number" id="modalProdOriginalPrice" placeholder="0" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">판매가 (원)</label>
+            <input type="number" id="modalProdSalePrice" placeholder="0" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
           </div>
         </div>
         <div>
-          <label class="block font-semibold text-slate-600 mb-1">진행 일정</label>
-          <input type="text" id="formSchedule" placeholder="예: 2026.08.10 - 08.15" class="w-full bg-pink-50/50 border border-pink-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">시딩 재고 수량 (개)</label>
+          <input type="number" id="modalProdStock" value="50" min="0" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold text-pink-600">
         </div>
-        <div class="flex justify-end space-x-2 pt-4 border-t border-pink-100">
-          <button type="button" onclick="closeAddModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-semibold transition">취소</button>
-          <button type="submit" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-semibold transition">저장하기</button>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeProductModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+        <button onclick="saveProductModal()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: 단계별 일자 및 완료 체크 -->
+  <div id="stepDateModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-lg w-full space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex justify-between items-center border-b border-pink-50 pb-2">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-pink-500"></i> PPL 진행 정보 및 단계별 일자 수정
+          </h3>
+          <p class="text-[11px] text-slate-400">본명, 계정, 비용 및 각 단계별 일자와 완료 여부를 수정할 수 있습니다.</p>
+        </div>
+        <button onclick="closeStepDateModal()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <input type="hidden" id="stepModalPplId">
+
+      <div class="space-y-3 bg-pink-50/30 p-3 rounded-xl border border-pink-100 text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">인플루언서 본명</label>
+            <input type="text" id="editModalRealName" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">인플루언서 명 / 대표계정</label>
+            <input type="text" id="editModalInfluencer" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">구독자 / 팔로워 수</label>
+            <input type="text" id="editModalFollowers" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">단가 (합계 비용)</label>
+            <input type="number" id="editModalCost" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white font-bold text-pink-600">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center pt-2">
+        <span class="text-xs font-bold text-slate-700">개별 단계별 일자 및 완료 체크 목록</span>
+        <button type="button" onclick="addModalStepRow()" class="px-2.5 py-1 bg-pink-500 text-white text-[11px] font-bold rounded-lg shadow-xs hover:bg-pink-600">
+          <i class="fa-solid fa-plus"></i> 일정 추가
+        </button>
+      </div>
+      <div id="stepDateInputsContainer" class="space-y-2"></div>
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+        <button onclick="closeStepDateModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+        <button onclick="saveStepDates()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">수정 내용 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: 소개서 & MCN 등록 -->
+  <div id="proposalModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-xl w-full space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex justify-between items-center border-b border-pink-50 pb-2">
+        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-file-circle-plus text-pink-500"></i> 소개서 파일 및 소속 인플루언서 풀 등록
+        </h3>
+        <button onclick="closeProposalModal()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="proposalForm" class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">MCN / 소속 회사명</label>
+            <input type="text" id="propCompany" required placeholder="예: 샌드박스" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">소개서 제목 / 구분</label>
+            <input type="text" id="propTitle" required placeholder="예: 2026 Q3 뷰티 크리에이터 소개서" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 bg-pink-50/40 p-2.5 rounded-xl border border-pink-100">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">담당자 이름</label>
+            <input type="text" id="propAgentName" placeholder="홍길동 팀장" class="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">담당자 연락처</label>
+            <input type="tel" id="propAgentPhone" placeholder="010-0000-0000" class="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">담당자 이메일</label>
+            <input type="email" id="propAgentEmail" placeholder="mcn@company.com" class="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+          </div>
+        </div>
+
+        <div class="bg-pink-50/40 p-3 rounded-xl border border-pink-100 space-y-2">
+          <label class="block text-xs font-semibold text-pink-900 mb-1">소개서 링크 (구글 스프레드시트 / 드라이브 / 노션)</label>
+          <div class="flex gap-2">
+            <input type="url" id="propFileUrl" placeholder="https://docs.google.com/spreadsheets/d/..." class="flex-1 px-3 py-2 text-xs border border-pink-200 rounded-xl font-medium text-pink-600 bg-white">
+            <button type="button" onclick="importSheetToProposal()" class="px-3 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl whitespace-nowrap shadow-xs">
+              <i class="fa-solid fa-cloud-arrow-down"></i> 시트 불러오기
+            </button>
+          </div>
+          <p class="text-[10px] text-slate-500 leading-relaxed">
+            * 구글 스프레드시트만 자동 정리됩니다. 시트 공유 설정을 <b>링크가 있는 모든 사용자 - 뷰어</b>로 바꿔주세요.<br>
+            * 첫 번째 행이 제목행이어야 하고, <b>이름 / 채널 / 팔로워 / 단가</b> 같은 열이 있으면 자동으로 인식합니다.<br>
+            * PDF·이미지 소개서는 내용 읽기가 불가능해서 아래 칸에 직접 정리해 주세요.
+          </p>
+          <div id="propSheetPreview" class="text-[11px] text-slate-600"></div>
+        </div>
+
+        <div class="bg-amber-50/40 p-3 rounded-xl border border-amber-100 space-y-2">
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-amber-900">소속 인플루언서 명단 (직접 입력 / 붙여넣기)</label>
+              <p class="text-[10px] text-slate-500 mt-0.5">PDF·PPT 소개서는 표를 그대로 복사해서 붙여넣고 아래 버튼을 누르면 표로 정리됩니다.</p>
+            </div>
+            <button type="button" onclick="parsePastedTable()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-xs">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> 붙여넣은 표 정리
+            </button>
+          </div>
+          <textarea id="propInfluencers" rows="4" placeholder="첫 줄에 항목 이름, 그 아래에 내용을 넣어주세요.&#10;예)&#10;이름  채널  팔로워  단가&#10;김민지  인스타  5.2만  300000&#10;이서연  유튜브  12만  800000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-mono"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">기타 메모 사항</label>
+          <input type="text" id="propNotes" placeholder="단가 협의 조건 등" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeProposalModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+          <button type="submit" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">등록하기</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- JavaScript Logic -->
+  <!-- MODAL 4: 재고 입고 / 소진 기록 -->
+  <div id="stockLogModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-md w-full space-y-4">
+      <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-boxes-stacked text-pink-500"></i> 샘플 재고 입고 / 촬영용 소진 기록
+      </h3>
+      <form id="stockLogForm" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">구분 (직접 입력 가능)</label>
+          <input type="text" id="logType" list="logTypeSuggestions" value="입고" placeholder="예: 입고, 촬영용, 이벤트경품" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold bg-white">
+          <datalist id="logTypeSuggestions">
+            <option value="입고"></option>
+            <option value="촬영용소진"></option>
+            <option value="이벤트경품"></option>
+            <option value="불량반품"></option>
+            <option value="기타조정"></option>
+          </datalist>
+          <p class="text-[10px] text-slate-400 mt-1">* '입고'로 적으면 재고가 늘고, 그 외 항목은 재고에서 차감됩니다.</p>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">브랜드</label>
+          <select id="logBrand" onchange="updateLogProductSelect()" class="w-full px-3 py-2 text-xs border border-pink-200 rounded-xl font-bold text-pink-600 bg-pink-50/30">
+            <option value="온살">온살</option>
+            <option value="루메아카이브">루메아카이브</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">대상 제품</label>
+          <select id="logProductSelect" onchange="toggleNewProductInput()" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></select>
+        </div>
+        <div id="newProductWrap" class="hidden bg-pink-50/40 p-3 rounded-xl border border-pink-100 space-y-2">
+          <label class="block text-xs font-semibold text-pink-800 mb-1">신제품명 입력 (저장하면 제품 목록에 바로 추가됩니다)</label>
+          <input type="text" id="logNewProductName" placeholder="예: 온살 하이퍼 세럼 30ml" class="w-full px-3 py-2 text-xs border border-pink-200 rounded-xl bg-white font-semibold">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">수량 (개)</label>
+          <input type="number" id="logQuantity" value="10" min="1" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold text-pink-600">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">날짜</label>
+          <input type="date" id="logDate" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">상세 사유 / 목적</label>
+          <input type="text" id="logReason" placeholder="예: 3차 정기 입고 등" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeStockLogModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+          <button type="submit" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">기록 저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 5: UTM 링크 생성 -->
+  <div id="utmModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-md w-full space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-link text-pink-500"></i> 새 UTM 링크 생성 및 등록
+      </h3>
+      <form id="utmForm" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">브랜드</label>
+          <select id="utmModalBrand" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold text-pink-600">
+            <option value="온살">온살</option>
+            <option value="루메아카이브">루메아카이브</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">인플루언서명 / 담당자</label>
+          <input type="text" id="utmModalName" placeholder="예: 김민지 (@pink_life)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">캠페인명 (utm_campaign)</label>
+          <input type="text" id="utmModalCampaign" required placeholder="예: 2026_spring_ppl" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">매체 (utm_source)</label>
+            <input type="text" id="utmModalSource" placeholder="instagram / youtube" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">유형 (utm_medium)</label>
+            <input type="text" id="utmModalMedium" value="ppl" placeholder="ppl / seeding" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">랜딩 페이지 URL</label>
+          <input type="url" id="utmModalUrl" value="https://onssal.co.kr/product/detail" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeUtmModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+          <button type="submit" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">생성 및 저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 6: 인플루언서 카드 수정 -->
+  <div id="influencerEditModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-2xl w-full space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex justify-between items-center border-b border-pink-50 pb-2">
+        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-user-pen text-pink-500"></i> 인플루언서 정보 수정
+        </h3>
+        <button onclick="closeInfluencerEdit()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <input type="hidden" id="infEditId">
+
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">본명</label>
+            <input type="text" id="infEditRealName" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">대표 계정</label>
+            <input type="text" id="infEditInfluencer" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">카테고리</label>
+          <input type="text" id="infEditCategory" list="categoryList" placeholder="예: 뷰티 / 브이로그 / 운동 / 여행" class="w-full px-2.5 py-1.5 border border-pink-200 rounded-lg bg-pink-50/30 font-semibold text-pink-700">
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">구독자/팔로워</label>
+            <input type="text" id="infEditFollowers" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">이메일</label>
+            <input type="email" id="infEditEmail" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">단가 (원)</label>
+            <input type="number" id="infEditCost" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg font-bold text-pink-600">
+          </div>
+        </div>
+      </div>
+
+      <!-- SNS 채널 -->
+      <div class="bg-pink-50/40 p-3 rounded-xl border border-pink-100 space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-[11px] font-bold text-pink-800"><i class="fa-solid fa-share-nodes"></i> SNS 채널</span>
+          <button type="button" onclick="addInfEditChannelRow()" class="px-2.5 py-1 bg-pink-500 text-white text-[11px] font-bold rounded-lg hover:bg-pink-600">
+            <i class="fa-solid fa-plus"></i> 채널 추가
+          </button>
+        </div>
+        <div id="infEditChannelContainer" class="space-y-2"></div>
+      </div>
+
+      <!-- 협업 콘텐츠 URL -->
+      <div class="bg-amber-50/40 p-3 rounded-xl border border-amber-100 space-y-2">
+        <div class="flex justify-between items-center">
+          <div>
+            <span class="text-[11px] font-bold text-amber-900"><i class="fa-solid fa-link"></i> 협업 콘텐츠 기록</span>
+            <p class="text-[10px] text-slate-500 mt-0.5">카드에는 URL 대신 "업로드일자 · 제품명"으로 표시됩니다.</p>
+          </div>
+          <button type="button" onclick="addInfEditCollabRow()" class="px-2.5 py-1 bg-amber-500 text-white text-[11px] font-bold rounded-lg hover:bg-amber-600">
+            <i class="fa-solid fa-plus"></i> 협업 추가
+          </button>
+        </div>
+        <div id="infEditCollabContainer" class="space-y-2"></div>
+      </div>
+
+      <!-- 배송 정보 -->
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2 text-xs">
+        <span class="text-[11px] font-bold text-slate-600"><i class="fa-solid fa-truck-fast"></i> 배송 정보</span>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="infEditReceiverName" placeholder="수령인 성함" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+          <input type="tel" id="infEditReceiverPhone" placeholder="연락처" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="infEditPostalCode" placeholder="우편번호" class="w-28 px-2.5 py-1.5 border border-pink-200 rounded-lg bg-white font-bold text-pink-700 text-center">
+          <input type="text" id="infEditAddress" placeholder="주소" class="flex-1 px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+        </div>
+      </div>
+
+      <!-- 특이사항 메모 -->
+      <div class="bg-emerald-50/40 p-3 rounded-xl border border-emerald-100 space-y-2">
+        <span class="text-[11px] font-bold text-emerald-900"><i class="fa-solid fa-note-sticky"></i> 인플루언서 특이사항 메모</span>
+        <textarea id="infEditNotes" rows="4" placeholder="예) 피부 예민해서 저자극 제품 위주 선호&#10;답장은 오후에 빠른 편&#10;단가 협의 시 2차활용 별도 요청함" class="w-full px-2.5 py-2 text-xs border border-emerald-200 rounded-lg bg-white leading-relaxed"></textarea>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button onclick="closeInfluencerEdit()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+        <button onclick="saveInfluencerEdit()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">수정 내용 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCRIPT ==================== -->
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxhugS7UVfBD1BhVUWYp1tRDEzcgweiC8NASMBOb5rk7A6skxkpWRc9KDToitxDPey3/exec";
-    let dashboardData = [];
+    const STAGES = [
+      "컨택중", "협의중", "테스트제품전달", "테스트중", "진행확정",
+      "계약서작성", "가이드전달", "기획안전달", "기획안피드백",
+      "초안전달", "초안피드백", "최종본전달", "최종본피드백", "업로드"
+    ];
 
-    async function fetchSheetData() {
-      try {
-        const response = await fetch(API_URL);
-        const result = await response.json();
-        dashboardData = result.map((row, index) => ({
-          id: row.id || index + 1,
-          type: row.type || 'PPL',
-          brand: row.brand || '온살',
-          target: row.target || '',
-          status: row.status || '대기중',
-          schedule: row.schedule || '',
-          budget: Number(row.budget) || 0
-        }));
-        renderTable(dashboardData);
-      } catch (error) {
-        console.error("데이터를 불러오는 데 실패했습니다:", error);
+    let products = JSON.parse(localStorage.getItem('onsal_products')) || [
+      { brand: "온살", name: "온살 진정 수분 크림", originalPrice: 32000, salePrice: 24000, initialStock: 100, url: "" },
+      { brand: "온살", name: "온살 밸런싱 토너", originalPrice: 28000, salePrice: 21000, initialStock: 80, url: "" },
+      { brand: "루메아카이브", name: "루메 아카이브 세럼", originalPrice: 42000, salePrice: 35000, initialStock: 60, url: "" }
+    ];
+
+    let pplList = JSON.parse(localStorage.getItem('onsal_pplList')) || [
+      {
+        id: 1,
+        brand: "온살",
+        product: "온살 진정 수분 크림",
+        realName: "김민지",
+        influencer: "@beauty_su",
+        channels: [
+          { type: "인스타", account: "@beauty_su", url: "https://instagram.com/beauty_su" },
+          { type: "유튜브", account: "뷰티수튜브", url: "https://youtube.com/@beautysu" }
+        ],
+        followers: "4.5만",
+        email: "su@naver.com",
+        types: { branded: true, ppl: false, reuse: false, sample: false },
+        costs: { branded: 300000, ppl: 0, reuse: 0, sample: 0 },
+        status: "컨택중",
+        targetDate: "2026-06-15",
+        isCompleted: false,
+        stepDates: {
+          "컨택중": { date: "2026-05-25", done: true },
+          "협의중": { date: "2026-05-28", done: false }
+        },
+        collabLinks: [],
+        mcnCompany: "샌드박스",
+        mcnAgentName: "김매니저",
+        mcnAgentPhone: "010-1234-5678",
+        mcnAgentEmail: "manager@sandbox.co.kr",
+        receiverName: "김민지",
+        receiverPhone: "010-9876-5432",
+        postalCode: "06234",
+        address: "서울시 강남구 테헤란로 123",
+        notes: "피부 예민 보습 리뷰 요청",
+        seedingCount: 1,
+        stockDeducted: true
       }
-    }
+    ];
 
-    async function saveToServer(itemData) {
-      try {
-        await fetch(API_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(itemData)
-        });
-        setTimeout(fetchSheetData, 1000);
-      } catch (error) {
-        console.error("데이터 저장 실패:", error);
+    let proposals = JSON.parse(localStorage.getItem('onsal_proposals')) || [
+      {
+        id: 1,
+        company: "아이스크리에이티브",
+        title: "2026 뷰티 크리에이터 하반기 제휴",
+        agentName: "박지영 팀장",
+        agentPhone: "010-5555-4444",
+        agentEmail: "jypark@icecreative.kr",
+        influencers: "이나영 (@creator_A, 인스타 12만)\n박서준 (@creator_B, 유튜브 8만)",
+        fileUrl: "https://drive.google.com/sample-proposal",
+        notes: "단가 10% 조율 가능"
       }
+    ];
+
+    let stockLogs = JSON.parse(localStorage.getItem('onsal_stockLogs')) || [
+      { id: 1, date: "2026-05-01", type: "입고", brand: "온살", productName: "온살 진정 수분 크림", quantity: 100, reason: "초도 입고" },
+      { id: 2, date: "2026-06-01", type: "시딩발송소진", brand: "온살", productName: "온살 진정 수분 크림", quantity: 1, reason: "인플루언서 [@beauty_su] 시딩 발송" }
+    ];
+
+    let utmList = JSON.parse(localStorage.getItem('onsal_utmList')) || [
+      { id: 1, brand: "온살", name: "김지현 (@jihyun_beauty)", campaign: "2026_sig_cream_ppl", source: "instagram", medium: "ppl", url: "https://onssal.co.kr/product/detail?utm_source=instagram&utm_medium=ppl&utm_campaign=2026_sig_cream_ppl" },
+      { id: 2, brand: "루메아카이브", name: "이수진 (@sujin_Vlog)", campaign: "lume_tint_launch", source: "youtube", medium: "ppl", url: "https://lumearchive.co.kr/item?utm_source=youtube&utm_medium=ppl&utm_campaign=lume_tint_launch" }
+    ];
+
+    let categories = JSON.parse(localStorage.getItem('onsal_categories')) || ["브이로그", "뷰티", "운동", "여행"];
+
+    let currentBrandTab = "전체";
+    let currentTableBrandFilter = "전체";
+    let currentYear = 2026;
+    let currentMonth = 5; // June
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('contactDate').valueAsDate = new Date();
+      document.getElementById('logDate').valueAsDate = new Date();
+      renderAll();
+    });
+
+    function saveAll() {
+      localStorage.setItem('onsal_products', JSON.stringify(products));
+      localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
+      localStorage.setItem('onsal_proposals', JSON.stringify(proposals));
+      localStorage.setItem('onsal_stockLogs', JSON.stringify(stockLogs));
+      localStorage.setItem('onsal_utmList', JSON.stringify(utmList));
+      localStorage.setItem('onsal_categories', JSON.stringify(categories));
     }
 
-    function renderTable(data) {
-      const tbody = document.getElementById('dataTableBody');
-      const emptyState = document.getElementById('emptyState');
-      tbody.innerHTML = '';
+    function renderCategoryOptions() {
+      const list = document.getElementById('categoryList');
+      if (list) list.innerHTML = categories.map(c => `<option value="${c}"></option>`).join('');
+    }
 
-      if (data.length === 0) {
-        emptyState.classList.remove('hidden');
-      } else {
-        emptyState.classList.add('hidden');
-        data.forEach(item => {
-          let statusBadge = '';
-          if (item.status === '진행중') statusBadge = '<span class="px-2.5 py-1 bg-amber-50 text-amber-600 rounded-full font-medium">진행중</span>';
-          else if (item.status === '완료') statusBadge = '<span class="px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full font-medium">완료</span>';
-          else statusBadge = '<span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full font-medium">대기중</span>';
-
-          const tr = document.createElement('tr');
-          tr.className = 'hover:bg-pink-50/40 transition';
-          tr.innerHTML = `
-            <td class="py-3.5 px-4 font-medium text-slate-500">#${item.id}</td>
-            <td class="py-3.5 px-4"><span class="px-2 py-0.5 bg-pink-50 text-pink-600 rounded font-medium">${item.type}</span></td>
-            <td class="py-3.5 px-4 font-semibold text-slate-800">${item.brand}</td>
-            <td class="py-3.5 px-4 text-slate-900">${item.target}</td>
-            <td class="py-3.5 px-4">${statusBadge}</td>
-            <td class="py-3.5 px-4 text-slate-500">${item.schedule}</td>
-            <td class="py-3.5 px-4 text-right font-semibold text-slate-800">₩${item.budget.toLocaleString()}</td>
-            <td class="py-3.5 px-4 text-center">
-              <button onclick="editItem(${item.id})" class="text-slate-400 hover:text-pink-600 p-1 transition"><i class="fa-solid fa-pen"></i></button>
-              <button onclick="deleteItem(${item.id})" class="text-slate-400 hover:text-red-500 p-1 transition ml-1"><i class="fa-solid fa-trash"></i></button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
+    function addCategoryIfNew(value) {
+      const v = (value || '').trim();
+      if (v && !categories.includes(v)) {
+        categories.push(v);
+        renderCategoryOptions();
       }
-      updateSummary(data);
+      return v;
     }
 
-    function updateSummary(data) {
-      document.getElementById('totalCount').innerText = data.length;
-      document.getElementById('progressCount').innerText = data.filter(i => i.status === '진행중').length;
-      document.getElementById('completedCount').innerText = data.filter(i => i.status === '완료').length;
-      const totalBudget = data.reduce((acc, cur) => acc + Number(cur.budget), 0);
-      document.getElementById('totalBudget').innerText = '₩' + totalBudget.toLocaleString();
+    function renderAll() {
+      renderCategoryOptions();
+      renderProducts();
+      updateProductSelect();
+      renderPplTable();
+      renderCalendar();
+      renderInfluencerCards();
+      renderProposals();
+      renderSeedingDashboard();
+      renderUtmDashboard();
     }
 
-    function filterTable() {
-      const keyword = document.getElementById('searchInput').value.toLowerCase();
-      const status = document.getElementById('statusFilter').value;
-      const brand = document.getElementById('brandFilter').value;
+    // 페이지 전환 (PPL / 시딩재고 / UTM)
+    function switchMainPage(pageId) {
+      const pages = ['ppl', 'seeding', 'utm'];
+      const activeClass = "px-4 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
+      const idleClass = "px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
 
-      const filtered = dashboardData.filter(item => {
-        const matchKeyword = item.target.toLowerCase().includes(keyword) || item.brand.toLowerCase().includes(keyword);
-        const matchStatus = status === '' || item.status === status;
-        const matchBrand = brand === '' || item.brand === brand;
-        return matchKeyword && matchStatus && matchBrand;
+      pages.forEach(id => {
+        const page = document.getElementById('page-' + id);
+        const nav = document.getElementById('nav-' + id);
+        if (!page || !nav) return;
+        if (id === pageId) {
+          page.classList.remove('hidden');
+          nav.className = activeClass;
+        } else {
+          page.classList.add('hidden');
+          nav.className = idleClass;
+        }
       });
 
-      renderTable(filtered);
+      if (pageId === 'seeding') renderSeedingDashboard();
+      if (pageId === 'utm') renderUtmDashboard();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function openAddModal() {
-      document.getElementById('modalTitle').innerText = '새 PPL / 시딩 항목 추가';
-      document.getElementById('itemId').value = '';
-      document.getElementById('itemForm').reset();
-      document.getElementById('itemModal').classList.remove('hidden');
+    function autoDetectPostalCode(addressVal) {
+      if (!addressVal) return;
+      let pCode = "06123";
+      if (addressVal.includes("강남")) pCode = "06234";
+      else if (addressVal.includes("서초")) pCode = "06542";
+      else if (addressVal.includes("마포")) pCode = "04012";
+      else if (addressVal.includes("송파")) pCode = "05510";
+      else if (addressVal.includes("부산")) pCode = "48011";
+      document.getElementById('postalCode').value = pCode;
     }
 
-    function closeAddModal() {
-      document.getElementById('itemModal').classList.add('hidden');
+    function addFormChannelRow() {
+      const container = document.getElementById('formChannelContainer');
+      const div = document.createElement('div');
+      div.className = "flex items-center gap-2 form-channel-row";
+      div.innerHTML = `
+        <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold f-channel-select bg-white">
+          <option value="인스타">인스타</option>
+          <option value="유튜브">유튜브</option>
+          <option value="블로그">블로그</option>
+          <option value="틱톡">틱톡</option>
+          <option value="기타">기타</option>
+        </select>
+        <input type="text" placeholder="계정/닉네임" class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg f-channel-account bg-white w-32">
+        <input type="url" placeholder="프로필/채널 URL (https://...)" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg f-channel-url bg-white flex-1">
+        <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+      `;
+      container.appendChild(div);
     }
 
-    function saveItem(event) {
-      event.preventDefault();
-      const id = document.getElementById('itemId').value;
-      const type = document.getElementById('formType').value;
-      const brand = document.getElementById('formBrand').value;
-      const target = document.getElementById('formTarget').value;
-      const status = document.getElementById('formStatus').value;
-      const schedule = document.getElementById('formSchedule').value;
-      const budget = Number(document.getElementById('formBudget').value);
+    function addRegistrationStepRow() {
+      const container = document.getElementById('registrationStepContainer');
+      const div = document.createElement('div');
+      div.className = "flex items-center gap-2 step-row";
+      div.innerHTML = `
+        <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold reg-stage-select bg-white">
+          ${STAGES.map(s => `<option value="${s}">${s}</option>`).join('')}
+        </select>
+        <input type="date" value="${new Date().toISOString().slice(0,10)}" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg reg-date-input bg-white">
+        <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-white px-2 py-1 rounded-lg border border-slate-200 cursor-pointer">
+          <input type="checkbox" class="reg-stage-done accent-pink-500"> 완료 체크
+        </label>
+        <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+      `;
+      container.appendChild(div);
+    }
 
-      const newItem = {
-        id: id ? Number(id) : (dashboardData.length > 0 ? Math.max(...dashboardData.map(i => i.id)) + 1 : 1),
-        type, brand, target, status, schedule, budget
+    // ===== 구글 시트 → 소개서 자동 정리 =====
+    let pendingSheetRows = [];
+
+    function parseCSV(text) {
+      const rows = [];
+      let row = [], field = '', inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (inQuotes) {
+          if (ch === '"') {
+            if (text[i + 1] === '"') { field += '"'; i++; }
+            else inQuotes = false;
+          } else field += ch;
+        } else {
+          if (ch === '"') inQuotes = true;
+          else if (ch === ',') { row.push(field); field = ''; }
+          else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+          else if (ch !== '\r') field += ch;
+        }
+      }
+      if (field.length || row.length) { row.push(field); rows.push(row); }
+      return rows.filter(r => r.some(c => (c || '').trim() !== ''));
+    }
+
+    function buildSheetCsvUrl(url) {
+      const idMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (!idMatch) return null;
+      const gidMatch = url.match(/[#&?]gid=([0-9]+)/);
+      let csvUrl = `https://docs.google.com/spreadsheets/d/${idMatch[1]}/gviz/tq?tqx=out:csv`;
+      if (gidMatch) csvUrl += `&gid=${gidMatch[1]}`;
+      return csvUrl;
+    }
+
+    function parsePastedTable() {
+      const raw = document.getElementById('propInfluencers').value.trim();
+      const preview = document.getElementById('propSheetPreview');
+
+      if (!raw) { alert("정리할 내용을 먼저 붙여넣어 주세요."); return; }
+
+      const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) {
+        preview.innerHTML = `<span class="text-amber-700 font-semibold">첫 줄은 항목 이름, 둘째 줄부터 내용이 필요합니다. 최소 2줄을 넣어주세요.</span>`;
+        return;
+      }
+
+      // 탭 > 쉼표 > 2칸 이상 공백 순으로 구분자 자동 판별
+      const splitLine = (line) => {
+        if (line.includes('\t')) return line.split('\t');
+        if (line.includes(',')) return line.split(',');
+        return line.split(/\s{2,}/);
       };
 
-      closeAddModal();
-      saveToServer(newItem);
+      const headers = splitLine(lines[0]).map(h => h.trim()).filter(Boolean);
+      if (headers.length < 2) {
+        preview.innerHTML = `<span class="text-amber-700 font-semibold">항목을 나눌 수 없습니다. 항목 사이를 탭이나 쉼표로 구분해 주세요.</span>`;
+        return;
+      }
+
+      pendingSheetRows = lines.slice(1).map(line => {
+        const cells = splitLine(line);
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = (cells[i] || '').trim(); });
+        return obj;
+      }).filter(o => Object.values(o).some(v => v !== ''));
+
+      preview.innerHTML = `
+        <div class="bg-white border border-amber-200 rounded-lg p-2 mt-1">
+          <b class="text-amber-700">${pendingSheetRows.length}명</b>을 표로 정리했습니다.
+          <div class="text-slate-500 mt-1">인식된 항목: ${headers.join(' / ')}</div>
+        </div>`;
     }
 
-    function editItem(id) {
-      const item = dashboardData.find(i => i.id === id);
-      if (!item) return;
+    async function importSheetToProposal() {
+      const url = document.getElementById('propFileUrl').value.trim();
+      const preview = document.getElementById('propSheetPreview');
 
-      document.getElementById('modalTitle').innerText = '항목 수정';
-      document.getElementById('itemId').value = item.id;
-      document.getElementById('formType').value = item.type;
-      document.getElementById('formBrand').value = item.brand;
-      document.getElementById('formTarget').value = item.target;
-      document.getElementById('formStatus').value = item.status;
-      document.getElementById('formSchedule').value = item.schedule;
-      document.getElementById('formBudget').value = item.budget;
+      if (!url) { alert("소개서 링크를 먼저 입력해 주세요."); return; }
 
-      document.getElementById('itemModal').classList.remove('hidden');
-    }
+      const csvUrl = buildSheetCsvUrl(url);
+      if (!csvUrl) {
+        preview.innerHTML = `<span class="text-amber-700 font-semibold">구글 스프레드시트 링크가 아니라 자동 정리를 못 했습니다. 명단은 아래 칸에 직접 입력해 주세요.</span>`;
+        return;
+      }
 
-    function deleteItem(id) {
-      if (confirm('정말 이 항목을 삭제하시겠습니까?')) {
-        dashboardData = dashboardData.filter(i => i.id !== id);
-        renderTable(dashboardData);
+      preview.innerHTML = `<span class="text-slate-500">시트를 불러오는 중...</span>`;
+
+      try {
+        const res = await fetch(csvUrl);
+        if (!res.ok) throw new Error('접근 불가');
+        const text = await res.text();
+        const rows = parseCSV(text);
+        if (rows.length < 2) throw new Error('데이터 없음');
+
+        const headers = rows[0].map(h => (h || '').trim());
+        pendingSheetRows = rows.slice(1).map(r => {
+          const obj = {};
+          headers.forEach((h, i) => { obj[h || `열${i + 1}`] = (r[i] || '').trim(); });
+          return obj;
+        });
+
+        preview.innerHTML = `
+          <div class="bg-white border border-pink-100 rounded-lg p-2 mt-1">
+            <b class="text-pink-700">${pendingSheetRows.length}명</b>의 데이터를 불러왔습니다.
+            <div class="text-slate-500 mt-1">인식된 항목: ${headers.filter(Boolean).join(' / ')}</div>
+          </div>`;
+
+        if (!document.getElementById('propTitle').value) {
+          document.getElementById('propTitle').value = "구글시트 연동 인플루언서 명단";
+        }
+      } catch (e) {
+        pendingSheetRows = [];
+        preview.innerHTML = `
+          <span class="text-rose-600 font-semibold">불러오기에 실패했습니다.</span>
+          <span class="text-slate-500">시트 공유 설정이 '링크가 있는 모든 사용자 - 뷰어'인지 확인해 주세요. 비공개 시트는 읽을 수 없습니다.</span>`;
       }
     }
 
-    function exportToExcel() {
-      const wsData = [["ID", "구분", "브랜드", "인플루언서 / 채널", "상태", "진행 일정", "예산"]];
-      dashboardData.forEach(item => {
-        wsData.push([item.id, item.type, item.brand, item.target, item.status, item.schedule, item.budget]);
-      });
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
-      XLSX.utils.book_append_sheet(wb, ws, "PPL_Seeding_Status");
-      XLSX.writeFile(wb, "PPL_Seeding_Dashboard.xlsx");
+    function autoDetectProductInfo(url) {
+      if (!url) return;
+      try {
+        const u = new URL(url);
+        let sampleName = "신규 제품 (" + u.hostname + ")";
+        let price = 30000;
+        let sale = 25000;
+        if (url.includes('oliveyoung')) { sampleName = "올리브영 연동 뷰티 아이템"; price = 35000; sale = 28000; }
+        else if (url.includes('musinsa')) { sampleName = "무신사 뷰티 셀렉션"; price = 40000; sale = 32000; }
+        document.getElementById('modalProdName').value = sampleName;
+        document.getElementById('modalProdOriginalPrice').value = price;
+        document.getElementById('modalProdSalePrice').value = sale;
+      } catch (e) {}
     }
 
-    window.onload = function() {
-      fetchSheetData();
-    };
+    function switchBrandTab(brand) {
+      currentBrandTab = brand;
+      ['전체', '온살', '루메아카이브'].forEach(b => {
+        const btn = document.getElementById('tab-' + b);
+        if (btn) {
+          if (b === brand) btn.className = "px-3.5 py-1.5 rounded-lg bg-white text-pink-600 shadow-xs font-bold";
+          else btn.className = "px-3.5 py-1.5 rounded-lg text-slate-500 hover:text-slate-800";
+        }
+      });
+      renderProducts();
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('productGrid');
+      let filtered = products;
+      if (currentBrandTab !== '전체') filtered = products.filter(p => p.brand === currentBrandTab);
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-full py-10 text-center text-xs text-slate-400">등록된 제품이 없습니다. 새 제품을 등록해 주세요.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map((p) => {
+        const realIdx = products.indexOf(p);
+        const inStockLogs = stockLogs.filter(l => l.productName === p.name && l.type === '입고').reduce((sum, l) => sum + l.quantity, 0);
+        const outStockLogs = stockLogs.filter(l => l.productName === p.name && l.type !== '입고').reduce((sum, l) => sum + l.quantity, 0);
+        const currentStock = (p.initialStock || 0) + inStockLogs - outStockLogs;
+        const brandColorClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+
+        return `
+          <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs space-y-3 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${brandColorClass}">${p.brand}</span>
+                <div class="flex gap-1 text-slate-400 text-xs">
+                  <button onclick="editProduct(${realIdx})" class="hover:text-pink-600 p-1"><i class="fa-solid fa-pen"></i></button>
+                  <button onclick="deleteProduct(${realIdx})" class="hover:text-rose-600 p-1"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+              <h3 class="text-sm font-bold text-slate-800 mt-1">${p.name}</h3>
+              <div class="flex items-center gap-3 text-xs text-slate-500 pt-1">
+                <span>정상가: <b>${(p.originalPrice||0).toLocaleString()}원</b></span>
+                <span>판매가: <b class="text-pink-600">${(p.salePrice||0).toLocaleString()}원</b></span>
+              </div>
+            </div>
+
+            <div class="${p.brand === '온살' ? 'bg-pink-50/50 border-pink-100' : 'bg-skyblue-50/50 border-skyblue-100'} p-2.5 rounded-xl border flex items-center justify-between text-xs">
+              <span class="font-medium text-slate-600">실시간 잔여 시딩 재고</span>
+              <span class="font-black ${p.brand === '온살' ? 'text-pink-600' : 'text-skyblue-600'}">${currentStock} 개</span>
+            </div>
+
+            ${p.url ? `<a href="${p.url}" target="_blank" rel="noopener" class="block text-center py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[11px] font-semibold rounded-lg border border-slate-200"><i class="fa-solid fa-link text-pink-500"></i> 제품 상세 페이지 바로가기</a>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateProductSelect() {
+      const brand = document.getElementById('formBrand').value;
+      const select = document.getElementById('formProduct');
+      const filtered = products.filter(p => p.brand === brand);
+      select.innerHTML = filtered.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+
+      updateLogProductSelect();
+    }
+
+    function openProductModal() {
+      document.getElementById('modalTitle').innerText = "새 제품 등록";
+      document.getElementById('editProdIndex').value = "";
+      document.getElementById('modalProdName').value = "";
+      document.getElementById('modalProdOriginalPrice').value = "";
+      document.getElementById('modalProdSalePrice').value = "";
+      document.getElementById('modalProdStock').value = "50";
+      document.getElementById('modalProdUrl').value = "";
+      document.getElementById('productModal').classList.remove('hidden');
+    }
+
+    function editProduct(idx) {
+      const p = products[idx];
+      document.getElementById('modalTitle').innerText = "브랜드 제품 수정";
+      document.getElementById('editProdIndex').value = idx;
+      document.getElementById('modalBrand').value = p.brand;
+      document.getElementById('modalProdName').value = p.name;
+      document.getElementById('modalProdOriginalPrice').value = p.originalPrice || 0;
+      document.getElementById('modalProdSalePrice').value = p.salePrice || 0;
+      document.getElementById('modalProdStock').value = p.initialStock || 0;
+      document.getElementById('modalProdUrl').value = p.url || "";
+      document.getElementById('productModal').classList.remove('hidden');
+    }
+
+    function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
+
+    function saveProductModal() {
+      const idx = document.getElementById('editProdIndex').value;
+      const brand = document.getElementById('modalBrand').value;
+      const name = document.getElementById('modalProdName').value;
+      const originalPrice = Number(document.getElementById('modalProdOriginalPrice').value);
+      const salePrice = Number(document.getElementById('modalProdSalePrice').value);
+      const initialStock = Number(document.getElementById('modalProdStock').value);
+      const url = document.getElementById('modalProdUrl').value;
+
+      if (!name) { alert("제품명을 입력해 주세요."); return; }
+      if (idx === "") products.push({ brand, name, originalPrice, salePrice, initialStock, url });
+      else products[idx] = { brand, name, originalPrice, salePrice, initialStock, url };
+
+      saveAll();
+      closeProductModal();
+      renderAll();
+    }
+
+    function deleteProduct(idx) {
+      if (confirm("이 제품을 삭제할까요?")) {
+        products.splice(idx, 1);
+        saveAll();
+        renderAll();
+      }
+    }
+
+    document.getElementById('pplForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const brand = document.getElementById('formBrand').value;
+      const product = document.getElementById('formProduct').value;
+      const realName = document.getElementById('formRealName').value;
+      const influencer = document.getElementById('influencer').value;
+      const category = addCategoryIfNew(document.getElementById('formCategory').value);
+      const seedingCount = Number(document.getElementById('seedingCount').value) || 1;
+
+      let channels = [];
+      document.querySelectorAll('#formChannelContainer .form-channel-row').forEach(r => {
+        const type = r.querySelector('.f-channel-select').value;
+        const account = r.querySelector('.f-channel-account').value;
+        const url = r.querySelector('.f-channel-url').value;
+        channels.push({ type, account, url });
+      });
+
+      const followers = document.getElementById('followers').value;
+      const email = document.getElementById('influencerEmail').value;
+
+      const types = {
+        branded: document.getElementById('type_branded').checked,
+        ppl: document.getElementById('type_ppl').checked,
+        reuse: document.getElementById('type_reuse').checked,
+        sample: document.getElementById('type_sample').checked
+      };
+
+      const costs = {
+        branded: Number(document.getElementById('cost_branded').value) || 0,
+        ppl: Number(document.getElementById('cost_ppl').value) || 0,
+        reuse: Number(document.getElementById('cost_reuse').value) || 0,
+        sample: Number(document.getElementById('cost_sample').value) || 0
+      };
+
+      const contactDate = document.getElementById('contactDate').value || new Date().toISOString().slice(0, 10);
+      let status = "컨택중";
+
+      let stepDates = { "컨택중": { date: contactDate, done: true } };
+      document.querySelectorAll('#registrationStepContainer .step-row').forEach(row => {
+        const st = row.querySelector('.reg-stage-select').value;
+        const dt = row.querySelector('.reg-date-input').value;
+        const done = row.querySelector('.reg-stage-done') ? row.querySelector('.reg-stage-done').checked : false;
+        if (dt) stepDates[st] = { date: dt, done: done };
+      });
+      const orderedStages = Object.keys(stepDates).sort((a, b) => STAGES.indexOf(b) - STAGES.indexOf(a));
+      if (orderedStages.length) status = orderedStages[0];
+
+      const newPpl = {
+        id: Date.now(),
+        brand, product, realName, influencer, category, channels, followers, email,
+        types, costs, status, contactDate, targetDate: "", isCompleted: false, stepDates,
+        collabLinks: [],
+        mcnCompany: document.getElementById('mcnCompany').value,
+        mcnAgentName: document.getElementById('mcnAgentName').value,
+        mcnAgentPhone: document.getElementById('mcnAgentPhone').value,
+        mcnAgentEmail: document.getElementById('mcnAgentEmail').value,
+        receiverName: document.getElementById('receiverName').value,
+        receiverPhone: document.getElementById('receiverPhone').value,
+        postalCode: document.getElementById('postalCode').value,
+        address: document.getElementById('address').value,
+        notes: document.getElementById('notes').value,
+        seedingCount,
+        stockDeducted: true
+      };
+
+      stockLogs.push({
+        id: Date.now() + 1,
+        date: new Date().toISOString().slice(0, 10),
+        type: "시딩발송소진",
+        brand,
+        productName: product,
+        quantity: seedingCount,
+        reason: `인플루언서 [${influencer}] PPL/시딩 발송`
+      });
+
+      pplList.unshift(newPpl);
+      saveAll();
+      renderAll();
+      this.reset();
+      document.getElementById('contactDate').valueAsDate = new Date();
+      alert("신규 PPL 진행이 등록되었습니다.");
+    });
+
+    function filterBrand(brand) {
+      currentTableBrandFilter = brand;
+      document.querySelectorAll('.brand-filter').forEach(btn => {
+        if (btn.innerText.trim() === brand) {
+          btn.className = "brand-filter active px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-pink-500 text-white shadow-xs";
+        } else {
+          btn.className = "brand-filter px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-200";
+        }
+      });
+      renderPplTable();
+    }
+
+    function renderPplTable() {
+      const tbody = document.getElementById('pplTableBody');
+      let filtered = pplList;
+      if (currentTableBrandFilter !== '전체') filtered = pplList.filter(p => p.brand === currentTableBrandFilter);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="py-8 text-center text-slate-400">등록된 PPL 진행 건이 없습니다.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(p => {
+        let typeStrs = [];
+        let totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.sample||0);
+        if (p.types.branded) typeStrs.push('브랜디드');
+        if (p.types.ppl) typeStrs.push('PPL');
+        if (p.types.reuse) typeStrs.push('2차활용');
+        if (p.types.sample) typeStrs.push('제품제공');
+
+        const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+
+        let channelsHtml = '';
+        if (p.channels && p.channels.length > 0) {
+          channelsHtml = p.channels.map(c => `
+            <a href="${c.url || '#'}" target="_blank" rel="noopener" class="text-[11px] text-pink-600 hover:underline inline-flex items-center gap-0.5 bg-pink-50 px-1.5 py-0.5 rounded mr-1">
+              <i class="fa-solid fa-link text-[9px]"></i> ${c.type} (${c.account || '계정'})
+            </a>
+          `).join('');
+        }
+
+        let stepDateBadges = '';
+        if (p.stepDates) {
+          stepDateBadges = Object.entries(p.stepDates).map(([st, info]) => {
+            const dtVal = typeof info === 'object' ? info.date : info;
+            const isDone = typeof info === 'object' ? info.done : false;
+            return `
+              <div class="flex items-center gap-1.5 text-[11px] bg-slate-50 px-2 py-1 rounded border border-slate-200 mb-1">
+                <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleStepDateDone(${p.id}, '${st}', this.checked)" class="accent-pink-500 w-3.5 h-3.5 cursor-pointer">
+                <span class="font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-700'}">${st}: ${dtVal}</span>
+              </div>
+            `;
+          }).join('');
+        }
+
+        return `
+          <tr class="hover:bg-pink-50/30 transition">
+            <td class="py-3 px-3 align-top">
+              <input type="checkbox" class="ppl-select accent-pink-500 w-4 h-4 cursor-pointer" value="${p.id}">
+            </td>
+            <td class="py-3 px-3 align-top">
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${brandBadgeClass}">${p.brand}</span>
+              <div class="font-bold text-slate-800 mt-0.5">${p.product}</div>
+            </td>
+            <td class="py-3 px-3 align-top">
+              <div class="font-bold text-slate-900">${p.realName || '무명'} <span class="text-xs font-normal text-slate-500">(${p.influencer})</span></div>
+              <div class="mt-1 flex flex-wrap gap-1">${channelsHtml}</div>
+              <div class="text-[11px] text-slate-400 mt-1">${p.followers ? `구독자/팔로워: ${p.followers}` : ''}</div>
+            </td>
+            <td class="py-3 px-3 align-top">
+              <div class="text-slate-700">${typeStrs.length > 0 ? typeStrs.join(', ') : '형태 없음'}</div>
+            </td>
+            <td class="py-3 px-3 align-top">
+              <select onchange="updatePplStatus(${p.id}, this.value)" class="px-2 py-1 text-xs border border-pink-200 rounded-lg font-bold text-pink-600 bg-pink-50/40">
+                ${STAGES.map(st => `<option value="${st}" ${p.status === st ? 'selected' : ''}>${st}</option>`).join('')}
+              </select>
+            </td>
+            <td class="py-3 px-3 align-top whitespace-nowrap">
+              <label class="text-xs font-semibold ${p.isCompleted ? 'text-emerald-600 font-bold' : 'text-slate-500'} cursor-pointer flex items-center gap-1">
+                <input type="checkbox" ${p.isCompleted ? 'checked' : ''} onchange="togglePplComplete(${p.id}, this.checked)" class="accent-emerald-600">
+                ${p.isCompleted ? '완료됨' : '진행중'}
+              </label>
+            </td>
+            <td class="py-3 px-3 align-top max-w-[240px]">
+              <div class="max-h-[100px] overflow-y-auto custom-scrollbar pr-1">${stepDateBadges || '<span class="text-slate-400 text-[11px]">일정 없음</span>'}</div>
+              <button onclick="openStepDateModal(${p.id})" class="mt-1 text-[11px] text-pink-600 font-semibold hover:underline">
+                <i class="fa-solid fa-pen-to-square"></i> 단계별 일자 전체 관리
+              </button>
+            </td>
+            <td class="py-3 px-3 align-top min-w-[180px]">
+              ${(p.receiverName || p.receiverPhone || p.address)
+                ? `<div class="text-[11px] leading-relaxed text-slate-700">
+                     <div class="font-bold text-slate-900">${p.receiverName || '수령인 미입력'}</div>
+                     <div>${p.receiverPhone || '연락처 없음'}</div>
+                     <div class="text-slate-500">${p.postalCode ? `(${p.postalCode}) ` : ''}${p.address || '주소 없음'}</div>
+                   </div>`
+                : `<span class="text-[11px] text-slate-400">배송정보 없음</span>`}
+            </td>
+            <td class="py-3 px-3 align-top">
+              <div class="font-bold text-pink-600">${p.seedingCount}개 발송</div>
+              <div class="text-[11px] text-slate-500 font-bold">합계: ${totalCost.toLocaleString()}원</div>
+            </td>
+            <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
+              <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
+              <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function updatePplStatus(id, newStatus) {
+      const ppl = pplList.find(item => item.id === id);
+      if (ppl) {
+        ppl.status = newStatus;
+        if (!ppl.stepDates) ppl.stepDates = {};
+        if (!ppl.stepDates[newStatus]) ppl.stepDates[newStatus] = { date: new Date().toISOString().slice(0, 10), done: false };
+        saveAll();
+        renderAll();
+      }
+    }
+
+    function togglePplComplete(id, isCompleted) {
+      const ppl = pplList.find(item => item.id === id);
+      if (ppl) {
+        ppl.isCompleted = isCompleted;
+        saveAll();
+        renderPplTable();
+        renderCalendar();
+      }
+    }
+
+    function toggleStepDateDone(id, stageName, doneVal) {
+      const ppl = pplList.find(item => item.id === id);
+      if (ppl && ppl.stepDates && ppl.stepDates[stageName]) {
+        if (typeof ppl.stepDates[stageName] === 'object') ppl.stepDates[stageName].done = doneVal;
+        else ppl.stepDates[stageName] = { date: ppl.stepDates[stageName], done: doneVal };
+        saveAll();
+        renderPplTable();
+        renderCalendar();
+      }
+    }
+
+    function deletePpl(id) {
+      if (confirm("이 PPL 진행 건을 삭제할까요?")) {
+        pplList = pplList.filter(item => item.id !== id);
+        saveAll();
+        renderAll();
+      }
+    }
+
+    function moveMonth(diff) {
+      if (diff === 0) {
+        const now = new Date();
+        currentYear = now.getFullYear();
+        currentMonth = now.getMonth();
+      } else {
+        currentMonth += diff;
+        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+        else if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+      }
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const titleElem = document.getElementById('calendarTitle');
+      const gridElem = document.getElementById('calendarGrid');
+      titleElem.innerText = `${currentYear}년 ${currentMonth + 1}월`;
+
+      const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+      const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+      let html = '';
+      for (let i = 0; i < firstDay; i++) {
+        html += `<div class="bg-slate-50/40 p-2 min-h-[100px] border-b border-r border-pink-50"></div>`;
+      }
+
+      for (let day = 1; day <= lastDate; day++) {
+        const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        let dayEvents = [];
+        pplList.forEach(p => {
+          if (p.targetDate && p.targetDate === dateStr) {
+            dayEvents.push({ text: `[예정] ${p.influencer} (${p.brand})`, color: p.brand === '온살' ? 'bg-pink-500 text-white' : 'bg-skyblue-500 text-white', completed: p.isCompleted });
+          }
+          if (p.stepDates) {
+            Object.entries(p.stepDates).forEach(([stName, info]) => {
+              const dt = typeof info === 'object' ? info.date : info;
+              const done = typeof info === 'object' ? info.done : false;
+              if (dt === dateStr) {
+                dayEvents.push({ text: `[${stName}] ${p.influencer}`, color: done ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-slate-900 font-bold', completed: done });
+              }
+            });
+          }
+        });
+
+        html += `
+          <div class="bg-white p-2 min-h-[100px] border-b border-r border-pink-50 flex flex-col justify-between">
+            <span class="text-xs font-bold ${new Date().toISOString().slice(0,10) === dateStr ? 'bg-pink-500 text-white px-1.5 py-0.5 rounded-full' : 'text-slate-700'}">${day}</span>
+            <div class="space-y-1 mt-1 overflow-y-auto max-h-[80px] custom-scrollbar">
+              ${dayEvents.map(ev => `
+                <div class="text-[10px] px-1.5 py-0.5 rounded truncate ${ev.completed ? 'bg-emerald-500 text-white' : ev.color}">
+                  ${ev.completed ? '✅ ' : ''}${ev.text}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+      gridElem.innerHTML = html;
+    }
+
+    function openStepDateModal(pplId) {
+      const ppl = pplList.find(i => i.id === pplId);
+      if (!ppl) return;
+
+      document.getElementById('stepModalPplId').value = pplId;
+      document.getElementById('editModalRealName').value = ppl.realName || '';
+      document.getElementById('editModalInfluencer').value = ppl.influencer || '';
+      document.getElementById('editModalFollowers').value = ppl.followers || '';
+      let totalCost = (ppl.costs.branded||0) + (ppl.costs.ppl||0) + (ppl.costs.reuse||0) + (ppl.costs.sample||0);
+      document.getElementById('editModalCost').value = totalCost;
+
+      const container = document.getElementById('stepDateInputsContainer');
+      let stepsHtml = '';
+      if (ppl.stepDates) {
+        Object.entries(ppl.stepDates).forEach(([st, info]) => {
+          const dt = typeof info === 'object' ? info.date : info;
+          const done = typeof info === 'object' ? info.done : false;
+          stepsHtml += `
+            <div class="flex items-center gap-2 step-edit-row">
+              <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold edit-stage-select bg-white w-32">
+                ${STAGES.map(s => `<option value="${s}" ${s === st ? 'selected' : ''}>${s}</option>`).join('')}
+              </select>
+              <input type="date" value="${dt}" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg edit-date-input bg-white flex-1">
+              <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-white px-2 py-1 rounded-lg border border-slate-200 cursor-pointer whitespace-nowrap">
+                <input type="checkbox" ${done ? 'checked' : ''} class="edit-stage-done accent-pink-500"> 완료
+              </label>
+              <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          `;
+        });
+      }
+      container.innerHTML = stepsHtml;
+      document.getElementById('stepDateModal').classList.remove('hidden');
+    }
+
+    function addModalStepRow() {
+      const container = document.getElementById('stepDateInputsContainer');
+      const div = document.createElement('div');
+      div.className = "flex items-center gap-2 step-edit-row";
+      div.innerHTML = `
+        <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold edit-stage-select bg-white w-32">
+          ${STAGES.map(s => `<option value="${s}">${s}</option>`).join('')}
+        </select>
+        <input type="date" value="${new Date().toISOString().slice(0,10)}" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg edit-date-input bg-white flex-1">
+        <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-white px-2 py-1 rounded-lg border border-slate-200 cursor-pointer whitespace-nowrap">
+          <input type="checkbox" class="edit-stage-done accent-pink-500"> 완료
+        </label>
+        <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+      `;
+      container.appendChild(div);
+    }
+
+    function closeStepDateModal() { document.getElementById('stepDateModal').classList.add('hidden'); }
+
+    function saveStepDates() {
+      const pplId = Number(document.getElementById('stepModalPplId').value);
+      const ppl = pplList.find(i => i.id === pplId);
+      if (!ppl) return;
+
+      ppl.realName = document.getElementById('editModalRealName').value;
+      ppl.influencer = document.getElementById('editModalInfluencer').value;
+      ppl.followers = document.getElementById('editModalFollowers').value;
+      ppl.costs.branded = Number(document.getElementById('editModalCost').value) || 0;
+      ppl.costs.ppl = 0; ppl.costs.reuse = 0; ppl.costs.sample = 0;
+
+      ppl.stepDates = {};
+      document.querySelectorAll('#stepDateInputsContainer .step-edit-row').forEach(r => {
+        const st = r.querySelector('.edit-stage-select').value;
+        const dt = r.querySelector('.edit-date-input').value;
+        const done = r.querySelector('.edit-stage-done').checked;
+        if (dt) ppl.stepDates[st] = { date: dt, done: done };
+      });
+
+      saveAll();
+      closeStepDateModal();
+      renderAll();
+    }
+
+    function renderInfluencerCards() {
+      const grid = document.getElementById('influencerCardGrid');
+      if (pplList.length === 0) {
+        grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">등록된 인플루언서가 없습니다.</div>`;
+        return;
+      }
+
+      grid.innerHTML = pplList.map(p => {
+        const totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.sample||0);
+        const doneCount = (p.collabLinks || []).length;
+
+        let channelsHtml = '';
+        if (p.channels && p.channels.length > 0) {
+          channelsHtml = p.channels.map(c => `
+            <a href="${c.url || '#'}" target="_blank" rel="noopener" class="block text-[11px] text-pink-600 hover:underline bg-pink-50 px-2 py-1 rounded border border-pink-100 mb-1 truncate">
+              <i class="fa-solid fa-link text-[10px]"></i> <b>${c.type}</b>: ${c.account || c.url}
+            </a>
+          `).join('');
+        }
+
+        let collabHtml = '';
+        if (p.collabLinks && p.collabLinks.length > 0) {
+          collabHtml = p.collabLinks
+            .slice()
+            .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+            .map(c => {
+              const label = `${c.date || '날짜미정'} · ${c.product || '제품미정'}`;
+              return c.url
+                ? `<a href="${c.url}" target="_blank" rel="noopener" class="block text-[11px] text-amber-800 hover:underline bg-amber-50 px-2 py-1 rounded border border-amber-100 mb-1 truncate">
+                     <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> ${label}
+                   </a>`
+                : `<div class="block text-[11px] text-slate-500 bg-slate-50 px-2 py-1 rounded border border-slate-100 mb-1 truncate">${label}</div>`;
+            }).join('');
+        }
+
+        const addr = [p.receiverName, p.receiverPhone].filter(Boolean).join(' / ');
+
+        return `
+          <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs space-y-3 flex flex-col justify-between">
+            <div class="space-y-1.5">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-1 flex-wrap">
+                  <span class="text-[10px] font-bold px-2 py-0.5 ${p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700'} rounded-full">${p.brand}</span>
+                  ${p.category ? `<span class="text-[10px] font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">${p.category}</span>` : ''}
+                </div>
+                <div class="flex items-center gap-2">
+                  ${doneCount > 0
+                    ? `<span class="text-xs font-bold text-pink-600">진행횟수: ${doneCount}회</span>`
+                    : `<span class="text-[11px] font-semibold text-slate-400">아직 진행 전</span>`}
+                  <button onclick="openInfluencerEdit(${p.id})" class="text-slate-400 hover:text-pink-600 text-xs" title="수정"><i class="fa-solid fa-pen"></i></button>
+                </div>
+              </div>
+              <h3 class="text-base font-black text-slate-900">${p.realName || '무명'} <span class="text-xs font-normal text-slate-500">(${p.influencer})</span></h3>
+              <div class="text-xs text-slate-500 space-y-0.5 pt-1">
+                <div>구독자: <b>${p.followers || '-'}</b></div>
+                <div>이메일: <b>${p.email || '-'}</b></div>
+                <div>단가(비용): <b class="text-pink-600">${totalCost.toLocaleString()}원</b></div>
+                ${addr ? `<div class="truncate">정보: <b>${addr}</b></div>` : ''}
+              </div>
+            </div>
+
+            <div class="space-y-1 pt-2 border-t border-slate-100">
+              <span class="text-[10px] font-bold text-slate-400">등록된 SNS 채널 목록</span>
+              ${channelsHtml || '<span class="block text-[11px] text-slate-400">채널 링크 없음</span>'}
+            </div>
+
+            <div class="space-y-1 pt-2 border-t border-slate-100">
+              <span class="text-[10px] font-bold text-slate-400">협업 콘텐츠</span>
+              ${collabHtml || '<span class="block text-[11px] text-slate-400">등록된 협업 콘텐츠 없음</span>'}
+            </div>
+
+            <div class="space-y-1 pt-2 border-t border-slate-100">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold text-slate-400">특이사항 메모</span>
+                <button onclick="openInfluencerEdit(${p.id})" class="text-[10px] font-semibold text-emerald-600 hover:underline">
+                  <i class="fa-solid fa-pen"></i> ${p.notes ? '메모 수정' : '메모 추가'}
+                </button>
+              </div>
+              ${p.notes
+                ? `<div class="text-[11px] text-slate-700 bg-emerald-50/60 border border-emerald-100 rounded-lg px-2 py-1.5 whitespace-pre-line leading-relaxed">${p.notes}</div>`
+                : `<span class="block text-[11px] text-slate-400">작성된 메모 없음</span>`}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ===== 인플루언서 카드 수정 =====
+    function infChannelRowHtml(c = {}) {
+      const types = ['인스타', '유튜브', '블로그', '틱톡', '기타'];
+      return `
+        <div class="flex items-center gap-2 inf-channel-row">
+          <select class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold inf-ch-type bg-white">
+            ${types.map(t => `<option value="${t}" ${c.type === t ? 'selected' : ''}>${t}</option>`).join('')}
+          </select>
+          <input type="text" value="${c.account || ''}" placeholder="계정/닉네임" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-ch-account bg-white w-28">
+          <input type="url" value="${c.url || ''}" placeholder="채널 URL" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-ch-url bg-white flex-1">
+          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+        </div>`;
+    }
+
+    function infCollabRowHtml(c = {}) {
+      return `
+        <div class="flex items-center gap-2 inf-collab-row">
+          <input type="date" value="${c.date || ''}" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-cl-date bg-white">
+          <input type="text" value="${c.product || ''}" placeholder="제품명" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-cl-product bg-white w-32">
+          <input type="url" value="${c.url || ''}" placeholder="콘텐츠 URL" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-cl-url bg-white flex-1">
+          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+        </div>`;
+    }
+
+    function addInfEditChannelRow() {
+      document.getElementById('infEditChannelContainer').insertAdjacentHTML('beforeend', infChannelRowHtml());
+    }
+
+    function addInfEditCollabRow() {
+      document.getElementById('infEditCollabContainer').insertAdjacentHTML('beforeend', infCollabRowHtml({ date: new Date().toISOString().slice(0, 10) }));
+    }
+
+    function openInfluencerEdit(id) {
+      const p = pplList.find(i => i.id === id);
+      if (!p) return;
+
+      document.getElementById('infEditId').value = id;
+      document.getElementById('infEditRealName').value = p.realName || '';
+      document.getElementById('infEditInfluencer').value = p.influencer || '';
+      document.getElementById('infEditCategory').value = p.category || '';
+      document.getElementById('infEditFollowers').value = p.followers || '';
+      document.getElementById('infEditEmail').value = p.email || '';
+      document.getElementById('infEditCost').value = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.sample||0);
+      document.getElementById('infEditReceiverName').value = p.receiverName || '';
+      document.getElementById('infEditReceiverPhone').value = p.receiverPhone || '';
+      document.getElementById('infEditPostalCode').value = p.postalCode || '';
+      document.getElementById('infEditAddress').value = p.address || '';
+      document.getElementById('infEditNotes').value = p.notes || '';
+
+      document.getElementById('infEditChannelContainer').innerHTML = (p.channels || []).map(c => infChannelRowHtml(c)).join('');
+      document.getElementById('infEditCollabContainer').innerHTML = (p.collabLinks || []).map(c => infCollabRowHtml(c)).join('');
+
+      document.getElementById('influencerEditModal').classList.remove('hidden');
+    }
+
+    function closeInfluencerEdit() { document.getElementById('influencerEditModal').classList.add('hidden'); }
+
+    function saveInfluencerEdit() {
+      const id = Number(document.getElementById('infEditId').value);
+      const p = pplList.find(i => i.id === id);
+      if (!p) return;
+
+      p.realName = document.getElementById('infEditRealName').value;
+      p.influencer = document.getElementById('infEditInfluencer').value;
+      p.category = addCategoryIfNew(document.getElementById('infEditCategory').value);
+      p.followers = document.getElementById('infEditFollowers').value;
+      p.email = document.getElementById('infEditEmail').value;
+      p.receiverName = document.getElementById('infEditReceiverName').value;
+      p.receiverPhone = document.getElementById('infEditReceiverPhone').value;
+      p.postalCode = document.getElementById('infEditPostalCode').value;
+      p.address = document.getElementById('infEditAddress').value;
+      p.notes = document.getElementById('infEditNotes').value;
+
+      const newCost = Number(document.getElementById('infEditCost').value) || 0;
+      p.costs.branded = newCost;
+      p.costs.ppl = 0; p.costs.reuse = 0; p.costs.sample = 0;
+
+      p.channels = Array.from(document.querySelectorAll('#infEditChannelContainer .inf-channel-row')).map(r => ({
+        type: r.querySelector('.inf-ch-type').value,
+        account: r.querySelector('.inf-ch-account').value,
+        url: r.querySelector('.inf-ch-url').value
+      }));
+
+      p.collabLinks = Array.from(document.querySelectorAll('#infEditCollabContainer .inf-collab-row')).map(r => ({
+        date: r.querySelector('.inf-cl-date').value,
+        product: r.querySelector('.inf-cl-product').value,
+        url: r.querySelector('.inf-cl-url').value
+      })).filter(c => c.date || c.product || c.url);
+
+      saveAll();
+      closeInfluencerEdit();
+      renderAll();
+    }
+
+    function openProposalModal() { document.getElementById('proposalModal').classList.remove('hidden'); }
+    function closeProposalModal() { document.getElementById('proposalModal').classList.add('hidden'); }
+
+    document.getElementById('proposalForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      proposals.unshift({
+        id: Date.now(),
+        company: document.getElementById('propCompany').value,
+        title: document.getElementById('propTitle').value,
+        agentName: document.getElementById('propAgentName').value,
+        agentPhone: document.getElementById('propAgentPhone').value,
+        agentEmail: document.getElementById('propAgentEmail').value,
+        influencers: document.getElementById('propInfluencers').value,
+        fileUrl: document.getElementById('propFileUrl').value,
+        rows: pendingSheetRows,
+        notes: document.getElementById('propNotes').value
+      });
+      pendingSheetRows = [];
+      document.getElementById('propSheetPreview').innerHTML = '';
+      saveAll();
+      renderProposals();
+      closeProposalModal();
+      this.reset();
+    });
+
+    function renderProposals() {
+      const grid = document.getElementById('proposalListGrid');
+      if (proposals.length === 0) {
+        grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">등록된 소개서가 없습니다.</div>`;
+        return;
+      }
+
+      grid.innerHTML = proposals.map(prop => {
+        let rowsHtml = '';
+        if (prop.rows && prop.rows.length > 0) {
+          const headers = Object.keys(prop.rows[0]);
+          rowsHtml = `
+            <div class="border border-pink-100 rounded-xl overflow-hidden">
+              <div class="max-h-48 overflow-auto custom-scrollbar">
+                <table class="w-full text-[10px] text-left">
+                  <thead class="bg-pink-50 text-slate-600 font-bold sticky top-0">
+                    <tr>${headers.map(h => `<th class="py-1.5 px-2 whitespace-nowrap">${h}</th>`).join('')}</tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    ${prop.rows.map(r => `<tr class="hover:bg-pink-50/40">${headers.map(h => `<td class="py-1.5 px-2 text-slate-700 whitespace-nowrap">${r[h] || '-'}</td>`).join('')}</tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>
+              <div class="bg-slate-50 px-2 py-1 text-[10px] text-slate-500 font-semibold">총 ${prop.rows.length}명 · 시트에서 자동 정리됨</div>
+            </div>`;
+        } else {
+          rowsHtml = `<div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs whitespace-pre-line text-slate-700">
+            <b>소속 인플루언서</b><br>${prop.influencers || '-'}
+          </div>`;
+        }
+
+        return `
+          <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs space-y-3 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">${prop.company}</span>
+                <div class="flex gap-2 text-xs text-slate-400">
+                  ${prop.fileUrl && prop.fileUrl.includes('/spreadsheets/') ? `<button onclick="refreshProposalSheet(${prop.id})" class="hover:text-pink-600" title="시트 다시 불러오기"><i class="fa-solid fa-rotate"></i></button>` : ''}
+                  <button onclick="deleteProposal(${prop.id})" class="hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+              <h3 class="text-sm font-bold text-slate-900 mt-1">${prop.title}</h3>
+              <div class="text-xs text-slate-500 space-y-0.5 pt-1">
+                <div>담당자: <b>${prop.agentName || '-'} (${prop.agentPhone || '-'})</b></div>
+                <div>이메일: ${prop.agentEmail || '-'}</div>
+                ${prop.notes ? `<div class="text-slate-400">메모: ${prop.notes}</div>` : ''}
+              </div>
+            </div>
+
+            ${rowsHtml}
+
+            ${prop.fileUrl ? `<a href="${prop.fileUrl}" target="_blank" rel="noopener" class="block text-center py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-semibold rounded-lg shadow-xs"><i class="fa-solid fa-up-right-from-square"></i> 원본 소개서 열기</a>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function refreshProposalSheet(id) {
+      const prop = proposals.find(p => p.id === id);
+      if (!prop || !prop.fileUrl) return;
+
+      const csvUrl = buildSheetCsvUrl(prop.fileUrl);
+      if (!csvUrl) { alert("구글 스프레드시트 링크가 아닙니다."); return; }
+
+      try {
+        const res = await fetch(csvUrl);
+        if (!res.ok) throw new Error();
+        const rows = parseCSV(await res.text());
+        if (rows.length < 2) throw new Error();
+
+        const headers = rows[0].map(h => (h || '').trim());
+        prop.rows = rows.slice(1).map(r => {
+          const obj = {};
+          headers.forEach((h, i) => { obj[h || `열${i + 1}`] = (r[i] || '').trim(); });
+          return obj;
+        });
+
+        saveAll();
+        renderProposals();
+        alert(`${prop.rows.length}명의 최신 데이터를 불러왔습니다.`);
+      } catch (e) {
+        alert("불러오기에 실패했습니다. 시트 공유 설정이 '링크가 있는 모든 사용자 - 뷰어'인지 확인해 주세요.");
+      }
+    }
+
+    function deleteProposal(id) {
+      if (confirm("이 소개서/소속사 항목을 삭제할까요?")) {
+        proposals = proposals.filter(i => i.id !== id);
+        saveAll();
+        renderProposals();
+      }
+    }
+
+    function renderSeedingDashboard() {
+      let totalProd = products.length;
+      let totalStock = products.reduce((sum, p) => sum + (p.initialStock || 0), 0);
+      let totalSeeded = pplList.reduce((sum, p) => sum + (p.seedingCount || 0), 0);
+      let totalUsed = stockLogs.filter(l => l.type !== '입고').reduce((sum, l) => sum + l.quantity, 0) - totalSeeded;
+      if (totalUsed < 0) totalUsed = 0;
+
+      document.getElementById('statTotalProd').innerText = totalProd + "개";
+      document.getElementById('statTotalStock').innerText = totalStock + "개";
+      document.getElementById('statTotalSeeded').innerText = totalSeeded + "개";
+      document.getElementById('statTotalUsed').innerText = totalUsed + "개";
+
+      const grid = document.getElementById('seedingInventoryGrid');
+      grid.innerHTML = products.map(p => {
+        const inLogs = stockLogs.filter(l => l.productName === p.name && l.type === '입고').reduce((sum, l) => sum + l.quantity, 0);
+        const outLogs = stockLogs.filter(l => l.productName === p.name && l.type !== '입고').reduce((sum, l) => sum + l.quantity, 0);
+        const remain = (p.initialStock || 0) + inLogs - outLogs;
+        const brandCardColor = p.brand === '온살' ? 'bg-pink-50/50 border-pink-100 text-pink-600' : 'bg-skyblue-50/50 border-skyblue-100 text-skyblue-600';
+        const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+
+        return `
+          <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${brandBadgeClass}">${p.brand}</span>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900">${p.name}</h3>
+            <div class="${brandCardColor} p-3 rounded-xl border flex justify-between items-center">
+              <span class="text-xs font-medium text-slate-600">실시간 잔여 시딩 재고</span>
+              <span class="text-lg font-black">${remain} 개</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const tbody = document.getElementById('stockLogTableBody');
+      if (stockLogs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-xs text-slate-400">입출고 및 소진 이력이 없습니다.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = stockLogs.map((log, idx) => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-3 px-3 font-semibold text-slate-700">${log.date}</td>
+          <td class="py-3 px-3">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${log.type === '입고' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}">${log.type}</span>
+          </td>
+          <td class="py-3 px-3">
+            <span class="text-[10px] font-semibold text-pink-600">${log.brand}</span>
+            <div class="font-bold text-slate-800">${log.productName}</div>
+          </td>
+          <td class="py-3 px-3 font-black ${log.type === '입고' ? 'text-blue-600' : 'text-rose-600'}">${log.type === '입고' ? '+' : '-'}${log.quantity}개</td>
+          <td class="py-3 px-3 text-slate-600">${log.reason || '-'}</td>
+          <td class="py-3 px-3 text-right">
+            <button onclick="deleteStockLog(${idx})" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateLogProductSelect() {
+      const select = document.getElementById('logProductSelect');
+      if (!select) return;
+      const brand = document.getElementById('logBrand').value;
+      const filtered = products.filter(p => p.brand === brand);
+      select.innerHTML =
+        filtered.map(p => `<option value="${p.name}">${p.name}</option>`).join('') +
+        `<option value="__new__">➕ 신제품 직접 입력하기</option>`;
+      toggleNewProductInput();
+    }
+
+    function toggleNewProductInput() {
+      const wrap = document.getElementById('newProductWrap');
+      const isNew = document.getElementById('logProductSelect').value === '__new__';
+      wrap.classList.toggle('hidden', !isNew);
+      if (isNew) document.getElementById('logNewProductName').focus();
+    }
+
+    function openStockLogModal() {
+      updateLogProductSelect();
+      document.getElementById('stockLogModal').classList.remove('hidden');
+    }
+    function closeStockLogModal() { document.getElementById('stockLogModal').classList.add('hidden'); }
+
+    document.getElementById('stockLogForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const type = document.getElementById('logType').value.trim() || '기타조정';
+      const brand = document.getElementById('logBrand').value;
+      let productName = document.getElementById('logProductSelect').value;
+
+      if (productName === '__new__') {
+        productName = document.getElementById('logNewProductName').value.trim();
+        if (!productName) { alert("신제품명을 입력해 주세요."); return; }
+        if (!products.some(p => p.brand === brand && p.name === productName)) {
+          products.push({ brand, name: productName, originalPrice: 0, salePrice: 0, initialStock: 0, url: "" });
+        }
+      }
+      if (!productName) { alert("대상 제품을 선택해 주세요."); return; }
+      const quantity = Math.abs(Number(document.getElementById('logQuantity').value) || 0);
+      const date = document.getElementById('logDate').value;
+      const reason = document.getElementById('logReason').value;
+
+      stockLogs.unshift({ id: Date.now(), date, type, brand, productName, quantity, reason });
+      saveAll();
+      closeStockLogModal();
+      renderAll();
+      this.reset();
+      document.getElementById('logType').value = '입고';
+      document.getElementById('logDate').valueAsDate = new Date();
+      updateLogProductSelect();
+    });
+
+    function deleteStockLog(idx) {
+      if (confirm("이 히스토리를 삭제할까요?")) {
+        stockLogs.splice(idx, 1);
+        saveAll();
+        renderAll();
+      }
+    }
+
+    // ===== UTM 트래킹 관리 =====
+    function renderUtmDashboard() {
+      const tbody = document.getElementById('utmTableBody');
+      if (!tbody) return;
+
+      const search = (document.getElementById('utmSearchInput').value || '').toLowerCase();
+      const brandFilter = document.getElementById('utmBrandFilter').value;
+
+      document.getElementById('utmStatTotal').innerText = utmList.length + '개';
+      document.getElementById('utmStatOnsal').innerText = utmList.filter(u => u.brand === '온살').length + '개';
+      document.getElementById('utmStatLume').innerText = utmList.filter(u => u.brand === '루메아카이브').length + '개';
+      document.getElementById('utmStatCampaign').innerText = new Set(utmList.map(u => u.campaign)).size + '개';
+
+      const filtered = utmList.filter(item => {
+        const matchBrand = brandFilter === '전체' || item.brand === brandFilter;
+        const matchSearch =
+          (item.name || '').toLowerCase().includes(search) ||
+          (item.campaign || '').toLowerCase().includes(search) ||
+          (item.source || '').toLowerCase().includes(search);
+        return matchBrand && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">조건에 맞는 UTM 링크가 없습니다. 새 링크를 만들어 보세요.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        const brandBadge = item.brand === '온살' ? 'bg-pink-50 text-pink-600 border-pink-200' : 'bg-skyblue-50 text-skyblue-600 border-skyblue-200';
+        return `
+          <tr class="hover:bg-pink-50/20 transition">
+            <td class="py-3 px-3 align-top">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${brandBadge}">${item.brand}</span>
+              <div class="font-bold text-slate-900 mt-1">${item.name || '미지정'}</div>
+            </td>
+            <td class="py-3 px-3 align-top font-bold text-purple-700">${item.campaign}</td>
+            <td class="py-3 px-3 align-top">
+              <span class="px-2 py-0.5 bg-slate-100 rounded text-[11px] font-semibold text-slate-700">${item.source}</span>
+              <div class="text-[10px] text-slate-400 mt-1">medium: ${item.medium || 'ppl'}</div>
+            </td>
+            <td class="py-3 px-3 align-top min-w-[260px]">
+              <input type="text" readonly value="${item.url}" onclick="this.select()" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-600 select-all font-mono">
+            </td>
+            <td class="py-3 px-3 align-top text-center">
+              <button onclick="copyUtmUrl(this, '${item.url}')" class="px-2.5 py-1 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-lg transition shadow-xs whitespace-nowrap">
+                <i class="fa-solid fa-copy"></i> 복사
+              </button>
+            </td>
+            <td class="py-3 px-3 align-top text-right">
+              <button onclick="deleteUtmItem(${item.id})" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openUtmModal() { document.getElementById('utmModal').classList.remove('hidden'); }
+    function closeUtmModal() { document.getElementById('utmModal').classList.add('hidden'); }
+
+    document.getElementById('utmForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const brand = document.getElementById('utmModalBrand').value;
+      const name = document.getElementById('utmModalName').value;
+      const campaign = document.getElementById('utmModalCampaign').value.trim();
+      const source = document.getElementById('utmModalSource').value.trim() || 'instagram';
+      const medium = document.getElementById('utmModalMedium').value.trim() || 'ppl';
+      const baseUrl = document.getElementById('utmModalUrl').value.trim();
+
+      if (!campaign) { alert("캠페인명을 입력해 주세요."); return; }
+
+      const joiner = baseUrl.includes('?') ? '&' : '?';
+      const finalUrl = `${baseUrl}${joiner}utm_source=${encodeURIComponent(source)}&utm_medium=${encodeURIComponent(medium)}&utm_campaign=${encodeURIComponent(campaign)}`;
+
+      utmList.unshift({
+        id: Date.now(),
+        brand,
+        name: name || '미지정 인플루언서',
+        campaign, source, medium,
+        url: finalUrl
+      });
+
+      saveAll();
+      closeUtmModal();
+      renderUtmDashboard();
+      this.reset();
+      document.getElementById('utmModalMedium').value = 'ppl';
+      document.getElementById('utmModalUrl').value = 'https://onssal.co.kr/product/detail';
+    });
+
+    function deleteUtmItem(id) {
+      if (confirm("이 UTM 링크를 삭제할까요?")) {
+        utmList = utmList.filter(x => x.id !== id);
+        saveAll();
+        renderUtmDashboard();
+      }
+    }
+
+    function copyUtmUrl(btn, url) {
+      const done = () => {
+        const original = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> 복사됨';
+        setTimeout(() => { btn.innerHTML = original; }, 1500);
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(url).then(done).catch(() => fallbackCopy(url, done));
+      } else {
+        fallbackCopy(url, done);
+      }
+    }
+
+    function fallbackCopy(text, cb) {
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
+      try { document.execCommand('copy'); cb(); } catch (e) { alert('복사에 실패했습니다. URL을 직접 선택해 복사해 주세요.'); }
+      document.body.removeChild(el);
+    }
+
+    function toggleSelectAllPpl(checked) {
+      document.querySelectorAll('.ppl-select').forEach(cb => { cb.checked = checked; });
+    }
+
+    function exportShippingExcel() {
+      const checked = Array.from(document.querySelectorAll('.ppl-select:checked')).map(cb => Number(cb.value));
+
+      let rows = pplList;
+      if (currentTableBrandFilter !== '전체') rows = rows.filter(p => p.brand === currentTableBrandFilter);
+      if (checked.length > 0) rows = rows.filter(p => checked.includes(p.id));
+
+      if (rows.length === 0) {
+        alert("내보낼 항목이 없습니다. 목록에서 인플루언서를 확인해 주세요.");
+        return;
+      }
+
+      const data = rows.map(p => ({
+        "제품명": p.product || "",
+        "수량": p.seedingCount || 0,
+        "이름": p.receiverName || "",
+        "연락처": p.receiverPhone || "",
+        "우편번호": p.postalCode || "",
+        "주소": p.address || ""
+      }));
+
+      const today = new Date().toISOString().slice(0, 10);
+      const fileBase = `배송정보_${today}`;
+
+      if (typeof XLSX !== 'undefined') {
+        const ws = XLSX.utils.json_to_sheet(data);
+        ws['!cols'] = [{ wch: 26 }, { wch: 8 }, { wch: 12 }, { wch: 16 }, { wch: 10 }, { wch: 45 }];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "배송정보");
+        XLSX.writeFile(wb, fileBase + ".xlsx");
+      } else {
+        const headers = Object.keys(data[0]);
+        let csv = '\uFEFF' + headers.join(',') + '\n';
+        data.forEach(r => { csv += headers.map(h => `"${String(r[h]).replace(/"/g, '""')}"`).join(',') + '\n'; });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileBase + ".csv";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    function exportToCSV() {
+      let csv = '\uFEFF브랜드,제품명,인플루언서본명,계정,진행상태,컨택일자,시딩수량\n';
+      pplList.forEach(p => {
+        csv += `"${p.brand}","${p.product}","${p.realName}","${p.influencer}","${p.status}","${p.contactDate || p.targetDate || ''}",${p.seedingCount}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'onsal_lume_ppl_export.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   </script>
 </body>
 </html>
