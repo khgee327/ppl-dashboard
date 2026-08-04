@@ -1693,3 +1693,132 @@
     </section>
 
   </main>
+<script>
+  // 1. 페이지 전환 함수 (PPL / 시딩 / UTM 페이지 전환)
+  function switchMainPage(pageId) {
+    document.getElementById('page-ppl').classList.add('hidden');
+    document.getElementById('page-seeding').classList.add('hidden');
+    document.getElementById('page-utm').classList.add('hidden');
+
+    document.getElementById('nav-ppl').className = "px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
+    document.getElementById('nav-seeding').className = "px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
+    document.getElementById('nav-utm').className = "px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
+
+    document.getElementById('page-' + pageId).classList.remove('hidden');
+    document.getElementById('nav-' + pageId).className = "px-4 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
+  }
+
+  // 2. UTM 링크 실시간 생성 함수
+  function generateUTMLink() {
+    const url = document.getElementById('utmInputUrl').value.trim();
+    const source = document.getElementById('utmInputSource').value.trim();
+    const medium = document.getElementById('utmInputMedium').value.trim();
+    const detail = document.getElementById('utmInputDetail').value.trim();
+    const keyword = document.getElementById('utmInputKeyword').value.trim();
+    const previewBox = document.getElementById('utmResultPreview');
+
+    if (!url) {
+      previewBox.innerText = "좌측 입력칸에 원본 URL을 작성해주세요.";
+      return;
+    }
+
+    try {
+      const urlObj = new URL(url);
+      if (source) urlObj.searchParams.set('nt_source', source);
+      if (medium) urlObj.searchParams.set('nt_medium', medium);
+      if (detail) urlObj.searchParams.set('nt_detail', detail);
+      if (keyword) urlObj.searchParams.set('nt_keyword', keyword);
+
+      previewBox.innerText = urlObj.toString();
+    } catch (e) {
+      previewBox.innerText = "유효한 URL 형식이 아닙니다.";
+    }
+  }
+
+  // 3. UTM 링크 복사하기
+  function copyUTMResult() {
+    const previewText = document.getElementById('utmResultPreview').innerText;
+    if (!previewText.startsWith('http')) {
+      alert('복사할 유효한 URL이 없습니다.');
+      return;
+    }
+    navigator.clipboard.writeText(previewText).then(() => {
+      alert('UTM 링크가 클립보드에 복사되었습니다!');
+    });
+  }
+
+  // 4. UTM 링크 저장 및 목록 관리
+  let utmList = JSON.parse(localStorage.getItem('utmList') || '[]');
+
+  function saveUTMRecord() {
+    const url = document.getElementById('utmInputUrl').value.trim();
+    const source = document.getElementById('utmInputSource').value.trim();
+    const medium = document.getElementById('utmInputMedium').value.trim();
+    const detail = document.getElementById('utmInputDetail').value.trim();
+    const keyword = document.getElementById('utmInputKeyword').value.trim();
+
+    if (!url || !source) {
+      alert('원본 URL과 캠페인 이름(source)은 필수 입력 항목입니다.');
+      return;
+    }
+
+    const urlObj = new URL(url);
+    if (source) urlObj.searchParams.set('nt_source', source);
+    if (medium) urlObj.searchParams.set('nt_medium', medium);
+    if (detail) urlObj.searchParams.set('nt_detail', detail);
+    if (keyword) urlObj.searchParams.set('nt_keyword', keyword);
+
+    const newRecord = {
+      id: Date.now(),
+      url: url,
+      source: source,
+      medium: medium,
+      detail: detail,
+      keyword: keyword,
+      fullUrl: urlObj.toString()
+    };
+
+    utmList.push(newRecord);
+    localStorage.setItem('utmList', JSON.stringify(utmList));
+    renderUTMTable();
+    alert('UTM 링크가 저장되었습니다.');
+  }
+
+  function renderUTMTable() {
+    const tbody = document.getElementById('utmTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (utmList.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-center text-slate-400">저장된 UTM 링크가 없습니다.</td></tr>`;
+      return;
+    }
+
+    utmList.forEach((item) => {
+      tbody.innerHTML += `
+        <tr class="hover:bg-pink-50/20">
+          <td class="py-3 px-3 truncate max-w-[150px]" title="${item.url}">${item.url}</td>
+          <td class="py-3 px-3">${item.source}</td>
+          <td class="py-3 px-3">${item.medium || '-'}</td>
+          <td class="py-3 px-3">${item.detail || '-'}</td>
+          <td class="py-3 px-3">${item.keyword || '-'}</td>
+          <td class="py-3 px-3 truncate max-w-[200px] text-pink-600 font-mono" title="${item.fullUrl}">${item.fullUrl}</td>
+          <td class="py-3 px-3 text-right">
+            <button onclick="deleteUTMRecord(${item.id})" class="text-slate-400 hover:text-rose-600 px-1.5 py-1"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  function deleteUTMRecord(id) {
+    utmList = utmList.filter(item => item.id !== id);
+    localStorage.setItem('utmList', JSON.stringify(utmList));
+    renderUTMTable();
+  }
+
+  // 페이지가 켜질 때 저장된 목록 불러오기 실행
+  window.addEventListener('DOMContentLoaded', () => {
+    renderUTMTable();
+  });
+</script>
