@@ -1608,3 +1608,132 @@
   </script>
 </body>
 </html>
+
+ // ==================== UTM 관리 페이지 로직 (스프레드시트 수식 참고) ====================
+    let currentGeneratedUtmUrl = '';
+
+    function generateUTMLink() {
+      const url = document.getElementById('utmInputUrl').value.trim();
+      const source = document.getElementById('utmInputSource').value.trim();
+      const medium = document.getElementById('utmInputMedium').value.trim();
+      const detail = document.getElementById('utmInputDetail').value.trim();
+      const keyword = document.getElementById('utmInputKeyword').value.trim();
+
+      const previewEl = document.getElementById('utmResultPreview');
+      if(!url) {
+        previewEl.innerText = '원본 URL을 먼저 입력해주세요.';
+        currentGeneratedUtmUrl = '';
+        return;
+      }
+
+      let separator = url.includes('?') ? '&' : '?';
+      let params = [];
+      if(source) params.push(`nt_source=${encodeURIComponent(source)}`);
+      if(medium) params.push(`nt_medium=${encodeURIComponent(medium)}`);
+      if(detail) params.push(`nt_detail=${encodeURIComponent(detail)}`);
+      if(keyword) params.push(`nt_keyword=${encodeURIComponent(keyword)}`);
+
+      currentGeneratedUtmUrl = url + (params.length > 0 ? separator + params.join('&') : '');
+      previewEl.innerText = currentGeneratedUtmUrl;
+    }
+
+    function saveUTMRecord() {
+      const url = document.getElementById('utmInputUrl').value.trim();
+      const source = document.getElementById('utmInputSource').value.trim();
+      const medium = document.getElementById('utmInputMedium').value.trim();
+      const detail = document.getElementById('utmInputDetail').value.trim();
+      const keyword = document.getElementById('utmInputKeyword').value.trim();
+
+      if(!url || !source || !medium || !detail) {
+        showAlert('URL, 캠페인 이름, 광고 세트, 광고 소재는 필수 입력 항목입니다.', false);
+        return;
+      }
+
+      dbUtms.unshift({
+        id: Date.now(),
+        url, source, medium, detail, keyword,
+        fullUrl: currentGeneratedUtmUrl
+      });
+      localStorage.setItem('onsal_utms', JSON.stringify(dbUtms));
+      renderUtmTable();
+      showAlert('UTM 링크가 성공적으로 저장되었습니다!');
+    }
+
+    function deleteUtm(id) {
+      dbUtms = dbUtms.filter(u => u.id !== id);
+      localStorage.setItem('onsal_utms', JSON.stringify(dbUtms));
+      renderUtmTable();
+    }
+
+    function copyUTMResult() {
+      if(!currentGeneratedUtmUrl) {
+        showAlert('생성된 링크가 없습니다.', false);
+        return;
+      }
+      const textarea = document.createElement('textarea');
+      textarea.value = currentGeneratedUtmUrl;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showAlert('최종 UTM URL이 클립보드에 복사되었습니다!');
+      } catch (err) {
+        showAlert('복사 실패', false);
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function copySpecificUtm(link) {
+      const textarea = document.createElement('textarea');
+      textarea.value = link;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showAlert('UTM URL이 클립보드에 복사되었습니다!');
+      } catch (err) {
+        showAlert('복사 실패', false);
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function renderUtmTable() {
+      const tbody = document.getElementById('utmTableBody');
+      if(!tbody) return;
+      if(dbUtms.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">저장된 UTM 링크가 없습니다.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = dbUtms.map(u => `
+        <tr class="hover:bg-pink-50/20 transition">
+          <td class="py-3 px-3 max-w-[150px] truncate"><a href="${u.url}" target="_blank" class="text-blue-500 underline">${u.url}</a></td>
+          <td class="py-3 px-3 font-semibold text-slate-800">${u.source}</td>
+          <td class="py-3 px-3 text-slate-600">${u.medium}</td>
+          <td class="py-3 px-3 text-slate-600">${u.detail}</td>
+          <td class="py-3 px-3 text-slate-600">${u.keyword || '-'}</td>
+          <td class="py-3 px-3 max-w-[200px] truncate font-mono text-pink-600"><a href="${u.fullUrl}" target="_blank" class="hover:underline">${u.fullUrl}</a></td>
+          <td class="py-3 px-3 text-right space-x-2">
+            <button onclick="copySpecificUtm('${u.fullUrl}')" class="px-2.5 py-1 bg-pink-100 hover:bg-pink-200 text-pink-700 rounded text-[11px] font-bold"><i class="fa-solid fa-copy"></i> 복사</button>
+            <button onclick="deleteUtm(${u.id})" class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function exportToCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      csvContent += "브랜드,제품명,인플루언서본명,대표계정,진행상태,업로드예정일,시딩수량\n";
+      dbPpl.forEach(item => {
+        csvContent += `"${item.brand}","${item.product}","${item.realName}","${item.influencer}","${item.status}","${item.targetDate}",${item.seedingCount}\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `온살_루메아카이브_PPL관리_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
