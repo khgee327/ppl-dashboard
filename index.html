@@ -537,6 +537,7 @@
               <th class="py-3 px-3">세트 · 소재 · 상품</th>
               <th class="py-3 px-3">트래킹 URL / 단축 URL</th>
               <th class="py-3 px-3 text-center w-24">복사</th>
+              <th class="py-3 px-3">특이사항</th>
               <th class="py-3 px-3 text-right">삭제</th>
             </tr>
           </thead>
@@ -835,6 +836,11 @@
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">미리보기</label>
           <div id="utmPreview" class="px-3 py-2 text-[11px] bg-slate-50 border border-slate-200 rounded-xl text-slate-600 font-mono break-all min-h-[38px]">URL과 캠페인 이름을 입력하면 미리보기가 표시됩니다.</div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">특이사항 / 메모</label>
+          <input type="text" id="utmModalNote" placeholder="예: 8월 프로모션용 / 프로필 링크에 삽입" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
 
         <label class="flex items-start gap-2 bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 cursor-pointer">
@@ -2304,12 +2310,13 @@
           (item.campaign || '').toLowerCase().includes(search) ||
           (item.detail || '').toLowerCase().includes(search) ||
           (item.keyword || '').toLowerCase().includes(search) ||
+          (item.note || '').toLowerCase().includes(search) ||
           (item.source || '').toLowerCase().includes(search);
         return matchBrand && matchSearch;
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">조건에 맞는 UTM 링크가 없습니다. 새 링크를 만들어 보세요.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">조건에 맞는 UTM 링크가 없습니다. 새 링크를 만들어 보세요.</td></tr>`;
         return;
       }
 
@@ -2343,6 +2350,9 @@
               ${item.shortUrl
                 ? `<button onclick="copyUtmUrl(this, '${item.shortUrl}')" class="w-full px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded-lg transition shadow-xs whitespace-nowrap"><i class="fa-solid fa-copy"></i> 단축</button>`
                 : ''}
+            </td>
+            <td class="py-3 px-3 align-top min-w-[150px]">
+              <input type="text" value="${(item.note || '').replace(/"/g, '&quot;')}" onchange="updateUtmNote(${item.id}, this.value)" placeholder="메모 입력" class="w-full px-2 py-1 text-[11px] border border-slate-200 rounded-lg bg-amber-50/40 focus:bg-white focus:border-pink-300 outline-none">
             </td>
             <td class="py-3 px-3 align-top text-right">
               <button onclick="deleteUtmItem(${item.id})" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 text-xs"><i class="fa-solid fa-trash"></i></button>
@@ -2419,15 +2429,41 @@
       document.getElementById(id).addEventListener('input', updateUtmModeUI);
     });
 
-    async function shortenUrl(longUrl) {
-      try {
-        const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
-        const json = await res.json();
-        if (json.shorturl) return json.shorturl;
-        return '';
-      } catch (e) {
-        return '';
-      }
+    // is.gd는 fetch(CORS)를 막아두고 JSONP 방식만 허용함
+    function shortenUrl(longUrl) {
+      return new Promise(resolve => {
+        const cbName = 'isgd_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+        const script = document.createElement('script');
+        let finished = false;
+
+        const cleanup = () => {
+          try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+          if (script.parentNode) script.parentNode.removeChild(script);
+        };
+
+        window[cbName] = (data) => {
+          finished = true;
+          cleanup();
+          resolve((data && data.shorturl) ? data.shorturl : '');
+        };
+
+        script.onerror = () => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          resolve('');
+        };
+
+        setTimeout(() => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          resolve('');
+        }, 10000);
+
+        script.src = `https://is.gd/create.php?format=json&callback=${cbName}&url=${encodeURIComponent(longUrl)}`;
+        document.body.appendChild(script);
+      });
     }
 
     document.getElementById('utmForm').addEventListener('submit', async function(e) {
@@ -2439,6 +2475,7 @@
       const medium = document.getElementById('utmModalMedium').value.trim();
       const detail = document.getElementById('utmModalDetail').value.trim();
       const keyword = document.getElementById('utmModalKeyword').value.trim();
+      const note = document.getElementById('utmModalNote').value.trim();
       const mode = detectUtmMode();
 
       if (!baseUrl) { alert("랜딩 페이지 URL을 입력해 주세요."); return; }
@@ -2455,7 +2492,8 @@
         source, medium, detail, keyword,
         base: baseUrl,
         url: finalUrl,
-        shortUrl: ''
+        shortUrl: '',
+        note
       };
 
       utmList.unshift(newItem);
@@ -2467,7 +2505,7 @@
 
       if (wantShort) {
         newItem.shortUrl = await shortenUrl(finalUrl);
-        if (!newItem.shortUrl) alert("단축 URL 생성에 실패했습니다. 원본 링크는 정상 저장됐고, 목록의 '단축 만들기' 버튼으로 다시 시도할 수 있어요.");
+        if (!newItem.shortUrl) console.warn('단축 URL 생성 실패 - 목록의 단축 만들기 버튼으로 재시도 가능');
         saveAll();
         renderUtmDashboard();
       }
@@ -2487,8 +2525,15 @@
         renderUtmDashboard();
       } else {
         btn.innerHTML = original;
-        alert("단축 URL 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        alert("단축 URL 생성에 실패했습니다. 잠시 후 다시 눌러주세요.\n(계속 실패하면 원본 링크를 그대로 사용하셔도 추적에는 문제없습니다)");
       }
+    }
+
+    function updateUtmNote(id, value) {
+      const item = utmList.find(x => x.id === id);
+      if (!item) return;
+      item.note = value;
+      saveAll();
     }
 
     function deleteUtmItem(id) {
