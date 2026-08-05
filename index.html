@@ -533,10 +533,10 @@
           <thead class="bg-pink-50/50 text-slate-600 font-semibold border-y border-pink-100">
             <tr>
               <th class="py-3 px-3">브랜드 / 인플루언서</th>
-              <th class="py-3 px-3">UTM 캠페인명</th>
-              <th class="py-3 px-3">매체 (Source)</th>
-              <th class="py-3 px-3">생성된 UTM 트래킹 URL</th>
-              <th class="py-3 px-3 text-center">복사</th>
+              <th class="py-3 px-3">캠페인 / 방식</th>
+              <th class="py-3 px-3">세트 · 소재 · 상품</th>
+              <th class="py-3 px-3">트래킹 URL / 단축 URL</th>
+              <th class="py-3 px-3 text-center w-24">복사</th>
               <th class="py-3 px-3 text-right">삭제</th>
             </tr>
           </thead>
@@ -783,35 +783,68 @@
         <i class="fa-solid fa-link text-pink-500"></i> 새 UTM 링크 생성 및 등록
       </h3>
       <form id="utmForm" class="space-y-3">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">브랜드</label>
-          <select id="utmModalBrand" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold text-pink-600">
-            <option value="온살">온살</option>
-            <option value="루메아카이브">루메아카이브</option>
-          </select>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">브랜드</label>
+            <select id="utmModalBrand" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold text-pink-600">
+              <option value="온살">온살</option>
+              <option value="루메아카이브">루메아카이브</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">파라미터 방식</label>
+            <select id="utmModalMode" onchange="updateUtmModeUI()" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold text-slate-700">
+              <option value="auto">자동 판별 (권장)</option>
+              <option value="naver">네이버 (nt_)</option>
+              <option value="utm">일반 (utm_)</option>
+            </select>
+          </div>
         </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">랜딩 페이지 URL</label>
+          <input type="url" id="utmModalUrl" oninput="updateUtmModeUI()" placeholder="https://smartstore.naver.com/onsal/products/..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          <p id="utmModeHint" class="text-[10px] text-slate-400 mt-1"></p>
+        </div>
+
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">인플루언서명 / 담당자</label>
           <input type="text" id="utmModalName" placeholder="예: 김민지 (@pink_life)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">캠페인명 (utm_campaign)</label>
-          <input type="text" id="utmModalCampaign" required placeholder="예: 2026_spring_ppl" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
+
+        <div class="bg-pink-50/40 p-3 rounded-xl border border-pink-100 space-y-2">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">매체 (utm_source)</label>
-            <input type="text" id="utmModalSource" placeholder="instagram / youtube" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">캠페인 이름 <span id="lblSource" class="text-pink-600 font-mono"></span></label>
+            <input type="text" id="utmModalSource" required placeholder="예: 시카세럼 / 인스타" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold bg-white">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">유형 (utm_medium)</label>
-            <input type="text" id="utmModalMedium" value="ppl" placeholder="ppl / seeding" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">광고 세트 이름 <span id="lblMedium" class="text-pink-600 font-mono"></span></label>
+            <input type="text" id="utmModalMedium" placeholder="예: 리뷰 / ppl" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white">
           </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">광고 소재 이름 <span id="lblDetail" class="text-pink-600 font-mono"></span></label>
+            <input type="text" id="utmModalDetail" placeholder="예: 블로그 / 릴스" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">상품명 / 키워드 <span id="lblKeyword" class="text-pink-600 font-mono"></span></label>
+            <input type="text" id="utmModalKeyword" placeholder="예: 비타앰플" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white">
+          </div>
+          <p class="text-[10px] text-slate-500">* 캠페인·광고세트는 자동으로 소문자 변환됩니다. 한글은 자동 인코딩돼요.</p>
         </div>
+
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">랜딩 페이지 URL</label>
-          <input type="url" id="utmModalUrl" value="https://onssal.co.kr/product/detail" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">미리보기</label>
+          <div id="utmPreview" class="px-3 py-2 text-[11px] bg-slate-50 border border-slate-200 rounded-xl text-slate-600 font-mono break-all min-h-[38px]">URL과 캠페인 이름을 입력하면 미리보기가 표시됩니다.</div>
         </div>
+
+        <label class="flex items-start gap-2 bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 cursor-pointer">
+          <input type="checkbox" id="utmMakeShort" checked class="accent-emerald-600 w-4 h-4 mt-0.5">
+          <span class="text-[11px] text-emerald-900 font-semibold leading-relaxed">
+            단축 URL도 같이 만들기 (is.gd)
+            <span class="block text-[10px] font-normal text-slate-500">DM·프로필 링크용 짧은 주소가 함께 생성됩니다. 실패해도 원본 링크는 정상 저장돼요.</span>
+          </span>
+        </label>
+
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeUtmModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
           <button type="submit" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">생성 및 저장</button>
@@ -2262,13 +2295,15 @@
       document.getElementById('utmStatTotal').innerText = utmList.length + '개';
       document.getElementById('utmStatOnsal').innerText = utmList.filter(u => u.brand === '온살').length + '개';
       document.getElementById('utmStatLume').innerText = utmList.filter(u => u.brand === '루메아카이브').length + '개';
-      document.getElementById('utmStatCampaign').innerText = new Set(utmList.map(u => u.campaign)).size + '개';
+      document.getElementById('utmStatCampaign').innerText = new Set(utmList.map(u => u.source || u.campaign)).size + '개';
 
       const filtered = utmList.filter(item => {
         const matchBrand = brandFilter === '전체' || item.brand === brandFilter;
         const matchSearch =
           (item.name || '').toLowerCase().includes(search) ||
           (item.campaign || '').toLowerCase().includes(search) ||
+          (item.detail || '').toLowerCase().includes(search) ||
+          (item.keyword || '').toLowerCase().includes(search) ||
           (item.source || '').toLowerCase().includes(search);
         return matchBrand && matchSearch;
       });
@@ -2286,18 +2321,28 @@
               <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${brandBadge}">${item.brand}</span>
               <div class="font-bold text-slate-900 mt-1">${item.name || '미지정'}</div>
             </td>
-            <td class="py-3 px-3 align-top font-bold text-purple-700">${item.campaign}</td>
             <td class="py-3 px-3 align-top">
-              <span class="px-2 py-0.5 bg-slate-100 rounded text-[11px] font-semibold text-slate-700">${item.source}</span>
-              <div class="text-[10px] text-slate-400 mt-1">medium: ${item.medium || 'ppl'}</div>
+              <div class="font-bold text-purple-700">${item.source || item.campaign || '-'}</div>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${item.mode === 'naver' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${item.mode === 'naver' ? 'nt_' : 'utm_'}</span>
             </td>
-            <td class="py-3 px-3 align-top min-w-[260px]">
+            <td class="py-3 px-3 align-top text-[11px] text-slate-600 leading-relaxed">
+              <div>세트: <b>${item.medium || '-'}</b></div>
+              <div>소재: <b>${item.detail || '-'}</b></div>
+              <div>상품: <b>${item.keyword || item.campaign || '-'}</b></div>
+            </td>
+            <td class="py-3 px-3 align-top min-w-[260px] space-y-1">
               <input type="text" readonly value="${item.url}" onclick="this.select()" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-600 select-all font-mono">
+              ${item.shortUrl
+                ? `<input type="text" readonly value="${item.shortUrl}" onclick="this.select()" class="w-full px-2 py-1 bg-emerald-50 border border-emerald-200 rounded text-[11px] text-emerald-800 select-all font-mono font-bold">`
+                : `<button onclick="makeShortForItem(${item.id}, this)" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-semibold rounded"><i class="fa-solid fa-link"></i> 단축 만들기</button>`}
             </td>
-            <td class="py-3 px-3 align-top text-center">
-              <button onclick="copyUtmUrl(this, '${item.url}')" class="px-2.5 py-1 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-lg transition shadow-xs whitespace-nowrap">
-                <i class="fa-solid fa-copy"></i> 복사
+            <td class="py-3 px-3 align-top text-center space-y-1">
+              <button onclick="copyUtmUrl(this, '${item.url}')" class="w-full px-2.5 py-1 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-lg transition shadow-xs whitespace-nowrap">
+                <i class="fa-solid fa-copy"></i> 원본
               </button>
+              ${item.shortUrl
+                ? `<button onclick="copyUtmUrl(this, '${item.shortUrl}')" class="w-full px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded-lg transition shadow-xs whitespace-nowrap"><i class="fa-solid fa-copy"></i> 단축</button>`
+                : ''}
             </td>
             <td class="py-3 px-3 align-top text-right">
               <button onclick="deleteUtmItem(${item.id})" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 text-xs"><i class="fa-solid fa-trash"></i></button>
@@ -2307,38 +2352,144 @@
       }).join('');
     }
 
-    function openUtmModal() { document.getElementById('utmModal').classList.remove('hidden'); }
+    function openUtmModal() {
+      document.getElementById('utmModal').classList.remove('hidden');
+      updateUtmModeUI();
+    }
     function closeUtmModal() { document.getElementById('utmModal').classList.add('hidden'); }
 
-    document.getElementById('utmForm').addEventListener('submit', function(e) {
+    function detectUtmMode() {
+      const mode = document.getElementById('utmModalMode').value;
+      if (mode !== 'auto') return mode;
+      const url = document.getElementById('utmModalUrl').value.toLowerCase();
+      return url.includes('naver.com') ? 'naver' : 'utm';
+    }
+
+    function buildTrackingUrl(base, mode, source, medium, detail, keyword) {
+      if (!base || !source) return '';
+      const enc = v => encodeURIComponent(v);
+      const parts = [];
+
+      if (mode === 'naver') {
+        parts.push('nt_source=' + enc(source.toLowerCase()));
+        if (medium) parts.push('nt_medium=' + enc(medium.toLowerCase()));
+        if (detail) parts.push('nt_detail=' + enc(detail));
+        if (keyword) parts.push('nt_keyword=' + enc(keyword));
+      } else {
+        parts.push('utm_source=' + enc(source.toLowerCase()));
+        if (medium) parts.push('utm_medium=' + enc(medium.toLowerCase()));
+        if (detail) parts.push('utm_content=' + enc(detail));
+        if (keyword) parts.push('utm_campaign=' + enc(keyword));
+      }
+
+      return base + (base.includes('?') ? '&' : '?') + parts.join('&');
+    }
+
+    function updateUtmModeUI() {
+      const mode = detectUtmMode();
+      const isNaver = mode === 'naver';
+
+      document.getElementById('lblSource').innerText = isNaver ? '(nt_source)' : '(utm_source)';
+      document.getElementById('lblMedium').innerText = isNaver ? '(nt_medium)' : '(utm_medium)';
+      document.getElementById('lblDetail').innerText = isNaver ? '(nt_detail)' : '(utm_content)';
+      document.getElementById('lblKeyword').innerText = isNaver ? '(nt_keyword)' : '(utm_campaign)';
+
+      const hint = document.getElementById('utmModeHint');
+      const selected = document.getElementById('utmModalMode').value;
+      if (selected === 'auto') {
+        hint.innerHTML = isNaver
+          ? '네이버 주소로 인식 → <b class="text-pink-600">nt_ 파라미터</b>로 생성됩니다.'
+          : '일반 사이트로 인식 → <b class="text-pink-600">utm_ 파라미터</b>로 생성됩니다.';
+      } else {
+        hint.innerHTML = isNaver ? '네이버(nt_) 방식 고정' : '일반(utm_) 방식 고정';
+      }
+
+      const preview = buildTrackingUrl(
+        document.getElementById('utmModalUrl').value.trim(),
+        mode,
+        document.getElementById('utmModalSource').value.trim(),
+        document.getElementById('utmModalMedium').value.trim(),
+        document.getElementById('utmModalDetail').value.trim(),
+        document.getElementById('utmModalKeyword').value.trim()
+      );
+      document.getElementById('utmPreview').innerText = preview || 'URL과 캠페인 이름을 입력하면 미리보기가 표시됩니다.';
+    }
+
+    ['utmModalSource', 'utmModalMedium', 'utmModalDetail', 'utmModalKeyword'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateUtmModeUI);
+    });
+
+    async function shortenUrl(longUrl) {
+      try {
+        const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
+        const json = await res.json();
+        if (json.shorturl) return json.shorturl;
+        return '';
+      } catch (e) {
+        return '';
+      }
+    }
+
+    document.getElementById('utmForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const brand = document.getElementById('utmModalBrand').value;
       const name = document.getElementById('utmModalName').value;
-      const campaign = document.getElementById('utmModalCampaign').value.trim();
-      const source = document.getElementById('utmModalSource').value.trim() || 'instagram';
-      const medium = document.getElementById('utmModalMedium').value.trim() || 'ppl';
       const baseUrl = document.getElementById('utmModalUrl').value.trim();
+      const source = document.getElementById('utmModalSource').value.trim();
+      const medium = document.getElementById('utmModalMedium').value.trim();
+      const detail = document.getElementById('utmModalDetail').value.trim();
+      const keyword = document.getElementById('utmModalKeyword').value.trim();
+      const mode = detectUtmMode();
 
-      if (!campaign) { alert("캠페인명을 입력해 주세요."); return; }
+      if (!baseUrl) { alert("랜딩 페이지 URL을 입력해 주세요."); return; }
+      if (!source) { alert("캠페인 이름을 입력해 주세요."); return; }
 
-      const joiner = baseUrl.includes('?') ? '&' : '?';
-      const finalUrl = `${baseUrl}${joiner}utm_source=${encodeURIComponent(source)}&utm_medium=${encodeURIComponent(medium)}&utm_campaign=${encodeURIComponent(campaign)}`;
+      const finalUrl = buildTrackingUrl(baseUrl, mode, source, medium, detail, keyword);
+      const wantShort = document.getElementById('utmMakeShort').checked;
 
-      utmList.unshift({
+      const newItem = {
         id: Date.now(),
         brand,
         name: name || '미지정 인플루언서',
-        campaign, source, medium,
-        url: finalUrl
-      });
+        mode,
+        source, medium, detail, keyword,
+        base: baseUrl,
+        url: finalUrl,
+        shortUrl: ''
+      };
 
+      utmList.unshift(newItem);
       saveAll();
       closeUtmModal();
       renderUtmDashboard();
       this.reset();
-      document.getElementById('utmModalMedium').value = 'ppl';
-      document.getElementById('utmModalUrl').value = 'https://onssal.co.kr/product/detail';
+      updateUtmModeUI();
+
+      if (wantShort) {
+        newItem.shortUrl = await shortenUrl(finalUrl);
+        if (!newItem.shortUrl) alert("단축 URL 생성에 실패했습니다. 원본 링크는 정상 저장됐고, 목록의 '단축 만들기' 버튼으로 다시 시도할 수 있어요.");
+        saveAll();
+        renderUtmDashboard();
+      }
     });
+
+    async function makeShortForItem(id, btn) {
+      const item = utmList.find(x => x.id === id);
+      if (!item) return;
+
+      const original = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      const short = await shortenUrl(item.url);
+
+      if (short) {
+        item.shortUrl = short;
+        saveAll();
+        renderUtmDashboard();
+      } else {
+        btn.innerHTML = original;
+        alert("단축 URL 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+    }
 
     function deleteUtmItem(id) {
       if (confirm("이 UTM 링크를 삭제할까요?")) {
