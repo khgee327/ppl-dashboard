@@ -1134,12 +1134,144 @@
     let currentYear = 2026;
     let currentMonth = 5; // June
 
+
+    // ===== [일회성] 노션 인플루언서 자동 등록 (2026-08-05 추가) =====
+    // 이미 등록된 사람(브랜드+이름 기준)은 건너뛰므로 여러 번 열어도 중복되지 않습니다.
+    const SEED_INFLUENCERS = [
+      { brand:"온살", product:"비타민, 비피다", realName:"문지혜", influencer:"@Moonjihae_",
+        channels:[{type:"유튜브",account:"@Moonjihae_",url:"https://youtube.com/@Moonjihae_"}],
+        email:"jhm0038@gmail.com", types:{branded:true,ppl:false,reuse:false,sample:false},
+        status:"계약서작성", stepDates:{"계약서작성":{date:"2026-07-10",done:true}},
+        receiverPhone:"010-5690-2956", address:"서울시 용산구 문배동 8-5 102동 1101호",
+        notes:"계약일자 2026/07/10 · 진행사항: 브랜디드 업로드/전자계약서/계약금·잔금 입금 관리 중" },
+      { brand:"루메아카이브", product:"", realName:"디렉터영 스튜디오(낭만표류기)", influencer:"낭만표류기",
+        channels:[{type:"유튜브",account:"낭만표류기",url:""}],
+        email:"nomad910721@gmail.com", types:{branded:false,ppl:true,reuse:false,sample:false},
+        status:"컨택중", stepDates:{}, receiverPhone:"010-2189-5566", address:"",
+        notes:"노션 상태: 시작 전 · 유튜브 URL 노션 원본 확인 필요" },
+      { brand:"루메아카이브", product:"", realName:"성유진(남사장보)", influencer:"남사장보",
+        channels:[{type:"유튜브",account:"남사장보",url:""}],
+        email:"uzin14x@gmail.com", types:{branded:false,ppl:true,reuse:false,sample:false},
+        status:"컨택중", stepDates:{}, receiverPhone:"010-8643-3613", postalCode:"05542",
+        address:"서울 송파구 올림픽로30길 1-12 집앤사잠실프리미어 1503호",
+        notes:"노션 상태: 시작 전" },
+      { brand:"루메아카이브", product:"", realName:"이상현(호디에)", influencer:"@hodiiiiie",
+        channels:[{type:"유튜브",account:"@hodiiiiie",url:"https://youtube.com/@hodiiiiie"}],
+        email:"sh408466@naver.com", types:{branded:true,ppl:false,reuse:false,sample:false},
+        status:"컨택중", stepDates:{}, receiverPhone:"010-9175-4084", address:"",
+        notes:"노션 상태: 시작 전" },
+      { brand:"루메아카이브", product:"", realName:"김동휘", influencer:"김동휘",
+        channels:[{type:"인스타",account:"",url:""}],
+        email:"fnzks28@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01082391445", postalCode:"16972",
+        address:"경기도 용인시 기흥구 관곡로64번길 10-8 (구갈동) 301호",
+        notes:"무상앰버서더 · 계약일자 2026/09/01 · 인스타 URL 노션 확인 필요" },
+      { brand:"루메아카이브", product:"", realName:"이주용", influencer:"이주용",
+        channels:[{type:"인스타",account:"",url:""}],
+        email:"wndyd4315@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01098289208", postalCode:"51464",
+        address:"경상남도 창원시 성산구 대정로 138 (대방동, 대방대동아파트) 107-901",
+        notes:"무상앰버서더 · 계약일자 2026/09/01 · 인스타 URL 노션 확인 필요" },
+      { brand:"루메아카이브", product:"", realName:"정승환", influencer:"@hwann.sta",
+        channels:[{type:"인스타",account:"@hwann.sta",url:"https://instagram.com/hwann.sta/"}],
+        email:"jshv813@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01029302198", postalCode:"14944",
+        address:"경기도 시흥시 미산로 85-2 (미산동, 경신아파트) 나동 408호",
+        notes:"무상앰버서더 · 계약일자 2026/09/01" },
+      { brand:"루메아카이브", product:"", realName:"최진일", influencer:"최진일",
+        channels:[{type:"인스타",account:"",url:""}],
+        email:"chjinil89@gmail.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01089674943", postalCode:"17006",
+        address:"경기도 용인시 기흥구 동백중앙로 219 (중동, 용인 동백역 현성 더 테라스) 1209호",
+        notes:"무상앰버서더 · 계약일자 2026/09/01 · 인스타 URL 노션 확인 필요" },
+      { brand:"루메아카이브", product:"", realName:"양동혁", influencer:"@dongyee__",
+        channels:[{type:"인스타",account:"@dongyee__",url:"https://instagram.com/dongyee__"}],
+        email:"qmffpr31@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01088941093", postalCode:"58579",
+        address:"전남 무안군 삼향읍 남악로250번길 60 (삼향읍, 남악센트레빌리버파크) 125-602",
+        notes:"무상앰버서더 · 계약일자 2026/09/01" },
+      { brand:"온살", product:"", realName:"조현주", influencer:"조현주",
+        channels:[{type:"인스타",account:"",url:""}],
+        email:"choberil@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01045212852", postalCode:"44664",
+        address:"울산광역시 남구 대공원로115번길 10 (옥동, 대공원현대아파트) 102동 608호",
+        notes:"무상앰버서더 · 계약일자 2026/08/01 · 인스타 URL 노션 확인 필요" },
+      { brand:"온살", product:"", realName:"남혜지", influencer:"@imm.hyej",
+        channels:[{type:"인스타",account:"@imm.hyej",url:"https://instagram.com/imm.hyej/"}],
+        email:"nahm4130@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01085943994", postalCode:"47537",
+        address:"부산광역시 연제구 거제대로230번길 30 (거제동, 엘리시움) 507호",
+        notes:"무상앰버서더 · 계약일자 2026/08/01" },
+      { brand:"온살", product:"", realName:"박지연", influencer:"@_01x27",
+        channels:[{type:"인스타",account:"@_01x27",url:"https://instagram.com/_01x27"}],
+        email:"parkjiyeon01@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01086549961", postalCode:"25135",
+        address:"강원특별자치도 홍천군 홍천읍 신장대로 33 (홍천읍) 1층",
+        notes:"무상앰버서더 · 계약일자 2026/08/01" },
+      { brand:"온살", product:"", realName:"김서희", influencer:"김서희",
+        channels:[{type:"인스타",account:"",url:""}],
+        email:"seohee__kim@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01024696393", postalCode:"46993",
+        address:"부산광역시 사상구 백양대로494번길 38 (주례동, 주례청구아파트) 103동 1303호",
+        notes:"무상앰버서더 · 계약일자 2026/08/01 · 인스타 URL 노션 확인 필요" },
+      { brand:"온살", product:"", realName:"김나윤", influencer:"김나윤",
+        channels:[{type:"인스타",account:"",url:""}],
+        email:"look_umji@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01032629202", postalCode:"04986",
+        address:"서울특별시 광진구 능동로34길 49-4 (능동, 경진빌) 304호",
+        notes:"무상앰버서더 · 계약일자 2026/08/01 · 인스타 URL 노션 확인 필요" },
+      { brand:"온살", product:"", realName:"최혜수", influencer:"최혜수",
+        channels:[{type:"인스타",account:"",url:""}],
+        email:"shu511@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01097025011", postalCode:"03672",
+        address:"서울특별시 서대문구 명지대7길 14-5 (남가좌동, 신흥아트빌4차) 201호",
+        notes:"무상앰버서더 · 계약일자 2026/08/01 · 인스타 URL 노션 확인 필요" },
+      { brand:"온살", product:"", realName:"변채영", influencer:"@hell_chae0",
+        channels:[{type:"인스타",account:"@hell_chae0",url:"https://instagram.com/hell_chae0"}],
+        email:"codud9755@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01052702632", postalCode:"06110",
+        address:"서울특별시 강남구 학동로6길 12 (논현동) 403호",
+        notes:"무상앰버서더 · 계약일자 2026/08/01" },
+      { brand:"온살", product:"", realName:"이지언", influencer:"이지언",
+        channels:[{type:"인스타",account:"",url:""}],
+        email:"dlwldjs610@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
+        status:"컨택중", stepDates:{}, receiverPhone:"01082523435", postalCode:"12913",
+        address:"경기도 하남시 미사강변중앙로204번길 21 (망월동, 미사엘큐브) 608호",
+        notes:"무상앰버서더 · 계약일자 2026/08/01 · 인스타 URL 노션 확인 필요" }
+    ];
+
+    function seedImportedInfluencers() {
+      let maxId = pplList.reduce((m, p) => Math.max(m, Number(p.id) || 0), 0);
+      let added = 0;
+      SEED_INFLUENCERS.forEach(s => {
+        const exists = pplList.some(p => p.realName === s.realName && p.brand === s.brand);
+        if (exists) return;
+        maxId += 1;
+        pplList.push({
+          id: maxId, brand: s.brand, product: s.product || "", realName: s.realName,
+          influencer: s.influencer, channels: s.channels || [], followers: "",
+          email: s.email || "", types: s.types,
+          costs: { branded: 0, ppl: 0, reuse: 0, sample: 0 },
+          status: s.status || "컨택중", targetDate: "", isCompleted: false,
+          stepDates: s.stepDates || {}, collabLinks: [],
+          mcnCompany: "", mcnAgentName: "", mcnAgentPhone: "", mcnAgentEmail: "",
+          receiverName: s.realName, receiverPhone: s.receiverPhone || "",
+          postalCode: s.postalCode || "", address: s.address || "",
+          notes: s.notes || "", seedingCount: 0, stockDeducted: true
+        });
+        added += 1;
+      });
+      if (added > 0) saveAll();
+      return added;
+    }
+    // ===== 자동 등록 코드 끝 =====
+
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('contactDate').valueAsDate = new Date();
       document.getElementById('logDate').valueAsDate = new Date();
       renderAll();
 
-      pullFromSheet().then(() => renderAll());
+      pullFromSheet().then(() => { seedImportedInfluencers(); renderAll(); });
     });
 
     function saveAll() {
