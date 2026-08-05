@@ -2429,8 +2429,26 @@
       document.getElementById(id).addEventListener('input', updateUtmModeUI);
     });
 
-    // is.gd는 fetch(CORS)를 막아두고 JSONP 방식만 허용함
-    function shortenUrl(longUrl) {
+    // 1순위: 구글 Apps Script 중계 (가장 안정적)
+    async function shortenViaProxy(longUrl) {
+      try {
+        const res = await fetch(`${SYNC_URL}?key=${encodeURIComponent(SYNC_KEY)}&action=shorten&url=${encodeURIComponent(longUrl)}`);
+        const json = await res.json();
+        return json.ok && json.shorturl ? json.shorturl : '';
+      } catch (e) {
+        return '';
+      }
+    }
+
+    // 최종 진입점: 중계 실패 시 브라우저 직접 호출로 재시도
+    async function shortenUrl(longUrl) {
+      const viaProxy = await shortenViaProxy(longUrl);
+      if (viaProxy) return viaProxy;
+      return await shortenViaJsonp(longUrl);
+    }
+
+    // 2순위: is.gd JSONP 직접 호출
+    function shortenViaJsonp(longUrl) {
       return new Promise(resolve => {
         const cbName = 'isgd_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
         const script = document.createElement('script');
