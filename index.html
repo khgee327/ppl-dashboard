@@ -1404,7 +1404,7 @@
     // ===== 스케줄러 연동 =====
     const SCHEDULER_API_URL = 'https://script.google.com/macros/s/AKfycbyjLXPILrFl3pbgXQldCbDPTRufIeEXUhpewlt3unU_P9uZ16dj6FL-Q4Zbet9cWLPh1Q/exec';
     const SCHEDULER_KEY = 'global_shared_scheduler_data';
-    const KEY_STAGES = ['테스트제품전달', '가이드전달', '기획안전달', '초안전달', '최종본전달', '업로드'];
+    const KEY_STAGES = ['테스트제품전달', '시딩제품전달', '가이드전달', '기획안전달', '초안전달', '최종본전달', '업로드'];
 
     function schedulerCategoryOf(p) {
       if (p.types && p.types.freeAmb) return '무엠버서더';
@@ -1533,7 +1533,7 @@
 
     const STAGES = [
       "컨택중", "협의중", "테스트제품전달", "테스트중", "진행확정",
-      "계약서작성", "계약금입금", "가이드전달", "기획안전달", "기획안피드백",
+      "계약서작성", "계약금입금", "시딩제품전달", "가이드전달", "기획안전달", "기획안피드백",
       "초안전달", "초안피드백", "최종본전달", "최종본피드백", "업로드", "잔금입금"
     ];
 
