@@ -20,6 +20,7 @@
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
     body { font-family: 'Pretendard', sans-serif; }
@@ -70,14 +71,17 @@
     <!-- SECTION 1: 브랜드별 제품 관리 -->
     <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
       <div class="flex flex-wrap justify-between items-center gap-3">
-        <div>
-          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-boxes-packing text-pink-500"></i> 브랜드별 제품 목록 & 진행 이력
-          </h2>
-          <p class="text-xs text-slate-500">제품별 카드 및 최근 진행된 PPL 건순으로 정렬됩니다.</p>
-        </div>
+        <button onclick="toggleSection('productSection')" class="flex items-center gap-2 text-left group">
+          <i id="productSection-icon" class="fa-solid fa-chevron-right text-pink-500 text-xs transition-transform"></i>
+          <div>
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 group-hover:text-pink-600 transition">
+              <i class="fa-solid fa-boxes-packing text-pink-500"></i> 브랜드별 제품 목록 & 진행 이력
+            </h2>
+            <p class="text-xs text-slate-500">클릭해서 펼치고 접을 수 있어요.</p>
+          </div>
+        </button>
 
-        <div class="flex items-center gap-3">
+        <div id="productSection-controls" class="hidden items-center gap-3">
           <div class="flex p-1 bg-pink-50 rounded-xl border border-pink-100 text-xs font-semibold">
             <button onclick="switchBrandTab('전체')" id="tab-전체" class="px-3.5 py-1.5 rounded-lg bg-white text-pink-600 shadow-xs">전체</button>
             <button onclick="switchBrandTab('온살')" id="tab-온살" class="px-3.5 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">온살</button>
@@ -89,18 +93,22 @@
         </div>
       </div>
 
-      <div id="productGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- JS 로딩 -->
+      <div id="productSection" class="hidden">
+        <div id="productGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
     </section>
 
     <!-- SECTION 2: PPL 신규 등록 폼 -->
     <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
-      <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-pink-50 pb-3">
-        <i class="fa-solid fa-user-plus text-pink-500"></i> 신규 PPL 진행 등록
-      </h2>
+      <button onclick="toggleSection('pplFormSection')" class="w-full flex items-center gap-2 text-left border-b border-pink-50 pb-3 group">
+        <i id="pplFormSection-icon" class="fa-solid fa-chevron-right text-pink-500 text-xs transition-transform"></i>
+        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 group-hover:text-pink-600 transition">
+          <i class="fa-solid fa-user-plus text-pink-500"></i> 신규 PPL 진행 등록
+        </h2>
+        <span class="text-xs text-slate-400 ml-auto">클릭해서 펼치기</span>
+      </button>
 
-      <form id="pplForm" class="space-y-4">
+      <form id="pplForm" class="space-y-4 hidden">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-1">브랜드</label>
@@ -109,11 +117,9 @@
               <option value="루메아카이브">루메아카이브</option>
             </select>
           </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-600 mb-1">진행 제품 선택</label>
-            <select id="formProduct" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-400">
-              <!-- JS 로딩 -->
-            </select>
+          <div class="sm:col-span-2 lg:col-span-1">
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">진행 제품 선택 (복수 선택 가능)</label>
+            <div id="formProductList" class="border border-slate-200 rounded-xl p-2 max-h-24 overflow-y-auto custom-scrollbar space-y-1 bg-white"></div>
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-1">인플루언서 본명</label>
@@ -255,16 +261,26 @@
             <div>
               <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">배송지 주소 (입력 시 우편번호 자동 기재)</label>
               <div class="flex gap-2">
-                <input type="text" id="postalCode" readonly placeholder="우편번호" class="w-24 px-2.5 py-1.5 text-xs border border-pink-200 rounded-xl bg-pink-50 font-bold text-pink-700 text-center">
-                <input type="text" id="address" onchange="autoDetectPostalCode(this.value)" required placeholder="도로명/지번 상세 주소 입력" class="flex-1 px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+                <input type="text" id="postalCode" readonly placeholder="우편번호" class="w-20 px-2 py-1.5 text-xs border border-pink-200 rounded-xl bg-pink-50 font-bold text-pink-700 text-center">
+                <button type="button" onclick="searchAddress('postalCode','address')" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-800 text-white text-[11px] font-bold rounded-xl whitespace-nowrap">
+                  <i class="fa-solid fa-magnifying-glass"></i> 주소 검색
+                </button>
+                <input type="text" id="address" required placeholder="검색 버튼을 눌러주세요" class="flex-1 px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
               </div>
+              <input type="text" id="addressDetail" placeholder="상세 주소 (동/호수 등)" class="w-full mt-1 px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
             </div>
           </div>
         </div>
 
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-600 mb-1"><i class="fa-solid fa-sticky-note text-amber-500"></i> 특이사항 / 메모</label>
-          <input type="text" id="notes" placeholder="특이사항, 요청조건 등 기재" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1"><i class="fa-solid fa-file-lines text-blue-500"></i> 가이드라인 링크 (구글드라이브/노션 등)</label>
+            <input type="url" id="guideUrl" placeholder="https://drive.google.com/..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1"><i class="fa-solid fa-sticky-note text-amber-500"></i> 특이사항 / 메모</label>
+            <input type="text" id="notes" placeholder="특이사항, 요청조건 등 기재" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
         </div>
 
         <button type="submit" class="w-full py-3 bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs rounded-xl transition shadow-md shadow-pink-200">
@@ -593,53 +609,186 @@
     </div>
   </div>
 
-  <!-- MODAL 2: 단계별 일자 및 완료 체크 -->
+  <!-- MODAL 2: PPL 전체 수정 -->
   <div id="stepDateModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
-    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-lg w-full space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
-      <div class="flex justify-between items-center border-b border-pink-50 pb-2">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-3xl w-full space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar">
+      <div class="flex justify-between items-center border-b border-pink-50 pb-2 sticky top-0 bg-white z-10">
         <div>
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-clock-rotate-left text-pink-500"></i> PPL 진행 정보 및 단계별 일자 수정
+            <i class="fa-solid fa-pen-to-square text-pink-500"></i> PPL 진행 건 전체 수정
           </h3>
-          <p class="text-[11px] text-slate-400">본명, 계정, 비용 및 각 단계별 일자와 완료 여부를 수정할 수 있습니다.</p>
+          <p class="text-[11px] text-slate-400">등록할 때 입력한 모든 항목을 여기서 수정할 수 있습니다.</p>
         </div>
         <button onclick="closeStepDateModal()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <input type="hidden" id="stepModalPplId">
 
-      <div class="space-y-3 bg-pink-50/30 p-3 rounded-xl border border-pink-100 text-xs">
-        <div class="grid grid-cols-2 gap-2">
+      <!-- 기본 정보 -->
+      <div class="bg-pink-50/30 p-3 rounded-xl border border-pink-100 space-y-2 text-xs">
+        <span class="text-[11px] font-bold text-pink-800"><i class="fa-solid fa-user"></i> 기본 정보</span>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">인플루언서 본명</label>
+            <label class="block font-semibold text-slate-600 mb-1">브랜드</label>
+            <select id="editModalBrand" onchange="renderEditProductList()" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white font-bold text-pink-600">
+              <option value="온살">온살</option>
+              <option value="루메아카이브">루메아카이브</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">본명</label>
             <input type="text" id="editModalRealName" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">인플루언서 명 / 대표계정</label>
+            <label class="block font-semibold text-slate-600 mb-1">대표 계정</label>
             <input type="text" id="editModalInfluencer" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">카테고리</label>
+            <input type="text" id="editModalCategory" list="categoryList" class="w-full px-2.5 py-1.5 border border-pink-200 rounded-lg bg-white font-semibold text-pink-700">
           </div>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">구독자 / 팔로워 수</label>
+            <label class="block font-semibold text-slate-600 mb-1">구독자 / 팔로워</label>
             <input type="text" id="editModalFollowers" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">단가 (합계 비용)</label>
-            <input type="number" id="editModalCost" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white font-bold text-pink-600">
+            <label class="block font-semibold text-slate-600 mb-1">이메일</label>
+            <input type="email" id="editModalEmail" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
           </div>
         </div>
       </div>
 
-      <div class="flex justify-between items-center pt-2">
-        <span class="text-xs font-bold text-slate-700">개별 단계별 일자 및 완료 체크 목록</span>
-        <button type="button" onclick="addModalStepRow()" class="px-2.5 py-1 bg-pink-500 text-white text-[11px] font-bold rounded-lg shadow-xs hover:bg-pink-600">
-          <i class="fa-solid fa-plus"></i> 일정 추가
-        </button>
+      <!-- 진행 제품 -->
+      <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
+        <span class="text-[11px] font-bold text-slate-700"><i class="fa-solid fa-box"></i> 이번 협업 제품 (복수 선택 가능)</span>
+        <div id="editModalProductList" class="grid grid-cols-1 sm:grid-cols-2 gap-1 max-h-32 overflow-y-auto custom-scrollbar"></div>
       </div>
-      <div id="stepDateInputsContainer" class="space-y-2"></div>
-      <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+
+      <!-- 협업 형태 -->
+      <div class="bg-amber-50/40 p-3 rounded-xl border border-amber-100 space-y-2">
+        <span class="text-[11px] font-bold text-amber-900"><i class="fa-solid fa-check-double"></i> 이번 협업 형태 & 단가</span>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <div class="bg-white p-2 rounded-lg border border-amber-200/60 space-y-1">
+            <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+              <input type="checkbox" id="editType_branded" class="accent-pink-500 w-4 h-4"> 브랜디드
+            </label>
+            <input type="number" id="editCost_branded" placeholder="단가" class="w-full px-2 py-1 border border-slate-200 rounded">
+          </div>
+          <div class="bg-white p-2 rounded-lg border border-amber-200/60 space-y-1">
+            <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+              <input type="checkbox" id="editType_ppl" class="accent-pink-500 w-4 h-4"> PPL
+            </label>
+            <input type="number" id="editCost_ppl" placeholder="단가" class="w-full px-2 py-1 border border-slate-200 rounded">
+          </div>
+          <div class="bg-white p-2 rounded-lg border border-amber-200/60 space-y-1">
+            <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+              <input type="checkbox" id="editType_reuse" class="accent-pink-500 w-4 h-4"> 2차활용
+            </label>
+            <input type="number" id="editCost_reuse" placeholder="단가" class="w-full px-2 py-1 border border-slate-200 rounded">
+          </div>
+          <div class="bg-white p-2 rounded-lg border border-amber-200/60 space-y-1">
+            <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+              <input type="checkbox" id="editType_sample" class="accent-pink-500 w-4 h-4"> 제품제공
+            </label>
+            <input type="number" id="editCost_sample" placeholder="비용" class="w-full px-2 py-1 border border-slate-200 rounded">
+          </div>
+        </div>
+      </div>
+
+      <!-- 단계별 일자 -->
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+        <div class="flex justify-between items-center">
+          <div>
+            <span class="text-[11px] font-bold text-slate-700"><i class="fa-solid fa-clock-rotate-left"></i> 단계별 일자 및 완료 체크</span>
+            <p class="text-[10px] text-slate-400">완료 체크한 항목은 목록에서 아래로 내려갑니다.</p>
+          </div>
+          <button type="button" onclick="addModalStepRow()" class="px-2.5 py-1 bg-slate-700 text-white text-[11px] font-bold rounded-lg hover:bg-slate-800">
+            <i class="fa-solid fa-plus"></i> 일정 추가
+          </button>
+        </div>
+        <div id="stepDateInputsContainer" class="space-y-2"></div>
+      </div>
+
+      <!-- 시딩 / 배송 -->
+      <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2 text-xs">
+        <span class="text-[11px] font-bold text-slate-700"><i class="fa-solid fa-truck-fast"></i> 시딩 수량 및 배송 정보</span>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">발송 수량</label>
+            <input type="number" id="editModalSeedingCount" min="1" class="w-full px-2.5 py-1.5 border border-pink-200 rounded-lg font-bold text-pink-600">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">수령인</label>
+            <input type="text" id="editModalReceiverName" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">연락처</label>
+            <input type="tel" id="editModalReceiverPhone" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="editModalPostalCode" readonly placeholder="우편번호" class="w-20 px-2 py-1.5 border border-pink-200 rounded-lg bg-pink-50 font-bold text-pink-700 text-center">
+          <button type="button" onclick="searchAddress('editModalPostalCode','editModalAddress')" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-800 text-white text-[11px] font-bold rounded-lg whitespace-nowrap">
+            <i class="fa-solid fa-magnifying-glass"></i> 주소 검색
+          </button>
+          <input type="text" id="editModalAddress" placeholder="주소" class="flex-1 px-2.5 py-1.5 border border-slate-200 rounded-lg">
+        </div>
+        <input type="text" id="editModalAddressDetail" placeholder="상세 주소 (동/호수 등)" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+      </div>
+
+      <!-- SNS 채널 (접기 가능) -->
+      <div class="bg-pink-50/40 rounded-xl border border-pink-100">
+        <button type="button" onclick="toggleEditSns()" class="w-full flex justify-between items-center p-3 text-left">
+          <span class="text-[11px] font-bold text-pink-800">
+            <i id="editSnsIcon" class="fa-solid fa-chevron-right text-[10px] mr-1 transition-transform"></i>
+            <i class="fa-solid fa-share-nodes"></i> SNS 채널 <span id="editSnsCount" class="text-slate-500 font-semibold"></span>
+          </span>
+          <span class="text-[10px] text-slate-400">클릭해서 펼치기</span>
+        </button>
+        <div id="editSnsBody" class="hidden px-3 pb-3 space-y-2">
+          <div class="flex justify-end">
+            <button type="button" onclick="addEditModalChannelRow()" class="px-2.5 py-1 bg-pink-500 text-white text-[11px] font-bold rounded-lg hover:bg-pink-600">
+              <i class="fa-solid fa-plus"></i> 채널 추가
+            </button>
+          </div>
+          <div id="editModalChannelContainer" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- MCN -->
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2 text-xs">
+        <span class="text-[11px] font-bold text-slate-600"><i class="fa-solid fa-building"></i> MCN / 소속사</span>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <input type="text" id="editModalMcnCompany" placeholder="회사명" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+          <input type="text" id="editModalMcnAgentName" placeholder="담당자" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+          <input type="tel" id="editModalMcnAgentPhone" placeholder="연락처" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+          <input type="email" id="editModalMcnAgentEmail" placeholder="이메일" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+        </div>
+      </div>
+
+      <!-- 가이드라인 & 메모 -->
+      <div class="bg-blue-50/40 p-3 rounded-xl border border-blue-100 space-y-2 text-xs">
+        <span class="text-[11px] font-bold text-blue-900"><i class="fa-solid fa-file-lines"></i> 가이드라인 & 메모</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">가이드라인 링크</label>
+            <input type="url" id="editModalGuideUrl" placeholder="https://drive.google.com/..." class="w-full px-2.5 py-1.5 border border-blue-200 rounded-lg bg-white">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">가이드 표시 이름 (선택)</label>
+            <input type="text" id="editModalGuideName" placeholder="예: 8월 릴스 가이드 v2" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">특이사항 메모</label>
+          <textarea id="editModalNotes" rows="3" placeholder="요청 조건, 협의 내용 등" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg bg-white leading-relaxed"></textarea>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 sticky bottom-0 bg-white">
         <button onclick="closeStepDateModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
-        <button onclick="saveStepDates()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">수정 내용 저장</button>
+        <button onclick="saveStepDates()" class="px-5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl shadow-xs">수정 내용 저장</button>
       </div>
     </div>
   </div>
@@ -1134,144 +1283,12 @@
     let currentYear = 2026;
     let currentMonth = 5; // June
 
-
-    // ===== [일회성] 노션 인플루언서 자동 등록 (2026-08-05 추가) =====
-    // 이미 등록된 사람(브랜드+이름 기준)은 건너뛰므로 여러 번 열어도 중복되지 않습니다.
-    const SEED_INFLUENCERS = [
-      { brand:"온살", product:"비타민, 비피다", realName:"문지혜", influencer:"@Moonjihae_",
-        channels:[{type:"유튜브",account:"@Moonjihae_",url:"https://youtube.com/@Moonjihae_"}],
-        email:"jhm0038@gmail.com", types:{branded:true,ppl:false,reuse:false,sample:false},
-        status:"계약서작성", stepDates:{"계약서작성":{date:"2026-07-10",done:true}},
-        receiverPhone:"010-5690-2956", address:"서울시 용산구 문배동 8-5 102동 1101호",
-        notes:"계약일자 2026/07/10 · 진행사항: 브랜디드 업로드/전자계약서/계약금·잔금 입금 관리 중" },
-      { brand:"루메아카이브", product:"", realName:"디렉터영 스튜디오(낭만표류기)", influencer:"낭만표류기",
-        channels:[{type:"유튜브",account:"낭만표류기",url:""}],
-        email:"nomad910721@gmail.com", types:{branded:false,ppl:true,reuse:false,sample:false},
-        status:"컨택중", stepDates:{}, receiverPhone:"010-2189-5566", address:"",
-        notes:"노션 상태: 시작 전 · 유튜브 URL 노션 원본 확인 필요" },
-      { brand:"루메아카이브", product:"", realName:"성유진(남사장보)", influencer:"남사장보",
-        channels:[{type:"유튜브",account:"남사장보",url:""}],
-        email:"uzin14x@gmail.com", types:{branded:false,ppl:true,reuse:false,sample:false},
-        status:"컨택중", stepDates:{}, receiverPhone:"010-8643-3613", postalCode:"05542",
-        address:"서울 송파구 올림픽로30길 1-12 집앤사잠실프리미어 1503호",
-        notes:"노션 상태: 시작 전" },
-      { brand:"루메아카이브", product:"", realName:"이상현(호디에)", influencer:"@hodiiiiie",
-        channels:[{type:"유튜브",account:"@hodiiiiie",url:"https://youtube.com/@hodiiiiie"}],
-        email:"sh408466@naver.com", types:{branded:true,ppl:false,reuse:false,sample:false},
-        status:"컨택중", stepDates:{}, receiverPhone:"010-9175-4084", address:"",
-        notes:"노션 상태: 시작 전" },
-      { brand:"루메아카이브", product:"", realName:"김동휘", influencer:"김동휘",
-        channels:[{type:"인스타",account:"",url:""}],
-        email:"fnzks28@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01082391445", postalCode:"16972",
-        address:"경기도 용인시 기흥구 관곡로64번길 10-8 (구갈동) 301호",
-        notes:"무상앰버서더 · 계약일자 2026/09/01 · 인스타 URL 노션 확인 필요" },
-      { brand:"루메아카이브", product:"", realName:"이주용", influencer:"이주용",
-        channels:[{type:"인스타",account:"",url:""}],
-        email:"wndyd4315@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01098289208", postalCode:"51464",
-        address:"경상남도 창원시 성산구 대정로 138 (대방동, 대방대동아파트) 107-901",
-        notes:"무상앰버서더 · 계약일자 2026/09/01 · 인스타 URL 노션 확인 필요" },
-      { brand:"루메아카이브", product:"", realName:"정승환", influencer:"@hwann.sta",
-        channels:[{type:"인스타",account:"@hwann.sta",url:"https://instagram.com/hwann.sta/"}],
-        email:"jshv813@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01029302198", postalCode:"14944",
-        address:"경기도 시흥시 미산로 85-2 (미산동, 경신아파트) 나동 408호",
-        notes:"무상앰버서더 · 계약일자 2026/09/01" },
-      { brand:"루메아카이브", product:"", realName:"최진일", influencer:"최진일",
-        channels:[{type:"인스타",account:"",url:""}],
-        email:"chjinil89@gmail.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01089674943", postalCode:"17006",
-        address:"경기도 용인시 기흥구 동백중앙로 219 (중동, 용인 동백역 현성 더 테라스) 1209호",
-        notes:"무상앰버서더 · 계약일자 2026/09/01 · 인스타 URL 노션 확인 필요" },
-      { brand:"루메아카이브", product:"", realName:"양동혁", influencer:"@dongyee__",
-        channels:[{type:"인스타",account:"@dongyee__",url:"https://instagram.com/dongyee__"}],
-        email:"qmffpr31@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01088941093", postalCode:"58579",
-        address:"전남 무안군 삼향읍 남악로250번길 60 (삼향읍, 남악센트레빌리버파크) 125-602",
-        notes:"무상앰버서더 · 계약일자 2026/09/01" },
-      { brand:"온살", product:"", realName:"조현주", influencer:"조현주",
-        channels:[{type:"인스타",account:"",url:""}],
-        email:"choberil@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01045212852", postalCode:"44664",
-        address:"울산광역시 남구 대공원로115번길 10 (옥동, 대공원현대아파트) 102동 608호",
-        notes:"무상앰버서더 · 계약일자 2026/08/01 · 인스타 URL 노션 확인 필요" },
-      { brand:"온살", product:"", realName:"남혜지", influencer:"@imm.hyej",
-        channels:[{type:"인스타",account:"@imm.hyej",url:"https://instagram.com/imm.hyej/"}],
-        email:"nahm4130@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01085943994", postalCode:"47537",
-        address:"부산광역시 연제구 거제대로230번길 30 (거제동, 엘리시움) 507호",
-        notes:"무상앰버서더 · 계약일자 2026/08/01" },
-      { brand:"온살", product:"", realName:"박지연", influencer:"@_01x27",
-        channels:[{type:"인스타",account:"@_01x27",url:"https://instagram.com/_01x27"}],
-        email:"parkjiyeon01@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01086549961", postalCode:"25135",
-        address:"강원특별자치도 홍천군 홍천읍 신장대로 33 (홍천읍) 1층",
-        notes:"무상앰버서더 · 계약일자 2026/08/01" },
-      { brand:"온살", product:"", realName:"김서희", influencer:"김서희",
-        channels:[{type:"인스타",account:"",url:""}],
-        email:"seohee__kim@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01024696393", postalCode:"46993",
-        address:"부산광역시 사상구 백양대로494번길 38 (주례동, 주례청구아파트) 103동 1303호",
-        notes:"무상앰버서더 · 계약일자 2026/08/01 · 인스타 URL 노션 확인 필요" },
-      { brand:"온살", product:"", realName:"김나윤", influencer:"김나윤",
-        channels:[{type:"인스타",account:"",url:""}],
-        email:"look_umji@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01032629202", postalCode:"04986",
-        address:"서울특별시 광진구 능동로34길 49-4 (능동, 경진빌) 304호",
-        notes:"무상앰버서더 · 계약일자 2026/08/01 · 인스타 URL 노션 확인 필요" },
-      { brand:"온살", product:"", realName:"최혜수", influencer:"최혜수",
-        channels:[{type:"인스타",account:"",url:""}],
-        email:"shu511@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01097025011", postalCode:"03672",
-        address:"서울특별시 서대문구 명지대7길 14-5 (남가좌동, 신흥아트빌4차) 201호",
-        notes:"무상앰버서더 · 계약일자 2026/08/01 · 인스타 URL 노션 확인 필요" },
-      { brand:"온살", product:"", realName:"변채영", influencer:"@hell_chae0",
-        channels:[{type:"인스타",account:"@hell_chae0",url:"https://instagram.com/hell_chae0"}],
-        email:"codud9755@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01052702632", postalCode:"06110",
-        address:"서울특별시 강남구 학동로6길 12 (논현동) 403호",
-        notes:"무상앰버서더 · 계약일자 2026/08/01" },
-      { brand:"온살", product:"", realName:"이지언", influencer:"이지언",
-        channels:[{type:"인스타",account:"",url:""}],
-        email:"dlwldjs610@naver.com", types:{branded:false,ppl:false,reuse:false,sample:true},
-        status:"컨택중", stepDates:{}, receiverPhone:"01082523435", postalCode:"12913",
-        address:"경기도 하남시 미사강변중앙로204번길 21 (망월동, 미사엘큐브) 608호",
-        notes:"무상앰버서더 · 계약일자 2026/08/01 · 인스타 URL 노션 확인 필요" }
-    ];
-
-    function seedImportedInfluencers() {
-      let maxId = pplList.reduce((m, p) => Math.max(m, Number(p.id) || 0), 0);
-      let added = 0;
-      SEED_INFLUENCERS.forEach(s => {
-        const exists = pplList.some(p => p.realName === s.realName && p.brand === s.brand);
-        if (exists) return;
-        maxId += 1;
-        pplList.push({
-          id: maxId, brand: s.brand, product: s.product || "", realName: s.realName,
-          influencer: s.influencer, channels: s.channels || [], followers: "",
-          email: s.email || "", types: s.types,
-          costs: { branded: 0, ppl: 0, reuse: 0, sample: 0 },
-          status: s.status || "컨택중", targetDate: "", isCompleted: false,
-          stepDates: s.stepDates || {}, collabLinks: [],
-          mcnCompany: "", mcnAgentName: "", mcnAgentPhone: "", mcnAgentEmail: "",
-          receiverName: s.realName, receiverPhone: s.receiverPhone || "",
-          postalCode: s.postalCode || "", address: s.address || "",
-          notes: s.notes || "", seedingCount: 0, stockDeducted: true
-        });
-        added += 1;
-      });
-      if (added > 0) saveAll();
-      return added;
-    }
-    // ===== 자동 등록 코드 끝 =====
-
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('contactDate').valueAsDate = new Date();
       document.getElementById('logDate').valueAsDate = new Date();
       renderAll();
 
-      pullFromSheet().then(() => { seedImportedInfluencers(); renderAll(); });
+      pullFromSheet().then(() => renderAll());
     });
 
     function saveAll() {
@@ -1282,6 +1299,20 @@
       localStorage.setItem('onsal_utmList', JSON.stringify(utmList));
       localStorage.setItem('onsal_categories', JSON.stringify(categories));
       queueSync();
+    }
+
+    function toggleSection(id) {
+      const target = id === 'pplFormSection' ? document.getElementById('pplForm') : document.getElementById(id);
+      const icon = document.getElementById(id + '-icon');
+      const controls = document.getElementById(id + '-controls');
+
+      const willShow = target.classList.contains('hidden');
+      target.classList.toggle('hidden', !willShow);
+      if (controls) {
+        controls.classList.toggle('hidden', !willShow);
+        controls.classList.toggle('flex', willShow);
+      }
+      if (icon) icon.style.transform = willShow ? 'rotate(90deg)' : 'rotate(0deg)';
     }
 
     function renderCategoryOptions() {
@@ -1334,15 +1365,18 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function autoDetectPostalCode(addressVal) {
-      if (!addressVal) return;
-      let pCode = "06123";
-      if (addressVal.includes("강남")) pCode = "06234";
-      else if (addressVal.includes("서초")) pCode = "06542";
-      else if (addressVal.includes("마포")) pCode = "04012";
-      else if (addressVal.includes("송파")) pCode = "05510";
-      else if (addressVal.includes("부산")) pCode = "48011";
-      document.getElementById('postalCode').value = pCode;
+    // 카카오(다음) 우편번호 검색 - 실제 도로명주소 DB
+    function searchAddress(zipId, addrId) {
+      if (typeof daum === 'undefined') {
+        alert("주소 검색 서비스를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.");
+        return;
+      }
+      new daum.Postcode({
+        oncomplete: function (data) {
+          document.getElementById(zipId).value = data.zonecode;
+          document.getElementById(addrId).value = data.roadAddress || data.jibunAddress;
+        }
+      }).open();
     }
 
     function addFormChannelRow() {
@@ -1572,9 +1606,15 @@
 
     function updateProductSelect() {
       const brand = document.getElementById('formBrand').value;
-      const select = document.getElementById('formProduct');
       const filtered = products.filter(p => p.brand === brand);
-      select.innerHTML = filtered.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+      const box = document.getElementById('formProductList');
+      box.innerHTML = filtered.length
+        ? filtered.map(p => `
+            <label class="flex items-center gap-1.5 text-[11px] cursor-pointer hover:bg-pink-50 px-1 py-0.5 rounded">
+              <input type="checkbox" class="form-product-check accent-pink-500 w-3.5 h-3.5" value="${p.name}">
+              <span class="text-slate-700">${p.name}</span>
+            </label>`).join('')
+        : '<span class="text-[11px] text-slate-400">등록된 제품이 없습니다</span>';
 
       updateLogProductSelect();
     }
@@ -1635,7 +1675,9 @@
       e.preventDefault();
 
       const brand = document.getElementById('formBrand').value;
-      const product = document.getElementById('formProduct').value;
+      const productList = Array.from(document.querySelectorAll('.form-product-check:checked')).map(c => c.value);
+      if (productList.length === 0) { alert("진행 제품을 하나 이상 선택해 주세요."); return; }
+      const product = productList.join(', ');
       const realName = document.getElementById('formRealName').value;
       const influencer = document.getElementById('influencer').value;
       const category = addCategoryIfNew(document.getElementById('formCategory').value);
@@ -1681,7 +1723,7 @@
 
       const newPpl = {
         id: Date.now(),
-        brand, product, realName, influencer, category, channels, followers, email,
+        brand, product, productList, realName, influencer, category, channels, followers, email,
         types, costs, status, contactDate, targetDate: "", isCompleted: false, stepDates,
         collabLinks: [],
         mcnCompany: document.getElementById('mcnCompany').value,
@@ -1692,19 +1734,23 @@
         receiverPhone: document.getElementById('receiverPhone').value,
         postalCode: document.getElementById('postalCode').value,
         address: document.getElementById('address').value,
+        addressDetail: document.getElementById('addressDetail').value,
+        guideUrl: document.getElementById('guideUrl').value,
         notes: document.getElementById('notes').value,
         seedingCount,
         stockDeducted: true
       };
 
-      stockLogs.push({
-        id: Date.now() + 1,
-        date: new Date().toISOString().slice(0, 10),
-        type: "시딩발송소진",
-        brand,
-        productName: product,
-        quantity: seedingCount,
-        reason: `인플루언서 [${influencer}] PPL/시딩 발송`
+      productList.forEach((pn, idx) => {
+        stockLogs.push({
+          id: Date.now() + 1 + idx,
+          date: new Date().toISOString().slice(0, 10),
+          type: "시딩발송소진",
+          brand,
+          productName: pn,
+          quantity: seedingCount,
+          reason: `인플루언서 [${influencer}] PPL/시딩 발송`
+        });
       });
 
       pplList.unshift(newPpl);
@@ -1738,12 +1784,21 @@
       }
 
       tbody.innerHTML = filtered.map(p => {
-        let typeStrs = [];
         let totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.sample||0);
-        if (p.types.branded) typeStrs.push('브랜디드');
-        if (p.types.ppl) typeStrs.push('PPL');
-        if (p.types.reuse) typeStrs.push('2차활용');
-        if (p.types.sample) typeStrs.push('제품제공');
+        const typeBadges = [
+          { on: p.types.branded, label: '브랜디드', cost: p.costs.branded, cls: 'bg-violet-100 text-violet-700 border-violet-200' },
+          { on: p.types.ppl, label: 'PPL', cost: p.costs.ppl, cls: 'bg-pink-100 text-pink-700 border-pink-200' },
+          { on: p.types.reuse, label: '2차활용', cost: p.costs.reuse, cls: 'bg-amber-100 text-amber-800 border-amber-200' },
+          { on: p.types.sample, label: '제품제공', cost: p.costs.sample, cls: 'bg-emerald-100 text-emerald-700 border-emerald-200' }
+        ].filter(t => t.on);
+
+        const typeHtml = typeBadges.length
+          ? typeBadges.map(t => `
+              <div class="inline-flex flex-col items-start px-2 py-1 rounded-lg border ${t.cls} mb-1 mr-1">
+                <span class="text-[11px] font-black">${t.label}</span>
+                ${t.cost ? `<span class="text-[10px] font-semibold opacity-80">${Number(t.cost).toLocaleString()}원</span>` : ''}
+              </div>`).join('')
+          : '<span class="text-[11px] text-slate-400">형태 미지정</span>';
 
         const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
 
@@ -1758,7 +1813,13 @@
 
         let stepDateBadges = '';
         if (p.stepDates) {
-          stepDateBadges = Object.entries(p.stepDates).map(([st, info]) => {
+          const entries = Object.entries(p.stepDates).sort((a, b) => {
+            const aDone = typeof a[1] === 'object' ? !!a[1].done : false;
+            const bDone = typeof b[1] === 'object' ? !!b[1].done : false;
+            if (aDone !== bDone) return aDone ? 1 : -1;
+            return STAGES.indexOf(b[0]) - STAGES.indexOf(a[0]);
+          });
+          stepDateBadges = entries.map(([st, info]) => {
             const dtVal = typeof info === 'object' ? info.date : info;
             const isDone = typeof info === 'object' ? info.done : false;
             return `
@@ -1777,15 +1838,17 @@
             </td>
             <td class="py-3 px-3 align-top">
               <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${brandBadgeClass}">${p.brand}</span>
-              <div class="font-bold text-slate-800 mt-0.5">${p.product}</div>
+              <div class="mt-1 space-y-0.5">
+                ${(p.productList && p.productList.length ? p.productList : [p.product]).map(pn => `<div class="font-bold text-slate-800 text-[11px]">· ${pn}</div>`).join('')}
+              </div>
             </td>
             <td class="py-3 px-3 align-top">
               <div class="font-bold text-slate-900">${p.realName || '무명'} <span class="text-xs font-normal text-slate-500">(${p.influencer})</span></div>
               <div class="mt-1 flex flex-wrap gap-1">${channelsHtml}</div>
               <div class="text-[11px] text-slate-400 mt-1">${p.followers ? `구독자/팔로워: ${p.followers}` : ''}</div>
             </td>
-            <td class="py-3 px-3 align-top">
-              <div class="text-slate-700">${typeStrs.length > 0 ? typeStrs.join(', ') : '형태 없음'}</div>
+            <td class="py-3 px-3 align-top min-w-[110px]">
+              <div class="flex flex-wrap">${typeHtml}</div>
             </td>
             <td class="py-3 px-3 align-top">
               <select onchange="updatePplStatus(${p.id}, this.value)" class="px-2 py-1 text-xs border border-pink-200 rounded-lg font-bold text-pink-600 bg-pink-50/40">
@@ -1809,7 +1872,7 @@
                 ? `<div class="text-[11px] leading-relaxed text-slate-700">
                      <div class="font-bold text-slate-900">${p.receiverName || '수령인 미입력'}</div>
                      <div>${p.receiverPhone || '연락처 없음'}</div>
-                     <div class="text-slate-500">${p.postalCode ? `(${p.postalCode}) ` : ''}${p.address || '주소 없음'}</div>
+                     <div class="text-slate-500">${p.postalCode ? `(${p.postalCode}) ` : ''}${[p.address, p.addressDetail].filter(Boolean).join(' ') || '주소 없음'}</div>
                    </div>`
                 : `<span class="text-[11px] text-slate-400">배송정보 없음</span>`}
             </td>
@@ -1926,56 +1989,139 @@
       gridElem.innerHTML = html;
     }
 
+    function renderEditProductList(selected) {
+      const brand = document.getElementById('editModalBrand').value;
+      const box = document.getElementById('editModalProductList');
+      const chosen = selected || Array.from(document.querySelectorAll('.edit-product-check:checked')).map(c => c.value);
+      const filtered = products.filter(p => p.brand === brand);
+
+      box.innerHTML = filtered.length
+        ? filtered.map(p => `
+            <label class="flex items-center gap-1.5 text-[11px] cursor-pointer hover:bg-pink-50 px-1.5 py-1 rounded border border-slate-100">
+              <input type="checkbox" class="edit-product-check accent-pink-500 w-3.5 h-3.5" value="${p.name}" ${chosen.includes(p.name) ? 'checked' : ''}>
+              <span class="text-slate-700">${p.name}</span>
+            </label>`).join('')
+        : '<span class="text-[11px] text-slate-400">이 브랜드에 등록된 제품이 없습니다</span>';
+    }
+
+    function editChannelRowHtml(c = {}) {
+      const types = ['인스타', '유튜브', '블로그', '틱톡', '기타'];
+      return `
+        <div class="flex items-center gap-2 edit-channel-row">
+          <select class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold ec-type bg-white">
+            ${types.map(t => `<option value="${t}" ${c.type === t ? 'selected' : ''}>${t}</option>`).join('')}
+          </select>
+          <input type="text" value="${c.account || ''}" placeholder="계정/닉네임" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg ec-account bg-white w-28">
+          <input type="url" value="${c.url || ''}" placeholder="채널 URL" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg ec-url bg-white flex-1">
+          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+        </div>`;
+    }
+
+    function toggleEditSns() {
+      const body = document.getElementById('editSnsBody');
+      const icon = document.getElementById('editSnsIcon');
+      const willShow = body.classList.contains('hidden');
+      body.classList.toggle('hidden', !willShow);
+      icon.style.transform = willShow ? 'rotate(90deg)' : 'rotate(0deg)';
+    }
+
+    function updateEditSnsCount() {
+      const n = document.querySelectorAll('#editModalChannelContainer .edit-channel-row').length;
+      const el = document.getElementById('editSnsCount');
+      if (el) el.innerText = n ? `(${n}개)` : '(없음)';
+    }
+
+    function addEditModalChannelRow() {
+      const body = document.getElementById('editSnsBody');
+      if (body.classList.contains('hidden')) toggleEditSns();
+      document.getElementById('editModalChannelContainer').insertAdjacentHTML('beforeend', editChannelRowHtml());
+      updateEditSnsCount();
+    }
+
     function openStepDateModal(pplId) {
       const ppl = pplList.find(i => i.id === pplId);
       if (!ppl) return;
 
       document.getElementById('stepModalPplId').value = pplId;
+      document.getElementById('editModalBrand').value = ppl.brand || '온살';
       document.getElementById('editModalRealName').value = ppl.realName || '';
       document.getElementById('editModalInfluencer').value = ppl.influencer || '';
+      document.getElementById('editModalCategory').value = ppl.category || '';
       document.getElementById('editModalFollowers').value = ppl.followers || '';
-      let totalCost = (ppl.costs.branded||0) + (ppl.costs.ppl||0) + (ppl.costs.reuse||0) + (ppl.costs.sample||0);
-      document.getElementById('editModalCost').value = totalCost;
+      document.getElementById('editModalEmail').value = ppl.email || '';
+
+      const chosen = ppl.productList && ppl.productList.length ? ppl.productList : (ppl.product ? [ppl.product] : []);
+      renderEditProductList(chosen);
+
+      document.getElementById('editType_branded').checked = !!(ppl.types && ppl.types.branded);
+      document.getElementById('editType_ppl').checked = !!(ppl.types && ppl.types.ppl);
+      document.getElementById('editType_reuse').checked = !!(ppl.types && ppl.types.reuse);
+      document.getElementById('editType_sample').checked = !!(ppl.types && ppl.types.sample);
+      document.getElementById('editCost_branded').value = (ppl.costs && ppl.costs.branded) || '';
+      document.getElementById('editCost_ppl').value = (ppl.costs && ppl.costs.ppl) || '';
+      document.getElementById('editCost_reuse').value = (ppl.costs && ppl.costs.reuse) || '';
+      document.getElementById('editCost_sample').value = (ppl.costs && ppl.costs.sample) || '';
+
+      document.getElementById('editModalChannelContainer').innerHTML = (ppl.channels || []).map(c => editChannelRowHtml(c)).join('');
+      document.getElementById('editSnsBody').classList.add('hidden');
+      document.getElementById('editSnsIcon').style.transform = 'rotate(0deg)';
+      updateEditSnsCount();
+
+      document.getElementById('editModalSeedingCount').value = ppl.seedingCount || 1;
+      document.getElementById('editModalReceiverName').value = ppl.receiverName || '';
+      document.getElementById('editModalReceiverPhone').value = ppl.receiverPhone || '';
+      document.getElementById('editModalPostalCode').value = ppl.postalCode || '';
+      document.getElementById('editModalAddress').value = ppl.address || '';
+      document.getElementById('editModalAddressDetail').value = ppl.addressDetail || '';
+
+      document.getElementById('editModalMcnCompany').value = ppl.mcnCompany || '';
+      document.getElementById('editModalMcnAgentName').value = ppl.mcnAgentName || '';
+      document.getElementById('editModalMcnAgentPhone').value = ppl.mcnAgentPhone || '';
+      document.getElementById('editModalMcnAgentEmail').value = ppl.mcnAgentEmail || '';
+
+      document.getElementById('editModalGuideUrl').value = ppl.guideUrl || '';
+      document.getElementById('editModalGuideName').value = ppl.guideName || '';
+      document.getElementById('editModalNotes').value = ppl.notes || '';
 
       const container = document.getElementById('stepDateInputsContainer');
       let stepsHtml = '';
       if (ppl.stepDates) {
-        Object.entries(ppl.stepDates).forEach(([st, info]) => {
+        const entries = Object.entries(ppl.stepDates).sort((a, b) => {
+          const aDone = typeof a[1] === 'object' ? !!a[1].done : false;
+          const bDone = typeof b[1] === 'object' ? !!b[1].done : false;
+          if (aDone !== bDone) return aDone ? 1 : -1;
+          return STAGES.indexOf(b[0]) - STAGES.indexOf(a[0]);
+        });
+        entries.forEach(([st, info]) => {
           const dt = typeof info === 'object' ? info.date : info;
           const done = typeof info === 'object' ? info.done : false;
-          stepsHtml += `
-            <div class="flex items-center gap-2 step-edit-row">
-              <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold edit-stage-select bg-white w-32">
-                ${STAGES.map(s => `<option value="${s}" ${s === st ? 'selected' : ''}>${s}</option>`).join('')}
-              </select>
-              <input type="date" value="${dt}" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg edit-date-input bg-white flex-1">
-              <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-white px-2 py-1 rounded-lg border border-slate-200 cursor-pointer whitespace-nowrap">
-                <input type="checkbox" ${done ? 'checked' : ''} class="edit-stage-done accent-pink-500"> 완료
-              </label>
-              <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
-            </div>
-          `;
+          stepsHtml += stepRowHtml(st, dt, done);
         });
       }
       container.innerHTML = stepsHtml;
+
       document.getElementById('stepDateModal').classList.remove('hidden');
     }
 
+    function stepRowHtml(stage, date, done) {
+      return `
+        <div class="flex items-center gap-2 step-edit-row ${done ? 'opacity-60' : ''}">
+          <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold edit-stage-select bg-white w-32">
+            ${STAGES.map(x => `<option value="${x}" ${x === stage ? 'selected' : ''}>${x}</option>`).join('')}
+          </select>
+          <input type="date" value="${date || ''}" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg edit-date-input bg-white flex-1">
+          <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-white px-2 py-1 rounded-lg border border-slate-200 cursor-pointer whitespace-nowrap">
+            <input type="checkbox" ${done ? 'checked' : ''} class="edit-stage-done accent-pink-500"> 완료
+          </label>
+          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+        </div>`;
+    }
+
     function addModalStepRow() {
-      const container = document.getElementById('stepDateInputsContainer');
-      const div = document.createElement('div');
-      div.className = "flex items-center gap-2 step-edit-row";
-      div.innerHTML = `
-        <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold edit-stage-select bg-white w-32">
-          ${STAGES.map(s => `<option value="${s}">${s}</option>`).join('')}
-        </select>
-        <input type="date" value="${new Date().toISOString().slice(0,10)}" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg edit-date-input bg-white flex-1">
-        <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-white px-2 py-1 rounded-lg border border-slate-200 cursor-pointer whitespace-nowrap">
-          <input type="checkbox" class="edit-stage-done accent-pink-500"> 완료
-        </label>
-        <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
-      `;
-      container.appendChild(div);
+      document.getElementById('stepDateInputsContainer').insertAdjacentHTML(
+        'afterbegin',
+        stepRowHtml('컨택중', new Date().toISOString().slice(0, 10), false)
+      );
     }
 
     function closeStepDateModal() { document.getElementById('stepDateModal').classList.add('hidden'); }
@@ -1985,11 +2131,52 @@
       const ppl = pplList.find(i => i.id === pplId);
       if (!ppl) return;
 
+      const productList = Array.from(document.querySelectorAll('.edit-product-check:checked')).map(c => c.value);
+      if (productList.length === 0) { alert("협업 제품을 하나 이상 선택해 주세요."); return; }
+
+      ppl.brand = document.getElementById('editModalBrand').value;
+      ppl.productList = productList;
+      ppl.product = productList.join(', ');
       ppl.realName = document.getElementById('editModalRealName').value;
       ppl.influencer = document.getElementById('editModalInfluencer').value;
+      ppl.category = addCategoryIfNew(document.getElementById('editModalCategory').value);
       ppl.followers = document.getElementById('editModalFollowers').value;
-      ppl.costs.branded = Number(document.getElementById('editModalCost').value) || 0;
-      ppl.costs.ppl = 0; ppl.costs.reuse = 0; ppl.costs.sample = 0;
+      ppl.email = document.getElementById('editModalEmail').value;
+
+      ppl.types = {
+        branded: document.getElementById('editType_branded').checked,
+        ppl: document.getElementById('editType_ppl').checked,
+        reuse: document.getElementById('editType_reuse').checked,
+        sample: document.getElementById('editType_sample').checked
+      };
+      ppl.costs = {
+        branded: Number(document.getElementById('editCost_branded').value) || 0,
+        ppl: Number(document.getElementById('editCost_ppl').value) || 0,
+        reuse: Number(document.getElementById('editCost_reuse').value) || 0,
+        sample: Number(document.getElementById('editCost_sample').value) || 0
+      };
+
+      ppl.channels = Array.from(document.querySelectorAll('#editModalChannelContainer .edit-channel-row')).map(r => ({
+        type: r.querySelector('.ec-type').value,
+        account: r.querySelector('.ec-account').value,
+        url: r.querySelector('.ec-url').value
+      }));
+
+      ppl.seedingCount = Number(document.getElementById('editModalSeedingCount').value) || 1;
+      ppl.receiverName = document.getElementById('editModalReceiverName').value;
+      ppl.receiverPhone = document.getElementById('editModalReceiverPhone').value;
+      ppl.postalCode = document.getElementById('editModalPostalCode').value;
+      ppl.address = document.getElementById('editModalAddress').value;
+      ppl.addressDetail = document.getElementById('editModalAddressDetail').value;
+
+      ppl.mcnCompany = document.getElementById('editModalMcnCompany').value;
+      ppl.mcnAgentName = document.getElementById('editModalMcnAgentName').value;
+      ppl.mcnAgentPhone = document.getElementById('editModalMcnAgentPhone').value;
+      ppl.mcnAgentEmail = document.getElementById('editModalMcnAgentEmail').value;
+
+      ppl.guideUrl = document.getElementById('editModalGuideUrl').value;
+      ppl.guideName = document.getElementById('editModalGuideName').value;
+      ppl.notes = document.getElementById('editModalNotes').value;
 
       ppl.stepDates = {};
       document.querySelectorAll('#stepDateInputsContainer .step-edit-row').forEach(r => {
@@ -1998,6 +2185,9 @@
         const done = r.querySelector('.edit-stage-done').checked;
         if (dt) ppl.stepDates[st] = { date: dt, done: done };
       });
+
+      const undone = Object.entries(ppl.stepDates).filter(([, v]) => !v.done).map(([k]) => k);
+      if (undone.length) ppl.status = undone.sort((a, b) => STAGES.indexOf(b) - STAGES.indexOf(a))[0];
 
       saveAll();
       closeStepDateModal();
@@ -2014,6 +2204,15 @@
       grid.innerHTML = pplList.map(p => {
         const totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.sample||0);
         const doneCount = (p.collabLinks || []).length;
+
+        const typeList = [];
+        if (p.types && p.types.branded) typeList.push({ t: '브랜디드', c: 'bg-violet-100 text-violet-700' });
+        if (p.types && p.types.ppl) typeList.push({ t: 'PPL', c: 'bg-pink-100 text-pink-700' });
+        if (p.types && p.types.reuse) typeList.push({ t: '2차활용', c: 'bg-amber-100 text-amber-800' });
+        if (p.types && p.types.sample) typeList.push({ t: '제품제공', c: 'bg-emerald-100 text-emerald-700' });
+        const typeChips = typeList.map(x => `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${x.c}">${x.t}</span>`).join(' ');
+
+        const prodNames = (p.productList && p.productList.length ? p.productList : (p.product ? [p.product] : []));
 
         let channelsHtml = '';
         if (p.channels && p.channels.length > 0) {
@@ -2053,7 +2252,8 @@
                   ${doneCount > 0
                     ? `<span class="text-xs font-bold text-pink-600">진행횟수: ${doneCount}회</span>`
                     : `<span class="text-[11px] font-semibold text-slate-400">아직 진행 전</span>`}
-                  <button onclick="openInfluencerEdit(${p.id})" class="text-slate-400 hover:text-pink-600 text-xs" title="수정"><i class="fa-solid fa-pen"></i></button>
+                  <button onclick="openStepDateModal(${p.id})" class="text-slate-400 hover:text-pink-600 text-xs" title="전체 수정"><i class="fa-solid fa-pen"></i></button>
+                  <button onclick="openInfluencerEdit(${p.id})" class="text-slate-400 hover:text-amber-600 text-xs" title="협업 콘텐츠/메모"><i class="fa-solid fa-link"></i></button>
                 </div>
               </div>
               <h3 class="text-base font-black text-slate-900">${p.realName || '무명'} <span class="text-xs font-normal text-slate-500">(${p.influencer})</span></h3>
@@ -2063,7 +2263,23 @@
                 <div>단가(비용): <b class="text-pink-600">${totalCost.toLocaleString()}원</b></div>
                 ${addr ? `<div class="truncate">정보: <b>${addr}</b></div>` : ''}
               </div>
+              ${typeChips ? `<div class="flex flex-wrap gap-1 pt-1">${typeChips}</div>` : ''}
             </div>
+
+            <div class="space-y-1 pt-2 border-t border-slate-100">
+              <span class="text-[10px] font-bold text-slate-400">이번 협업 제품</span>
+              ${prodNames.length
+                ? prodNames.map(n => `<div class="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded px-2 py-1 truncate">· ${n}</div>`).join('')
+                : '<span class="block text-[11px] text-slate-400">제품 미지정</span>'}
+            </div>
+
+            ${p.guideUrl ? `
+            <div class="space-y-1 pt-2 border-t border-slate-100">
+              <span class="text-[10px] font-bold text-slate-400">가이드라인</span>
+              <a href="${p.guideUrl}" target="_blank" rel="noopener" class="block text-[11px] text-blue-700 hover:underline bg-blue-50 px-2 py-1 rounded border border-blue-100 truncate">
+                <i class="fa-solid fa-file-lines text-[10px]"></i> ${p.guideName || '가이드 문서 열기'}
+              </a>
+            </div>` : ''}
 
             <div class="space-y-1 pt-2 border-t border-slate-100">
               <span class="text-[10px] font-bold text-slate-400">등록된 SNS 채널 목록</span>
@@ -2735,12 +2951,12 @@
       }
 
       const data = rows.map(p => ({
-        "제품명": p.product || "",
+        "제품명": (p.productList && p.productList.length ? p.productList.join(', ') : (p.product || "")),
         "수량": p.seedingCount || 0,
         "이름": p.receiverName || "",
         "연락처": p.receiverPhone || "",
         "우편번호": p.postalCode || "",
-        "주소": p.address || ""
+        "주소": [p.address, p.addressDetail].filter(Boolean).join(' ')
       }));
 
       const today = new Date().toISOString().slice(0, 10);
