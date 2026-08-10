@@ -213,6 +213,18 @@
               </label>
               <input type="number" id="cost_shorts" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
             </div>
+            <div class="bg-sky-50 p-2.5 rounded-xl border border-sky-200 space-y-1.5">
+              <label class="flex items-center gap-1.5 font-bold text-sky-800 cursor-pointer">
+                <input type="checkbox" id="type_microReels" class="w-4 h-4 accent-sky-600 rounded"> 마이크로 릴스
+              </label>
+              <input type="number" id="cost_microReels" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-sky-200 rounded-lg">
+            </div>
+            <div class="bg-sky-50 p-2.5 rounded-xl border border-sky-200 space-y-1.5">
+              <label class="flex items-center gap-1.5 font-bold text-sky-800 cursor-pointer">
+                <input type="checkbox" id="type_microPpl" class="w-4 h-4 accent-sky-600 rounded"> 마이크로 PPL
+              </label>
+              <input type="number" id="cost_microPpl" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-sky-200 rounded-lg">
+            </div>
             <div class="bg-white p-2.5 rounded-xl border border-amber-200/60 space-y-1.5">
               <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
                 <input type="checkbox" id="type_ambassador" class="w-4 h-4 text-pink-500 accent-pink-500 rounded"> 앰버서더
@@ -315,7 +327,7 @@
       <div class="flex flex-wrap gap-3 justify-between items-center">
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-list text-pink-500"></i> 진행 목록 테이블
+            <i class="fa-solid fa-list text-pink-500"></i> 브랜디드 &amp; PPL 진행 목록 테이블
           </h2>
           <p class="text-xs text-slate-500">체크한 인플루언서의 수령인 이름·연락처·우편번호·주소를 엑셀로 받을 수 있어요. (체크 없으면 현재 목록 전체)</p>
         </div>
@@ -396,7 +408,82 @@
       </div>
     </section>
 
-    <!-- SECTION 4-2: 무상앰버서더 -->
+    <!-- SECTION 4-2: 마이크로 진행 목록 -->
+    <section class="bg-white p-5 rounded-2xl border border-sky-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-sky-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-users-rays text-sky-600"></i> 마이크로 진행 목록 테이블
+            <span id="microHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">마이크로 릴스 / 마이크로 PPL 건만 모아서 관리합니다.</p>
+        </div>
+        <button onclick="exportShippingExcel('micro')" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 마이크로 배송정보 다운로드
+        </button>
+      </div>
+
+      <!-- 브랜드별 건수 집계 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div class="bg-pink-50/50 p-4 rounded-xl border border-pink-100 space-y-2">
+          <span class="text-xs font-bold text-pink-700">온살</span>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div>
+              <div class="text-[11px] text-slate-500 font-semibold">마이크로 릴스</div>
+              <div id="microOnsalReels" class="text-xl font-black text-sky-600">0건</div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-500 font-semibold">마이크로 PPL</div>
+              <div id="microOnsalPpl" class="text-xl font-black text-cyan-600">0건</div>
+            </div>
+            <div class="border-l border-pink-200">
+              <div class="text-[11px] text-slate-500 font-semibold">합계</div>
+              <div id="microOnsalTotal" class="text-xl font-black text-pink-600">0건</div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-skyblue-50/60 p-4 rounded-xl border border-skyblue-100 space-y-2">
+          <span class="text-xs font-bold text-skyblue-700">루메아카이브</span>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div>
+              <div class="text-[11px] text-slate-500 font-semibold">마이크로 릴스</div>
+              <div id="microLumeReels" class="text-xl font-black text-sky-600">0건</div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-500 font-semibold">마이크로 PPL</div>
+              <div id="microLumePpl" class="text-xl font-black text-cyan-600">0건</div>
+            </div>
+            <div class="border-l border-skyblue-200">
+              <div class="text-[11px] text-slate-500 font-semibold">합계</div>
+              <div id="microLumeTotal" class="text-xl font-black text-skyblue-600">0건</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-sky-50/60 text-slate-600 font-semibold border-y border-sky-100">
+            <tr>
+              <th class="py-3 px-3 w-8">
+                <input type="checkbox" onchange="toggleSelectAllMicro(this.checked)" class="accent-sky-600 w-4 h-4 cursor-pointer">
+              </th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">인플루언서</th>
+              <th class="py-3 px-3">유형</th>
+              <th class="py-3 px-3">진행 상태</th>
+              <th class="py-3 px-3">단계별 일자</th>
+              <th class="py-3 px-3">배송 정보</th>
+              <th class="py-3 px-3">시딩 / 비용</th>
+              <th class="py-3 px-3 text-right">수정 / 삭제</th>
+            </tr>
+          </thead>
+          <tbody id="microTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 4-3: 무상앰버서더 -->
     <section class="bg-white p-5 rounded-2xl border border-teal-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-teal-100 pb-3">
         <button onclick="toggleSection('freeAmbSection')" class="flex items-center gap-2 text-left group">
@@ -779,6 +866,18 @@
               <input type="checkbox" id="editType_shorts" class="accent-pink-500 w-4 h-4"> 숏츠
             </label>
             <input type="number" id="editCost_shorts" placeholder="단가" class="w-full px-2 py-1 border border-slate-200 rounded">
+          </div>
+          <div class="bg-sky-50 p-2 rounded-lg border border-sky-200 space-y-1">
+            <label class="flex items-center gap-1.5 font-bold text-sky-800 cursor-pointer">
+              <input type="checkbox" id="editType_microReels" class="accent-sky-600 w-4 h-4"> 마이크로 릴스
+            </label>
+            <input type="number" id="editCost_microReels" placeholder="단가" class="w-full px-2 py-1 border border-sky-200 rounded">
+          </div>
+          <div class="bg-sky-50 p-2 rounded-lg border border-sky-200 space-y-1">
+            <label class="flex items-center gap-1.5 font-bold text-sky-800 cursor-pointer">
+              <input type="checkbox" id="editType_microPpl" class="accent-sky-600 w-4 h-4"> 마이크로 PPL
+            </label>
+            <input type="number" id="editCost_microPpl" placeholder="단가" class="w-full px-2 py-1 border border-sky-200 rounded">
           </div>
           <div class="bg-white p-2 rounded-lg border border-amber-200/60 space-y-1">
             <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
@@ -1566,6 +1665,7 @@
       renderProducts();
       updateProductSelect();
       renderPplTable();
+      renderMicroTable();
       renderFreeAmbTable();
       renderCalendar();
       renderInfluencerCards();
@@ -1931,6 +2031,8 @@
         branded: document.getElementById('type_branded').checked,
         ppl: document.getElementById('type_ppl').checked,
         reuse: document.getElementById('type_reuse').checked,
+        microReels: document.getElementById('type_microReels').checked,
+        microPpl: document.getElementById('type_microPpl').checked,
         reels: document.getElementById('type_reels').checked,
         shorts: document.getElementById('type_shorts').checked,
         ambassador: document.getElementById('type_ambassador').checked,
@@ -1941,6 +2043,8 @@
         branded: Number(document.getElementById('cost_branded').value) || 0,
         ppl: Number(document.getElementById('cost_ppl').value) || 0,
         reuse: Number(document.getElementById('cost_reuse').value) || 0,
+        microReels: Number(document.getElementById('cost_microReels').value) || 0,
+        microPpl: Number(document.getElementById('cost_microPpl').value) || 0,
         reels: Number(document.getElementById('cost_reels').value) || 0,
         shorts: Number(document.getElementById('cost_shorts').value) || 0,
         ambassador: Number(document.getElementById('cost_ambassador').value) || 0,
@@ -2038,9 +2142,13 @@
       return !!(p.types && p.types.freeAmb);
     }
 
+    function isMicro(p) {
+      return !!(p.types && (p.types.microReels || p.types.microPpl)) && !isFreeAmb(p);
+    }
+
     function renderPplTable() {
       const tbody = document.getElementById('pplTableBody');
-      let filtered = pplList.filter(p => !isFreeAmb(p));
+      let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p));
       if (currentTableBrandFilter !== '전체') filtered = filtered.filter(p => p.brand === currentTableBrandFilter);
 
       if (filtered.length === 0) {
@@ -2049,11 +2157,13 @@
       }
 
       tbody.innerHTML = filtered.map(p => {
-        let totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
+        let totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.microReels||0) + (p.costs.microPpl||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
         const typeBadges = [
           { on: p.types.branded, label: '브랜디드', cost: p.costs.branded, cls: 'bg-violet-100 text-violet-700 border-violet-200' },
           { on: p.types.ppl, label: 'PPL', cost: p.costs.ppl, cls: 'bg-pink-100 text-pink-700 border-pink-200' },
           { on: p.types.reuse, label: '2차활용', cost: p.costs.reuse, cls: 'bg-amber-100 text-amber-800 border-amber-200' },
+          { on: p.types.microReels, label: '마이크로 릴스', cost: p.costs.microReels, cls: 'bg-sky-100 text-sky-700 border-sky-200' },
+          { on: p.types.microPpl, label: '마이크로 PPL', cost: p.costs.microPpl, cls: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
           { on: p.types.reels, label: '릴스', cost: p.costs.reels, cls: 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200' },
           { on: p.types.shorts, label: '숏츠', cost: p.costs.shorts, cls: 'bg-red-100 text-red-700 border-red-200' },
           { on: p.types.ambassador || p.types.sample, label: '앰버서더', cost: p.costs.ambassador || p.costs.sample, cls: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
@@ -2149,6 +2259,94 @@
             </td>
           </tr>
         `;
+      }).join('');
+    }
+
+    function toggleSelectAllMicro(checked) {
+      document.querySelectorAll('.micro-select').forEach(cb => { cb.checked = checked; });
+    }
+
+    function renderMicroTable() {
+      const list = pplList.filter(isMicro);
+
+      const cnt = (brand, key) => list.filter(p => p.brand === brand && p.types && p.types[key]).length;
+      const oR = cnt('온살', 'microReels'), oP = cnt('온살', 'microPpl');
+      const lR = cnt('루메아카이브', 'microReels'), lP = cnt('루메아카이브', 'microPpl');
+
+      document.getElementById('microOnsalReels').innerText = oR + '건';
+      document.getElementById('microOnsalPpl').innerText = oP + '건';
+      document.getElementById('microOnsalTotal').innerText = list.filter(p => p.brand === '온살').length + '건';
+      document.getElementById('microLumeReels').innerText = lR + '건';
+      document.getElementById('microLumePpl').innerText = lP + '건';
+      document.getElementById('microLumeTotal').innerText = list.filter(p => p.brand === '루메아카이브').length + '건';
+      document.getElementById('microHeaderCount').innerText = list.length + '건';
+
+      const tbody = document.getElementById('microTableBody');
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">마이크로 진행 건이 없습니다. 협업 형태에서 '마이크로 릴스' 또는 '마이크로 PPL'을 체크하면 여기로 들어옵니다.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(p => {
+        const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+        const prodNames = (p.productList && p.productList.length ? p.productList : [p.product]);
+        const totalCost = (p.costs.microReels||0) + (p.costs.microPpl||0);
+
+        const typeChips = [
+          p.types.microReels ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full">마이크로 릴스</span>' : '',
+          p.types.microPpl ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full">마이크로 PPL</span>' : ''
+        ].filter(Boolean).join(' ');
+
+        const stepHtml = sortedStepEntries(p.stepDates).map(([st, info]) => {
+          const dt = typeof info === 'object' ? info.date : info;
+          const done = typeof info === 'object' ? info.done : false;
+          return `<div class="text-[11px] ${done ? 'line-through text-slate-400' : 'text-slate-700 font-semibold'}">${st}: ${dt}</div>`;
+        }).join('');
+
+        const addrLine = (p.receiverName || p.receiverPhone || p.address)
+          ? `<div class="text-[11px] leading-relaxed text-slate-700">
+               <div class="font-bold text-slate-900">${p.receiverName || '수령인 미입력'}</div>
+               <div>${p.receiverPhone || '연락처 없음'}</div>
+               <div class="text-slate-500">${p.postalCode ? `(${p.postalCode}) ` : ''}${[p.address, p.addressDetail].filter(Boolean).join(' ') || '주소 없음'}</div>
+             </div>`
+          : '<span class="text-[11px] text-slate-400">배송정보 없음</span>';
+
+        return `
+          <tr class="hover:bg-sky-50/30 transition">
+            <td class="py-3 px-3 align-top">
+              <input type="checkbox" class="micro-select accent-sky-600 w-4 h-4 cursor-pointer" value="${p.id}">
+            </td>
+            <td class="py-3 px-3 align-top">
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${brandBadgeClass}">${p.brand}</span>
+              <div class="mt-1 space-y-0.5">
+                ${prodNames.map(pn => `<div class="font-bold text-slate-800 text-[11px]">· ${pn}</div>`).join('')}
+              </div>
+            </td>
+            <td class="py-3 px-3 align-top">
+              <div class="font-bold text-slate-900">${p.realName || '무명'}</div>
+              <div class="text-[11px] text-slate-500">${p.influencer || ''}</div>
+              <div class="text-[11px] text-slate-400">${p.followers ? `팔로워 ${p.followers}` : ''}</div>
+              ${p.category ? `<span class="text-[10px] font-bold px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded-full">${p.category}</span>` : ''}
+            </td>
+            <td class="py-3 px-3 align-top"><div class="flex flex-col gap-1 items-start">${typeChips}</div></td>
+            <td class="py-3 px-3 align-top">
+              <select onchange="updatePplStatus(${p.id}, this.value)" class="px-2 py-1 text-xs border border-sky-200 rounded-lg font-bold text-sky-700 bg-sky-50/40">
+                ${STAGES.map(st => `<option value="${st}" ${p.status === st ? 'selected' : ''}>${st}</option>`).join('')}
+              </select>
+            </td>
+            <td class="py-3 px-3 align-top max-w-[180px]">
+              <div class="max-h-[90px] overflow-y-auto custom-scrollbar pr-1">${stepHtml || '<span class="text-slate-400 text-[11px]">일정 없음</span>'}</div>
+            </td>
+            <td class="py-3 px-3 align-top min-w-[170px]">${addrLine}</td>
+            <td class="py-3 px-3 align-top">
+              <div class="font-bold text-sky-700">${p.seedingCount || 0}개</div>
+              <div class="text-[11px] text-slate-500 font-bold">${totalCost.toLocaleString()}원</div>
+            </td>
+            <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
+              <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
+              <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>`;
       }).join('');
     }
 
@@ -2260,6 +2458,7 @@
         else ppl.stepDates[stageName] = { date: ppl.stepDates[stageName], done: doneVal };
         saveAll();
         renderPplTable();
+        renderMicroTable();
         renderFreeAmbTable();
         renderCalendar();
         syncToScheduler(true);
@@ -2401,6 +2600,8 @@
       document.getElementById('editType_branded').checked = !!(ppl.types && ppl.types.branded);
       document.getElementById('editType_ppl').checked = !!(ppl.types && ppl.types.ppl);
       document.getElementById('editType_reuse').checked = !!(ppl.types && ppl.types.reuse);
+      document.getElementById('editType_microReels').checked = !!(ppl.types && ppl.types.microReels);
+      document.getElementById('editType_microPpl').checked = !!(ppl.types && ppl.types.microPpl);
       document.getElementById('editType_reels').checked = !!(ppl.types && ppl.types.reels);
       document.getElementById('editType_shorts').checked = !!(ppl.types && ppl.types.shorts);
       document.getElementById('editType_ambassador').checked = !!(ppl.types && (ppl.types.ambassador || ppl.types.sample));
@@ -2408,6 +2609,8 @@
       document.getElementById('editCost_branded').value = (ppl.costs && ppl.costs.branded) || '';
       document.getElementById('editCost_ppl').value = (ppl.costs && ppl.costs.ppl) || '';
       document.getElementById('editCost_reuse').value = (ppl.costs && ppl.costs.reuse) || '';
+      document.getElementById('editCost_microReels').value = (ppl.costs && ppl.costs.microReels) || '';
+      document.getElementById('editCost_microPpl').value = (ppl.costs && ppl.costs.microPpl) || '';
       document.getElementById('editCost_reels').value = (ppl.costs && ppl.costs.reels) || '';
       document.getElementById('editCost_shorts').value = (ppl.costs && ppl.costs.shorts) || '';
       document.getElementById('editCost_ambassador').value = (ppl.costs && (ppl.costs.ambassador || ppl.costs.sample)) || '';
@@ -2496,6 +2699,8 @@
         branded: document.getElementById('editType_branded').checked,
         ppl: document.getElementById('editType_ppl').checked,
         reuse: document.getElementById('editType_reuse').checked,
+        microReels: document.getElementById('editType_microReels').checked,
+        microPpl: document.getElementById('editType_microPpl').checked,
         reels: document.getElementById('editType_reels').checked,
         shorts: document.getElementById('editType_shorts').checked,
         ambassador: document.getElementById('editType_ambassador').checked,
@@ -2505,6 +2710,8 @@
         branded: Number(document.getElementById('editCost_branded').value) || 0,
         ppl: Number(document.getElementById('editCost_ppl').value) || 0,
         reuse: Number(document.getElementById('editCost_reuse').value) || 0,
+        microReels: Number(document.getElementById('editCost_microReels').value) || 0,
+        microPpl: Number(document.getElementById('editCost_microPpl').value) || 0,
         reels: Number(document.getElementById('editCost_reels').value) || 0,
         shorts: Number(document.getElementById('editCost_shorts').value) || 0,
         ambassador: Number(document.getElementById('editCost_ambassador').value) || 0,
@@ -2565,13 +2772,15 @@
       }
 
       grid.innerHTML = pplList.map(p => {
-        const totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
+        const totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.microReels||0) + (p.costs.microPpl||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
         const doneCount = (p.collabLinks || []).length;
 
         const typeList = [];
         if (p.types && p.types.branded) typeList.push({ t: '브랜디드', c: 'bg-violet-100 text-violet-700' });
         if (p.types && p.types.ppl) typeList.push({ t: 'PPL', c: 'bg-pink-100 text-pink-700' });
         if (p.types && p.types.reuse) typeList.push({ t: '2차활용', c: 'bg-amber-100 text-amber-800' });
+        if (p.types && p.types.microReels) typeList.push({ t: '마이크로 릴스', c: 'bg-sky-100 text-sky-700' });
+        if (p.types && p.types.microPpl) typeList.push({ t: '마이크로 PPL', c: 'bg-cyan-100 text-cyan-700' });
         if (p.types && p.types.reels) typeList.push({ t: '릴스', c: 'bg-fuchsia-100 text-fuchsia-700' });
         if (p.types && p.types.shorts) typeList.push({ t: '숏츠', c: 'bg-red-100 text-red-700' });
         if (p.types && (p.types.ambassador || p.types.sample)) typeList.push({ t: '앰버서더', c: 'bg-indigo-100 text-indigo-700' });
@@ -2715,7 +2924,7 @@
       document.getElementById('infEditCategory').value = p.category || '';
       document.getElementById('infEditFollowers').value = p.followers || '';
       document.getElementById('infEditEmail').value = p.email || '';
-      document.getElementById('infEditCost').value = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
+      document.getElementById('infEditCost').value = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.microReels||0) + (p.costs.microPpl||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
       document.getElementById('infEditReceiverName').value = p.receiverName || '';
       document.getElementById('infEditReceiverPhone').value = p.receiverPhone || '';
       document.getElementById('infEditPostalCode').value = p.postalCode || '';
@@ -3304,12 +3513,19 @@
       document.querySelectorAll('.ppl-select').forEach(cb => { cb.checked = checked; });
     }
 
-    function exportShippingExcel(freeAmbOnly) {
-      const selector = freeAmbOnly ? '.freeamb-select:checked' : '.ppl-select:checked';
+    function exportShippingExcel(mode) {
+      const isFree = mode === true || mode === 'free';
+      const isMicroMode = mode === 'micro';
+
+      const selector = isFree ? '.freeamb-select:checked' : (isMicroMode ? '.micro-select:checked' : '.ppl-select:checked');
       const checked = Array.from(document.querySelectorAll(selector)).map(cb => Number(cb.value));
 
-      let rows = freeAmbOnly ? pplList.filter(isFreeAmb) : pplList.filter(p => !isFreeAmb(p));
-      if (!freeAmbOnly && currentTableBrandFilter !== '전체') rows = rows.filter(p => p.brand === currentTableBrandFilter);
+      let rows;
+      if (isFree) rows = pplList.filter(isFreeAmb);
+      else if (isMicroMode) rows = pplList.filter(isMicro);
+      else rows = pplList.filter(p => !isFreeAmb(p) && !isMicro(p));
+
+      if (!isFree && !isMicroMode && currentTableBrandFilter !== '전체') rows = rows.filter(p => p.brand === currentTableBrandFilter);
       if (checked.length > 0) rows = rows.filter(p => checked.includes(p.id));
 
       if (rows.length === 0) {
@@ -3327,7 +3543,7 @@
       }));
 
       const today = new Date().toISOString().slice(0, 10);
-      const fileBase = freeAmbOnly ? `무상앰버서더_배송정보_${today}` : `배송정보_${today}`;
+      const fileBase = isFree ? `무상앰버서더_배송정보_${today}` : (isMicroMode ? `마이크로_배송정보_${today}` : `배송정보_${today}`);
 
       if (typeof XLSX !== 'undefined') {
         const ws = XLSX.utils.json_to_sheet(data);
