@@ -182,7 +182,7 @@
           <label class="block text-[11px] font-bold text-amber-900 flex items-center gap-1.5">
             <i class="fa-solid fa-check-double text-amber-600"></i> 이번 협업 형태 체크 & 단가(비용) 설정
           </label>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
             <div class="bg-white p-2.5 rounded-xl border border-amber-200/60 space-y-1.5">
               <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
                 <input type="checkbox" id="type_branded" class="w-4 h-4 text-pink-500 accent-pink-500 rounded"> 브랜디드
@@ -200,6 +200,18 @@
                 <input type="checkbox" id="type_reuse" class="w-4 h-4 text-pink-500 accent-pink-500 rounded"> 2차활용
               </label>
               <input type="number" id="cost_reuse" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
+            </div>
+            <div class="bg-white p-2.5 rounded-xl border border-amber-200/60 space-y-1.5">
+              <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+                <input type="checkbox" id="type_reels" class="w-4 h-4 text-pink-500 accent-pink-500 rounded"> 릴스
+              </label>
+              <input type="number" id="cost_reels" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
+            </div>
+            <div class="bg-white p-2.5 rounded-xl border border-amber-200/60 space-y-1.5">
+              <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+                <input type="checkbox" id="type_shorts" class="w-4 h-4 text-pink-500 accent-pink-500 rounded"> 숏츠
+              </label>
+              <input type="number" id="cost_shorts" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
             </div>
             <div class="bg-white p-2.5 rounded-xl border border-amber-200/60 space-y-1.5">
               <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
@@ -387,16 +399,24 @@
     <!-- SECTION 4-2: 무상앰버서더 -->
     <section class="bg-white p-5 rounded-2xl border border-teal-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-teal-100 pb-3">
-        <div>
-          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-hand-holding-heart text-teal-600"></i> 무상앰버서더 관리
-          </h2>
-          <p class="text-xs text-slate-500">비용 없이 진행하는 앰버서더 명단입니다. 진행 목록 테이블과 분리되어 관리됩니다.</p>
-        </div>
-        <button onclick="exportShippingExcel(true)" class="px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
-          <i class="fa-solid fa-file-arrow-down"></i> 무상앰버서더 배송정보 다운로드
+        <button onclick="toggleSection('freeAmbSection')" class="flex items-center gap-2 text-left group">
+          <i id="freeAmbSection-icon" class="fa-solid fa-chevron-right text-teal-600 text-xs transition-transform"></i>
+          <div>
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 group-hover:text-teal-700 transition">
+              <i class="fa-solid fa-hand-holding-heart text-teal-600"></i> 무상앰버서더 관리
+              <span id="freeAmbHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-teal-100 text-teal-700 rounded-full">0명</span>
+            </h2>
+            <p class="text-xs text-slate-500">클릭해서 펼치고 접을 수 있어요.</p>
+          </div>
         </button>
+        <div id="freeAmbSection-controls" class="hidden items-center gap-2">
+          <button onclick="exportShippingExcel(true)" class="px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-arrow-down"></i> 무상앰버서더 배송정보 다운로드
+          </button>
+        </div>
       </div>
+
+      <div id="freeAmbSection" class="hidden space-y-4">
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div class="bg-teal-50/60 p-4 rounded-xl border border-teal-100">
@@ -432,6 +452,7 @@
           </thead>
           <tbody id="freeAmbTableBody" class="divide-y divide-slate-100"></tbody>
         </table>
+      </div>
       </div>
     </section>
 
@@ -728,7 +749,7 @@
       <!-- 협업 형태 -->
       <div class="bg-amber-50/40 p-3 rounded-xl border border-amber-100 space-y-2">
         <span class="text-[11px] font-bold text-amber-900"><i class="fa-solid fa-check-double"></i> 이번 협업 형태 & 단가</span>
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
           <div class="bg-white p-2 rounded-lg border border-amber-200/60 space-y-1">
             <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
               <input type="checkbox" id="editType_branded" class="accent-pink-500 w-4 h-4"> 브랜디드
@@ -746,6 +767,18 @@
               <input type="checkbox" id="editType_reuse" class="accent-pink-500 w-4 h-4"> 2차활용
             </label>
             <input type="number" id="editCost_reuse" placeholder="단가" class="w-full px-2 py-1 border border-slate-200 rounded">
+          </div>
+          <div class="bg-white p-2 rounded-lg border border-amber-200/60 space-y-1">
+            <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+              <input type="checkbox" id="editType_reels" class="accent-pink-500 w-4 h-4"> 릴스
+            </label>
+            <input type="number" id="editCost_reels" placeholder="단가" class="w-full px-2 py-1 border border-slate-200 rounded">
+          </div>
+          <div class="bg-white p-2 rounded-lg border border-amber-200/60 space-y-1">
+            <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+              <input type="checkbox" id="editType_shorts" class="accent-pink-500 w-4 h-4"> 숏츠
+            </label>
+            <input type="number" id="editCost_shorts" placeholder="단가" class="w-full px-2 py-1 border border-slate-200 rounded">
           </div>
           <div class="bg-white p-2 rounded-lg border border-amber-200/60 space-y-1">
             <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
@@ -1280,70 +1313,120 @@
       return 'PPL';
     }
 
-    function buildSchedulerTasks() {
-      const tasks = [];
+    async function fetchSchedulerState() {
+      const res = await fetch(SCHEDULER_API_URL + '?t=' + Date.now());
+      const rows = await res.json();
+      let existing = { taskList: [], memoCards: [], customCategories: [] };
+      if (Array.isArray(rows)) {
+        const target = rows.find(r => r.key === SCHEDULER_KEY) || rows.find(r => r.json);
+        if (target && target.json) {
+          existing = typeof target.json === 'string' ? JSON.parse(target.json) : target.json;
+        }
+      }
+      if (!Array.isArray(existing.taskList)) existing.taskList = [];
+      return existing;
+    }
+
+    // 스케줄러 → 대시보드 반영 (날짜/완료 변경, 삭제)
+    function mergeFromScheduler(taskList) {
+      let changed = 0;
+      const byId = {};
+      taskList.forEach(t => { if (t.id && String(t.id).startsWith('ppl_')) byId[t.id] = t; });
+
       pplList.forEach(p => {
         if (!p.stepDates) return;
         Object.entries(p.stepDates).forEach(([stage, info]) => {
-          if (typeof info !== 'object') return;
-          if (!info.sched || !info.date) return;
+          if (typeof info !== 'object' || !info.sched) return;
+          const key = `ppl_${p.id}_${stage}`;
+          const task = byId[key];
 
-          const who = p.realName || p.influencer || '미지정';
-          tasks.push({
-            id: `ppl_${p.id}_${stage}`,
-            text: `[${p.brand}] ${who} - ${stage}`,
-            done: !!info.done,
-            category: schedulerCategoryOf(p),
-            startDate: info.date,
-            endDate: info.date,
-            link: p.guideUrl || '',
-            src: 'ppl-dashboard'
-          });
+          if (!task) {
+            // 스케줄러에서 삭제됨 → 대시보드 단계도 삭제 (한 번이라도 전송된 항목만)
+            if (info.syncedAt) {
+              delete p.stepDates[stage];
+              changed++;
+            }
+            return;
+          }
+
+          const taskTime = Number(task.updatedAt || 0);
+          const mineTime = Number(info.updatedAt || 0);
+          if (taskTime > mineTime) {
+            if (task.startDate && task.startDate !== info.date) { info.date = task.startDate; changed++; }
+            if (!!task.done !== !!info.done) { info.done = !!task.done; changed++; }
+            info.updatedAt = taskTime;
+          }
         });
       });
-      return tasks;
+
+      return changed;
     }
 
     async function syncToScheduler(silent) {
       const btn = document.getElementById('schedSyncBtn');
       const label = document.getElementById('schedSyncText');
-      if (label) label.innerText = '스케줄러 전송 중...';
+      if (label) label.innerText = '스케줄러 동기화 중...';
 
       try {
-        const res = await fetch(SCHEDULER_API_URL);
-        const rows = await res.json();
+        const existing = await fetchSchedulerState();
 
-        let existing = { taskList: [], memoCards: [], customCategories: [] };
-        if (Array.isArray(rows)) {
-          const target = rows.find(r => r.key === SCHEDULER_KEY) || rows.find(r => r.json);
-          if (target && target.json) {
-            existing = typeof target.json === 'string' ? JSON.parse(target.json) : target.json;
-          }
-        }
+        // 1) 스케줄러에서 바뀐 내용 먼저 가져오기
+        const changed = mergeFromScheduler(existing.taskList);
 
-        const kept = (existing.taskList || []).filter(t => !(t.id && String(t.id).startsWith('ppl_')));
-        const mine = buildSchedulerTasks();
+        // 2) 대시보드 내용 내보내기
+        const now = Date.now();
+        const mine = [];
+        pplList.forEach(p => {
+          if (!p.stepDates) return;
+          Object.entries(p.stepDates).forEach(([stage, info]) => {
+            if (typeof info !== 'object' || !info.sched || !info.date) return;
+            if (!info.updatedAt) info.updatedAt = now;
+            info.syncedAt = now;
 
-        const payload = [{
-          key: SCHEDULER_KEY,
-          json: JSON.stringify({
-            taskList: kept.concat(mine),
-            memoCards: existing.memoCards || [],
-            customCategories: existing.customCategories || []
-          })
-        }];
+            const who = p.realName || p.influencer || '미지정';
+            mine.push({
+              id: `ppl_${p.id}_${stage}`,
+              text: `[${p.brand}] ${who} - ${stage}`,
+              done: !!info.done,
+              category: schedulerCategoryOf(p),
+              startDate: info.date,
+              endDate: info.date,
+              link: p.guideUrl || '',
+              src: 'ppl-dashboard',
+              updatedAt: info.updatedAt
+            });
+          });
+        });
+
+        const kept = existing.taskList.filter(t => !(t.id && String(t.id).startsWith('ppl_')));
 
         await fetch(SCHEDULER_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify([{
+            key: SCHEDULER_KEY,
+            json: JSON.stringify({
+              taskList: kept.concat(mine),
+              memoCards: existing.memoCards || [],
+              customCategories: existing.customCategories || []
+            })
+          }])
         });
 
-        if (label) label.innerText = `스케줄러 반영 ${mine.length}건`;
+        if (changed > 0) {
+          saveAll();
+          renderAll();
+        }
+
+        if (label) label.innerText = `스케줄러 ${mine.length}건${changed ? ` (${changed}건 반영)` : ''}`;
         if (btn) btn.className = 'px-3 py-2 bg-violet-100 text-violet-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5';
-        if (!silent) alert(`스케줄러에 ${mine.length}건의 일정을 반영했습니다.`);
+        if (!silent) {
+          alert(changed > 0
+            ? `스케줄러 일정 ${mine.length}건 동기화 완료.\n스케줄러에서 변경된 ${changed}건을 대시보드에 반영했습니다.`
+            : `스케줄러에 ${mine.length}건의 일정을 반영했습니다.`);
+        }
       } catch (e) {
-        if (label) label.innerText = '스케줄러 전송 실패';
+        if (label) label.innerText = '스케줄러 동기화 실패';
         if (btn) btn.className = 'px-3 py-2 bg-rose-100 text-rose-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5';
         if (!silent) alert("스케줄러 연동에 실패했습니다. 잠시 후 다시 시도해 주세요.");
       }
@@ -1434,7 +1517,10 @@
       document.getElementById('logDate').valueAsDate = new Date();
       renderAll();
 
-      pullFromSheet().then(() => renderAll());
+      pullFromSheet().then(() => {
+        renderAll();
+        syncToScheduler(true);
+      });
     });
 
     function saveAll() {
@@ -1845,6 +1931,8 @@
         branded: document.getElementById('type_branded').checked,
         ppl: document.getElementById('type_ppl').checked,
         reuse: document.getElementById('type_reuse').checked,
+        reels: document.getElementById('type_reels').checked,
+        shorts: document.getElementById('type_shorts').checked,
         ambassador: document.getElementById('type_ambassador').checked,
         freeAmb: document.getElementById('type_freeAmb').checked
       };
@@ -1853,6 +1941,8 @@
         branded: Number(document.getElementById('cost_branded').value) || 0,
         ppl: Number(document.getElementById('cost_ppl').value) || 0,
         reuse: Number(document.getElementById('cost_reuse').value) || 0,
+        reels: Number(document.getElementById('cost_reels').value) || 0,
+        shorts: Number(document.getElementById('cost_shorts').value) || 0,
         ambassador: Number(document.getElementById('cost_ambassador').value) || 0,
         freeAmb: 0
       };
@@ -1922,6 +2012,28 @@
       renderPplTable();
     }
 
+    // 미완료(임박한 날짜순) 먼저, 완료는 아래로
+    function sortedStepEntries(stepDates) {
+      if (!stepDates) return [];
+      return Object.entries(stepDates).sort((a, b) => {
+        const aInfo = typeof a[1] === 'object' ? a[1] : { date: a[1], done: false };
+        const bInfo = typeof b[1] === 'object' ? b[1] : { date: b[1], done: false };
+        const aDone = !!aInfo.done;
+        const bDone = !!bInfo.done;
+
+        if (aDone !== bDone) return aDone ? 1 : -1;
+
+        const aDate = aInfo.date || '';
+        const bDate = bInfo.date || '';
+
+        if (aDate !== bDate) {
+          // 미완료: 빠른 날짜부터 / 완료: 최근 날짜부터
+          return aDone ? bDate.localeCompare(aDate) : aDate.localeCompare(bDate);
+        }
+        return STAGES.indexOf(a[0]) - STAGES.indexOf(b[0]);
+      });
+    }
+
     function isFreeAmb(p) {
       return !!(p.types && p.types.freeAmb);
     }
@@ -1937,11 +2049,13 @@
       }
 
       tbody.innerHTML = filtered.map(p => {
-        let totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
+        let totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
         const typeBadges = [
           { on: p.types.branded, label: '브랜디드', cost: p.costs.branded, cls: 'bg-violet-100 text-violet-700 border-violet-200' },
           { on: p.types.ppl, label: 'PPL', cost: p.costs.ppl, cls: 'bg-pink-100 text-pink-700 border-pink-200' },
           { on: p.types.reuse, label: '2차활용', cost: p.costs.reuse, cls: 'bg-amber-100 text-amber-800 border-amber-200' },
+          { on: p.types.reels, label: '릴스', cost: p.costs.reels, cls: 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200' },
+          { on: p.types.shorts, label: '숏츠', cost: p.costs.shorts, cls: 'bg-red-100 text-red-700 border-red-200' },
           { on: p.types.ambassador || p.types.sample, label: '앰버서더', cost: p.costs.ambassador || p.costs.sample, cls: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
           { on: p.types.freeAmb, label: '무상앰버서더', cost: 0, cls: 'bg-teal-100 text-teal-700 border-teal-200' }
         ].filter(t => t.on);
@@ -1967,12 +2081,7 @@
 
         let stepDateBadges = '';
         if (p.stepDates) {
-          const entries = Object.entries(p.stepDates).sort((a, b) => {
-            const aDone = typeof a[1] === 'object' ? !!a[1].done : false;
-            const bDone = typeof b[1] === 'object' ? !!b[1].done : false;
-            if (aDone !== bDone) return aDone ? 1 : -1;
-            return STAGES.indexOf(b[0]) - STAGES.indexOf(a[0]);
-          });
+          const entries = sortedStepEntries(p.stepDates);
           stepDateBadges = entries.map(([st, info]) => {
             const dtVal = typeof info === 'object' ? info.date : info;
             const isDone = typeof info === 'object' ? info.done : false;
@@ -2051,6 +2160,7 @@
       const list = pplList.filter(isFreeAmb);
 
       document.getElementById('freeAmbTotal').innerText = list.length + '명';
+      document.getElementById('freeAmbHeaderCount').innerText = list.length + '명';
       document.getElementById('freeAmbOnsal').innerText = list.filter(p => p.brand === '온살').length + '명';
       document.getElementById('freeAmbLume').innerText = list.filter(p => p.brand === '루메아카이브').length + '명';
 
@@ -2066,12 +2176,7 @@
 
         let stepHtml = '';
         if (p.stepDates) {
-          const entries = Object.entries(p.stepDates).sort((a, b) => {
-            const aDone = typeof a[1] === 'object' ? !!a[1].done : false;
-            const bDone = typeof b[1] === 'object' ? !!b[1].done : false;
-            if (aDone !== bDone) return aDone ? 1 : -1;
-            return STAGES.indexOf(b[0]) - STAGES.indexOf(a[0]);
-          });
+          const entries = sortedStepEntries(p.stepDates);
           stepHtml = entries.map(([st, info]) => {
             const dt = typeof info === 'object' ? info.date : info;
             const done = typeof info === 'object' ? info.done : false;
@@ -2148,7 +2253,10 @@
     function toggleStepDateDone(id, stageName, doneVal) {
       const ppl = pplList.find(item => item.id === id);
       if (ppl && ppl.stepDates && ppl.stepDates[stageName]) {
-        if (typeof ppl.stepDates[stageName] === 'object') ppl.stepDates[stageName].done = doneVal;
+        if (typeof ppl.stepDates[stageName] === 'object') {
+          ppl.stepDates[stageName].done = doneVal;
+          ppl.stepDates[stageName].updatedAt = Date.now();
+        }
         else ppl.stepDates[stageName] = { date: ppl.stepDates[stageName], done: doneVal };
         saveAll();
         renderPplTable();
@@ -2293,11 +2401,15 @@
       document.getElementById('editType_branded').checked = !!(ppl.types && ppl.types.branded);
       document.getElementById('editType_ppl').checked = !!(ppl.types && ppl.types.ppl);
       document.getElementById('editType_reuse').checked = !!(ppl.types && ppl.types.reuse);
+      document.getElementById('editType_reels').checked = !!(ppl.types && ppl.types.reels);
+      document.getElementById('editType_shorts').checked = !!(ppl.types && ppl.types.shorts);
       document.getElementById('editType_ambassador').checked = !!(ppl.types && (ppl.types.ambassador || ppl.types.sample));
       document.getElementById('editType_freeAmb').checked = !!(ppl.types && ppl.types.freeAmb);
       document.getElementById('editCost_branded').value = (ppl.costs && ppl.costs.branded) || '';
       document.getElementById('editCost_ppl').value = (ppl.costs && ppl.costs.ppl) || '';
       document.getElementById('editCost_reuse').value = (ppl.costs && ppl.costs.reuse) || '';
+      document.getElementById('editCost_reels').value = (ppl.costs && ppl.costs.reels) || '';
+      document.getElementById('editCost_shorts').value = (ppl.costs && ppl.costs.shorts) || '';
       document.getElementById('editCost_ambassador').value = (ppl.costs && (ppl.costs.ambassador || ppl.costs.sample)) || '';
 
       document.getElementById('editModalChannelContainer').innerHTML = (ppl.channels || []).map(c => editChannelRowHtml(c)).join('');
@@ -2324,12 +2436,7 @@
       const container = document.getElementById('stepDateInputsContainer');
       let stepsHtml = '';
       if (ppl.stepDates) {
-        const entries = Object.entries(ppl.stepDates).sort((a, b) => {
-          const aDone = typeof a[1] === 'object' ? !!a[1].done : false;
-          const bDone = typeof b[1] === 'object' ? !!b[1].done : false;
-          if (aDone !== bDone) return aDone ? 1 : -1;
-          return STAGES.indexOf(b[0]) - STAGES.indexOf(a[0]);
-        });
+        const entries = sortedStepEntries(ppl.stepDates);
         entries.forEach(([st, info]) => {
           const dt = typeof info === 'object' ? info.date : info;
           const done = typeof info === 'object' ? info.done : false;
@@ -2389,6 +2496,8 @@
         branded: document.getElementById('editType_branded').checked,
         ppl: document.getElementById('editType_ppl').checked,
         reuse: document.getElementById('editType_reuse').checked,
+        reels: document.getElementById('editType_reels').checked,
+        shorts: document.getElementById('editType_shorts').checked,
         ambassador: document.getElementById('editType_ambassador').checked,
         freeAmb: document.getElementById('editType_freeAmb').checked
       };
@@ -2396,6 +2505,8 @@
         branded: Number(document.getElementById('editCost_branded').value) || 0,
         ppl: Number(document.getElementById('editCost_ppl').value) || 0,
         reuse: Number(document.getElementById('editCost_reuse').value) || 0,
+        reels: Number(document.getElementById('editCost_reels').value) || 0,
+        shorts: Number(document.getElementById('editCost_shorts').value) || 0,
         ambassador: Number(document.getElementById('editCost_ambassador').value) || 0,
         freeAmb: 0
       };
@@ -2428,7 +2539,13 @@
         const dt = r.querySelector('.edit-date-input').value;
         const done = r.querySelector('.edit-stage-done').checked;
         const sched = r.querySelector('.edit-stage-sched').checked;
-        if (dt) ppl.stepDates[st] = { date: dt, done: done, sched: sched };
+        const prev = ppl.stepDates ? ppl.stepDates[st] : null;
+        const changedNow = !prev || prev.date !== dt || !!prev.done !== done;
+        if (dt) ppl.stepDates[st] = {
+          date: dt, done: done, sched: sched,
+          updatedAt: changedNow ? Date.now() : ((prev && prev.updatedAt) || Date.now()),
+          syncedAt: (prev && prev.syncedAt) || 0
+        };
       });
 
       const undone = Object.entries(ppl.stepDates).filter(([, v]) => !v.done).map(([k]) => k);
@@ -2448,13 +2565,15 @@
       }
 
       grid.innerHTML = pplList.map(p => {
-        const totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
+        const totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
         const doneCount = (p.collabLinks || []).length;
 
         const typeList = [];
         if (p.types && p.types.branded) typeList.push({ t: '브랜디드', c: 'bg-violet-100 text-violet-700' });
         if (p.types && p.types.ppl) typeList.push({ t: 'PPL', c: 'bg-pink-100 text-pink-700' });
         if (p.types && p.types.reuse) typeList.push({ t: '2차활용', c: 'bg-amber-100 text-amber-800' });
+        if (p.types && p.types.reels) typeList.push({ t: '릴스', c: 'bg-fuchsia-100 text-fuchsia-700' });
+        if (p.types && p.types.shorts) typeList.push({ t: '숏츠', c: 'bg-red-100 text-red-700' });
         if (p.types && (p.types.ambassador || p.types.sample)) typeList.push({ t: '앰버서더', c: 'bg-indigo-100 text-indigo-700' });
         if (p.types && p.types.freeAmb) typeList.push({ t: '무상앰버서더', c: 'bg-teal-100 text-teal-700' });
         const typeChips = typeList.map(x => `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${x.c}">${x.t}</span>`).join(' ');
@@ -2596,7 +2715,7 @@
       document.getElementById('infEditCategory').value = p.category || '';
       document.getElementById('infEditFollowers').value = p.followers || '';
       document.getElementById('infEditEmail').value = p.email || '';
-      document.getElementById('infEditCost').value = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
+      document.getElementById('infEditCost').value = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
       document.getElementById('infEditReceiverName').value = p.receiverName || '';
       document.getElementById('infEditReceiverPhone').value = p.receiverPhone || '';
       document.getElementById('infEditPostalCode').value = p.postalCode || '';
