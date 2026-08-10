@@ -58,6 +58,9 @@
         <button onclick="exportToCSV()" class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-xl transition flex items-center gap-1 shadow-xs">
           <i class="fa-solid fa-file-excel"></i> CSV 내보내기
         </button>
+        <button id="schedSyncBtn" onclick="syncToScheduler()" title="체크한 일정을 스케줄러로 보냅니다" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
+          <i class="fa-solid fa-calendar-check"></i> <span id="schedSyncText">스케줄러 동기화</span>
+        </button>
         <button id="syncStatus" onclick="syncNow()" title="눌러서 다시 동기화" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
           <i class="fa-solid fa-cloud"></i> <span id="syncStatusText">연결 확인 중...</span>
         </button>
@@ -1266,6 +1269,86 @@
       }
     }
 
+    // ===== 스케줄러 연동 =====
+    const SCHEDULER_API_URL = 'https://script.google.com/macros/s/AKfycbyjLXPILrFl3pbgXQldCbDPTRufIeEXUhpewlt3unU_P9uZ16dj6FL-Q4Zbet9cWLPh1Q/exec';
+    const SCHEDULER_KEY = 'global_shared_scheduler_data';
+    const KEY_STAGES = ['테스트제품전달', '가이드전달', '기획안전달', '초안전달', '최종본전달', '업로드'];
+
+    function schedulerCategoryOf(p) {
+      if (p.types && p.types.freeAmb) return '무엠버서더';
+      if (p.types && (p.types.ambassador || p.types.sample)) return '엠버서더';
+      return 'PPL';
+    }
+
+    function buildSchedulerTasks() {
+      const tasks = [];
+      pplList.forEach(p => {
+        if (!p.stepDates) return;
+        Object.entries(p.stepDates).forEach(([stage, info]) => {
+          if (typeof info !== 'object') return;
+          if (!info.sched || !info.date) return;
+
+          const who = p.realName || p.influencer || '미지정';
+          tasks.push({
+            id: `ppl_${p.id}_${stage}`,
+            text: `[${p.brand}] ${who} - ${stage}`,
+            done: !!info.done,
+            category: schedulerCategoryOf(p),
+            startDate: info.date,
+            endDate: info.date,
+            link: p.guideUrl || '',
+            src: 'ppl-dashboard'
+          });
+        });
+      });
+      return tasks;
+    }
+
+    async function syncToScheduler(silent) {
+      const btn = document.getElementById('schedSyncBtn');
+      const label = document.getElementById('schedSyncText');
+      if (label) label.innerText = '스케줄러 전송 중...';
+
+      try {
+        const res = await fetch(SCHEDULER_API_URL);
+        const rows = await res.json();
+
+        let existing = { taskList: [], memoCards: [], customCategories: [] };
+        if (Array.isArray(rows)) {
+          const target = rows.find(r => r.key === SCHEDULER_KEY) || rows.find(r => r.json);
+          if (target && target.json) {
+            existing = typeof target.json === 'string' ? JSON.parse(target.json) : target.json;
+          }
+        }
+
+        const kept = (existing.taskList || []).filter(t => !(t.id && String(t.id).startsWith('ppl_')));
+        const mine = buildSchedulerTasks();
+
+        const payload = [{
+          key: SCHEDULER_KEY,
+          json: JSON.stringify({
+            taskList: kept.concat(mine),
+            memoCards: existing.memoCards || [],
+            customCategories: existing.customCategories || []
+          })
+        }];
+
+        await fetch(SCHEDULER_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+
+        if (label) label.innerText = `스케줄러 반영 ${mine.length}건`;
+        if (btn) btn.className = 'px-3 py-2 bg-violet-100 text-violet-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5';
+        if (!silent) alert(`스케줄러에 ${mine.length}건의 일정을 반영했습니다.`);
+      } catch (e) {
+        if (label) label.innerText = '스케줄러 전송 실패';
+        if (btn) btn.className = 'px-3 py-2 bg-rose-100 text-rose-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5';
+        if (!silent) alert("스케줄러 연동에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+    }
+
     const STAGES = [
       "컨택중", "협의중", "테스트제품전달", "테스트중", "진행확정",
       "계약서작성", "가이드전달", "기획안전달", "기획안피드백",
@@ -1777,12 +1860,12 @@
       const contactDate = document.getElementById('contactDate').value || new Date().toISOString().slice(0, 10);
       let status = "컨택중";
 
-      let stepDates = { "컨택중": { date: contactDate, done: true } };
+      let stepDates = { "컨택중": { date: contactDate, done: true, sched: false } };
       document.querySelectorAll('#registrationStepContainer .step-row').forEach(row => {
         const st = row.querySelector('.reg-stage-select').value;
         const dt = row.querySelector('.reg-date-input').value;
         const done = row.querySelector('.reg-stage-done') ? row.querySelector('.reg-stage-done').checked : false;
-        if (dt) stepDates[st] = { date: dt, done: done };
+        if (dt) stepDates[st] = { date: dt, done: done, sched: KEY_STAGES.includes(st) };
       });
       const orderedStages = Object.keys(stepDates).sort((a, b) => STAGES.indexOf(b) - STAGES.indexOf(a));
       if (orderedStages.length) status = orderedStages[0];
@@ -2069,7 +2152,9 @@
         else ppl.stepDates[stageName] = { date: ppl.stepDates[stageName], done: doneVal };
         saveAll();
         renderPplTable();
+        renderFreeAmbTable();
         renderCalendar();
+        syncToScheduler(true);
       }
     }
 
@@ -2248,7 +2333,8 @@
         entries.forEach(([st, info]) => {
           const dt = typeof info === 'object' ? info.date : info;
           const done = typeof info === 'object' ? info.done : false;
-          stepsHtml += stepRowHtml(st, dt, done);
+          const sched = (typeof info === 'object' && info.sched !== undefined) ? info.sched : KEY_STAGES.includes(st);
+          stepsHtml += stepRowHtml(st, dt, done, sched);
         });
       }
       container.innerHTML = stepsHtml;
@@ -2256,7 +2342,7 @@
       document.getElementById('stepDateModal').classList.remove('hidden');
     }
 
-    function stepRowHtml(stage, date, done) {
+    function stepRowHtml(stage, date, done, sched) {
       return `
         <div class="flex items-center gap-2 step-edit-row ${done ? 'opacity-60' : ''}">
           <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold edit-stage-select bg-white w-32">
@@ -2266,6 +2352,9 @@
           <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-white px-2 py-1 rounded-lg border border-slate-200 cursor-pointer whitespace-nowrap">
             <input type="checkbox" ${done ? 'checked' : ''} class="edit-stage-done accent-pink-500"> 완료
           </label>
+          <label class="flex items-center gap-1 text-[11px] font-semibold text-violet-700 bg-violet-50 px-2 py-1 rounded-lg border border-violet-200 cursor-pointer whitespace-nowrap" title="스케줄러 달력에 표시">
+            <input type="checkbox" ${sched ? 'checked' : ''} class="edit-stage-sched accent-violet-600"> 📅
+          </label>
           <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
         </div>`;
     }
@@ -2273,7 +2362,7 @@
     function addModalStepRow() {
       document.getElementById('stepDateInputsContainer').insertAdjacentHTML(
         'afterbegin',
-        stepRowHtml('컨택중', new Date().toISOString().slice(0, 10), false)
+        stepRowHtml('컨택중', new Date().toISOString().slice(0, 10), false, false)
       );
     }
 
@@ -2338,7 +2427,8 @@
         const st = r.querySelector('.edit-stage-select').value;
         const dt = r.querySelector('.edit-date-input').value;
         const done = r.querySelector('.edit-stage-done').checked;
-        if (dt) ppl.stepDates[st] = { date: dt, done: done };
+        const sched = r.querySelector('.edit-stage-sched').checked;
+        if (dt) ppl.stepDates[st] = { date: dt, done: done, sched: sched };
       });
 
       const undone = Object.entries(ppl.stepDates).filter(([, v]) => !v.done).map(([k]) => k);
@@ -2347,6 +2437,7 @@
       saveAll();
       closeStepDateModal();
       renderAll();
+      syncToScheduler(true);
     }
 
     function renderInfluencerCards() {
