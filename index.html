@@ -649,7 +649,7 @@
               <th class="py-3 px-3">브랜드 / 제품명</th>
               <th class="py-3 px-3">수량</th>
               <th class="py-3 px-3">목적 / 상세 사유</th>
-              <th class="py-3 px-3 text-right">삭제</th>
+              <th class="py-3 px-3 text-right">관리</th>
             </tr>
           </thead>
           <tbody id="stockLogTableBody" class="divide-y divide-slate-100">
@@ -1128,8 +1128,9 @@
   <div id="utmModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
     <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-md w-full space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
       <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-        <i class="fa-solid fa-link text-pink-500"></i> 새 UTM 링크 생성 및 등록
+        <i class="fa-solid fa-link text-pink-500"></i> <span id="utmModalTitle">새 UTM 링크 생성 및 등록</span>
       </h3>
+      <input type="hidden" id="utmEditId">
       <form id="utmForm" class="space-y-3">
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -1200,7 +1201,7 @@
 
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeUtmModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
-          <button type="submit" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">생성 및 저장</button>
+          <button type="submit" id="utmSubmitBtn" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">생성 및 저장</button>
         </div>
       </form>
     </div>
@@ -3277,16 +3278,63 @@
             <td class="py-3 px-3 align-top min-w-[150px]">
               <input type="text" value="${(item.note || '').replace(/"/g, '&quot;')}" onchange="updateUtmNote(${item.id}, this.value)" placeholder="메모 입력" class="w-full px-2 py-1 text-[11px] border border-slate-200 rounded-lg bg-amber-50/40 focus:bg-white focus:border-pink-300 outline-none">
             </td>
-            <td class="py-3 px-3 align-top text-right">
-              <button onclick="deleteUtmItem(${item.id})" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 text-xs"><i class="fa-solid fa-trash"></i></button>
+            <td class="py-3 px-3 align-top text-right whitespace-nowrap">
+              <div class="flex gap-1 justify-end">
+                <button onclick="openUtmModal(${item.id})" title="수정" class="p-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 text-xs"><i class="fa-solid fa-pen"></i></button>
+                <button onclick="duplicateUtmItem(${item.id})" title="복제" class="p-1.5 bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 text-xs"><i class="fa-solid fa-copy"></i></button>
+                <button onclick="deleteUtmItem(${item.id})" title="삭제" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 text-xs"><i class="fa-solid fa-trash"></i></button>
+              </div>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    function openUtmModal() {
+    function openUtmModal(id) {
+      const isEdit = id !== undefined && id !== null;
+      document.getElementById('utmEditId').value = isEdit ? id : '';
+      document.getElementById('utmModalTitle').innerText = isEdit ? 'UTM 링크 수정' : '새 UTM 링크 생성 및 등록';
+      document.getElementById('utmSubmitBtn').innerText = isEdit ? '수정 내용 저장' : '생성 및 저장';
+
+      if (isEdit) {
+        const item = utmList.find(x => x.id === id);
+        if (item) {
+          document.getElementById('utmModalBrand').value = item.brand || '온살';
+          document.getElementById('utmModalMode').value = item.mode || 'auto';
+          document.getElementById('utmModalUrl').value = item.base || '';
+          document.getElementById('utmModalName').value = item.name || '';
+          document.getElementById('utmModalSource').value = item.source || '';
+          document.getElementById('utmModalMedium').value = item.medium || '';
+          document.getElementById('utmModalDetail').value = item.detail || '';
+          document.getElementById('utmModalKeyword').value = item.keyword || '';
+          document.getElementById('utmModalNote').value = item.note || '';
+          document.getElementById('utmMakeShort').checked = !item.shortUrl;
+        }
+      } else {
+        document.getElementById('utmForm').reset();
+        document.getElementById('utmModalMedium').value = 'ppl';
+        document.getElementById('utmModalUrl').value = 'https://onssal.co.kr/product/detail';
+        document.getElementById('utmMakeShort').checked = true;
+      }
+
       document.getElementById('utmModal').classList.remove('hidden');
+      updateUtmModeUI();
+    }
+
+    function duplicateUtmItem(id) {
+      const item = utmList.find(x => x.id === id);
+      if (!item) return;
+      openUtmModal();
+      document.getElementById('utmModalBrand').value = item.brand || '온살';
+      document.getElementById('utmModalMode').value = item.mode || 'auto';
+      document.getElementById('utmModalUrl').value = item.base || '';
+      document.getElementById('utmModalName').value = item.name || '';
+      document.getElementById('utmModalSource').value = item.source || '';
+      document.getElementById('utmModalMedium').value = item.medium || '';
+      document.getElementById('utmModalDetail').value = item.detail || '';
+      document.getElementById('utmModalKeyword').value = item.keyword || '';
+      document.getElementById('utmModalNote').value = item.note || '';
+      document.getElementById('utmModalTitle').innerText = 'UTM 링크 복제';
       updateUtmModeUI();
     }
     function closeUtmModal() { document.getElementById('utmModal').classList.add('hidden'); }
@@ -3425,28 +3473,46 @@
       const finalUrl = buildTrackingUrl(baseUrl, mode, source, medium, detail, keyword);
       const wantShort = document.getElementById('utmMakeShort').checked;
 
-      const newItem = {
-        id: Date.now(),
-        brand,
-        name: name || '미지정 인플루언서',
-        mode,
-        source, medium, detail, keyword,
-        base: baseUrl,
-        url: finalUrl,
-        shortUrl: '',
-        note
-      };
+      const editId = document.getElementById('utmEditId').value;
+      let target;
 
-      utmList.unshift(newItem);
+      if (editId) {
+        target = utmList.find(x => x.id === Number(editId));
+        if (!target) return;
+
+        const urlChanged = target.url !== finalUrl;
+        Object.assign(target, {
+          brand, name: name || '미지정 인플루언서', mode,
+          source, medium, detail, keyword,
+          base: baseUrl, url: finalUrl, note
+        });
+        // 링크가 바뀌면 기존 단축 URL은 더 이상 유효하지 않음
+        if (urlChanged) target.shortUrl = '';
+      } else {
+        target = {
+          id: Date.now(),
+          brand,
+          name: name || '미지정 인플루언서',
+          mode,
+          source, medium, detail, keyword,
+          base: baseUrl,
+          url: finalUrl,
+          shortUrl: '',
+          note
+        };
+        utmList.unshift(target);
+      }
+
       saveAll();
       closeUtmModal();
       renderUtmDashboard();
+      document.getElementById('utmEditId').value = '';
       this.reset();
       updateUtmModeUI();
 
-      if (wantShort) {
-        newItem.shortUrl = await shortenUrl(finalUrl);
-        if (!newItem.shortUrl) console.warn('단축 URL 생성 실패 - 목록의 단축 만들기 버튼으로 재시도 가능');
+      if (wantShort && !target.shortUrl) {
+        target.shortUrl = await shortenUrl(target.url);
+        if (!target.shortUrl) console.warn('단축 URL 생성 실패 - 목록의 단축 만들기 버튼으로 재시도 가능');
         saveAll();
         renderUtmDashboard();
       }
