@@ -39,7 +39,7 @@
         </div>
         <div>
           <h1 class="text-lg font-bold text-slate-900 leading-tight">온살 & 루메아카이브 마케팅 대시보드</h1>
-          <p class="text-xs text-slate-500">PPL 진행, 시딩 샘플 재고, UTM 트래킹 링크 통합 관리</p>
+          <p class="text-xs text-slate-500">PPL 진행, 체험단 일정, 시딩 샘플 재고, UTM 트래킹 통합 관리</p>
         </div>
       </div>
 
@@ -47,6 +47,9 @@
         <div class="flex p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold">
           <button onclick="switchMainPage('ppl')" id="nav-ppl" class="px-4 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5">
             <i class="fa-solid fa-bullhorn"></i> PPL & 협찬 관리
+          </button>
+          <button onclick="switchMainPage('trial')" id="nav-trial" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-users-rectangle"></i> 체험단 관리
           </button>
           <button onclick="switchMainPage('seeding')" id="nav-seeding" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-boxes-stacked"></i> 시딩 샘플 & 재고 관리
@@ -58,8 +61,8 @@
         <button onclick="exportToCSV()" class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-xl transition flex items-center gap-1 shadow-xs">
           <i class="fa-solid fa-file-excel"></i> CSV 내보내기
         </button>
-        <button id="schedSyncBtn" onclick="syncToScheduler()" title="체크한 일정을 스케줄러로 보냅니다" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
-          <i class="fa-solid fa-calendar-check"></i> <span id="schedSyncText">스케줄러 동기화</span>
+        <button id="schedSyncBtn" onclick="syncToScheduler()" title="📅 체크한 일정이 자동으로 스케줄러에 반영됩니다 (클릭 시 즉시 동기화)" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
+          <i class="fa-solid fa-calendar-check"></i> <span id="schedSyncText">스케줄러 자동연동</span>
         </button>
         <button id="syncStatus" onclick="syncNow()" title="눌러서 다시 동기화" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
           <i class="fa-solid fa-cloud"></i> <span id="syncStatusText">연결 확인 중...</span>
@@ -580,6 +583,163 @@
   </main>
 
   <!-- ==================== PAGE 2: 시딩 샘플 및 재고 관리 ==================== -->
+  <!-- ==================== PAGE: 체험단 관리 ==================== -->
+  <main id="page-trial" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="trialSummary"></div>
+
+    <!-- 체험단 등록 -->
+    <section class="bg-white rounded-3xl border border-pink-100 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 flex items-center justify-between cursor-pointer select-none" onclick="toggleSection('trialFormSection')">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i id="trialFormSection-icon" class="fa-solid fa-chevron-right text-pink-400 text-xs transition-transform"></i>
+          <i class="fa-solid fa-users-rectangle text-pink-500"></i> 체험단 등록
+        </h2>
+        <span class="text-xs text-slate-400">클릭해서 열기 · 항목 관리도 이 안에 있어요</span>
+      </div>
+
+      <div id="trialFormSection" class="px-6 pb-6 hidden space-y-4">
+
+        <!-- 항목 관리 (등록 폼 내부) -->
+        <div class="border border-slate-200 rounded-2xl overflow-hidden">
+          <div class="px-4 py-2.5 bg-slate-50 flex items-center justify-between cursor-pointer select-none" onclick="toggleSection('trialOptionSection')">
+            <p class="text-xs font-bold text-slate-700 flex items-center gap-2">
+              <i id="trialOptionSection-icon" class="fa-solid fa-chevron-right text-slate-400 text-[10px] transition-transform"></i>
+              <i class="fa-solid fa-tags text-pink-500"></i> 항목 관리
+            </p>
+            <span class="text-[11px] text-slate-400">체험단 · SNS · 유형 · 일정 단계 선택지 추가/삭제</span>
+          </div>
+          <div id="trialOptionSection" class="hidden p-4 space-y-4 bg-white">
+            <div class="grid md:grid-cols-3 gap-3">
+              <div class="bg-pink-50/50 border border-pink-100 rounded-xl p-3">
+                <p class="text-[11px] font-bold text-pink-600 mb-2">체험단 <span class="font-normal text-pink-300">(레뷰 / 글로우픽 …)</span></p>
+                <div id="trialPlatformChips" class="flex flex-wrap gap-1.5 mb-2"></div>
+                <div class="flex gap-1.5">
+                  <input id="newTrialPlatform" onkeydown="if(event.key==='Enter')addTrialOption('platform')" placeholder="추가" class="flex-1 px-2.5 py-1.5 border border-pink-200 rounded-lg text-xs bg-white outline-none">
+                  <button type="button" onclick="addTrialOption('platform')" class="px-3 py-1.5 bg-pink-500 text-white text-xs font-bold rounded-lg">추가</button>
+                </div>
+              </div>
+              <div class="bg-sky-50/50 border border-sky-100 rounded-xl p-3">
+                <p class="text-[11px] font-bold text-sky-600 mb-2">SNS <span class="font-normal text-sky-300">(유튜브 / 인스타 …)</span></p>
+                <div id="trialSnsChips" class="flex flex-wrap gap-1.5 mb-2"></div>
+                <div class="flex gap-1.5">
+                  <input id="newTrialSns" onkeydown="if(event.key==='Enter')addTrialOption('sns')" placeholder="추가" class="flex-1 px-2.5 py-1.5 border border-sky-200 rounded-lg text-xs bg-white outline-none">
+                  <button type="button" onclick="addTrialOption('sns')" class="px-3 py-1.5 bg-sky-500 text-white text-xs font-bold rounded-lg">추가</button>
+                </div>
+              </div>
+              <div class="bg-violet-50/50 border border-violet-100 rounded-xl p-3">
+                <p class="text-[11px] font-bold text-violet-600 mb-2">체험단 유형 <span class="font-normal text-violet-300">(릴스 / 피드 …)</span></p>
+                <div id="trialTypeChips" class="flex flex-wrap gap-1.5 mb-2"></div>
+                <div class="flex gap-1.5">
+                  <input id="newTrialType" onkeydown="if(event.key==='Enter')addTrialOption('type')" placeholder="추가" class="flex-1 px-2.5 py-1.5 border border-violet-200 rounded-lg text-xs bg-white outline-none">
+                  <button type="button" onclick="addTrialOption('type')" class="px-3 py-1.5 bg-violet-500 text-white text-xs font-bold rounded-lg">추가</button>
+                </div>
+              </div>
+            </div>
+            <div class="pt-3 border-t border-slate-100">
+              <p class="text-[11px] font-bold text-slate-600 mb-2">일정 단계 <span class="font-normal text-slate-400">(아래 일정 행의 선택지)</span></p>
+              <div id="trialStageChips" class="flex flex-wrap gap-1.5 mb-2"></div>
+              <div class="flex gap-1.5 max-w-md">
+                <input id="newTrialStage" onkeydown="if(event.key==='Enter')addTrialOption('stage')" placeholder="단계 추가 (예: 2차 리마인드)" class="flex-1 px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs outline-none">
+                <button type="button" onclick="addTrialOption('stage')" class="px-3 py-1.5 bg-slate-800 text-white text-xs font-bold rounded-lg">추가</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">브랜드</label>
+            <select id="trialBrand" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-200">
+              <option>온살</option><option>루메아카이브</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">체험단 <span class="text-pink-400 font-normal">직접입력 가능</span></label>
+            <input id="trialPlatform" list="trialPlatformList" autocomplete="off" placeholder="레뷰 / 직접 입력" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-200">
+            <datalist id="trialPlatformList"></datalist>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">SNS <span class="text-sky-400 font-normal">직접입력 가능</span></label>
+            <input id="trialSns" list="trialSnsOptions" autocomplete="off" placeholder="인스타 / 직접 입력" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-sky-200">
+            <datalist id="trialSnsOptions"></datalist>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">체험단 유형 <span class="text-violet-400 font-normal">직접입력 가능</span></label>
+            <input id="trialType" list="trialTypeOptions" autocomplete="off" placeholder="릴스 / 직접 입력" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-200">
+            <datalist id="trialTypeOptions"></datalist>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-500 mb-1">진행 제품</label>
+            <input id="trialProduct" list="trialProductList" placeholder="온살 하이퍼 트라넥 흔적 세럼" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-200">
+            <datalist id="trialProductList"></datalist>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">모집 인원</label>
+            <input id="trialHeadcount" type="number" min="1" placeholder="50" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-200">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">모집 시작일 (오픈일)</label>
+            <input id="trialOpenDate" type="date" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-200">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">체험단명 <span class="text-slate-300">(비우면 자동 생성)</span></label>
+            <input id="trialTitle" placeholder="온살 하이퍼 트라넥 흔적 세럼 인스타그램 이미지 체험단" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">메모</label>
+            <input id="trialNotes" placeholder="소재 전달 오후 6시까지 / 광고상품 신청 필요 등" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none">
+          </div>
+        </div>
+
+        <!-- 일정 -->
+        <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar text-pink-400"></i> 체험단 일정
+              <span class="font-normal text-slate-400">· 📅 체크한 일정은 스케줄러에 자동 반영</span>
+            </p>
+            <div class="flex gap-1.5">
+              <button type="button" onclick="autoFillTrialSteps()" class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-lg transition">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> 일정 자동생성
+              </button>
+              <button type="button" onclick="addTrialStepRow()" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-lg transition">
+                <i class="fa-solid fa-plus"></i> 일정 추가
+              </button>
+            </div>
+          </div>
+          <div id="trialStepContainer" class="space-y-2"></div>
+        </div>
+
+        <button onclick="addTrial()" class="px-5 py-2.5 bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold rounded-xl shadow-xs transition flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i> 체험단 등록
+        </button>
+      </div>
+    </section>
+
+    <!-- 체험단 목록 -->
+    <section class="space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-list-check text-pink-500"></i> 체험단 진행 현황
+        </h2>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex p-1 bg-slate-100 rounded-xl text-xs font-bold" id="trialBrandTabs"></div>
+          <label class="flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
+            <input type="checkbox" id="trialShowDone" onchange="renderTrialDashboard()" class="accent-pink-500"> 완료 포함
+          </label>
+        </div>
+      </div>
+      <div id="trialListContainer" class="space-y-4"></div>
+    </section>
+  </main>
+
   <main id="page-seeding" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1331,7 +1491,12 @@
         onsal_proposals: proposals,
         onsal_stockLogs: stockLogs,
         onsal_utmList: utmList,
-        onsal_categories: categories
+        onsal_categories: categories,
+        onsal_trialList: trialList,
+        onsal_trialPlatforms: trialPlatforms,
+        onsal_trialSnsList: trialSnsList,
+        onsal_trialTypes: trialTypes,
+        onsal_trialStages: trialStages
       };
     }
 
@@ -1382,6 +1547,11 @@
           if (Array.isArray(d.onsal_stockLogs)) stockLogs = d.onsal_stockLogs;
           if (Array.isArray(d.onsal_utmList)) utmList = d.onsal_utmList;
           if (Array.isArray(d.onsal_categories)) categories = d.onsal_categories;
+          if (Array.isArray(d.onsal_trialList)) trialList = d.onsal_trialList;
+          if (Array.isArray(d.onsal_trialPlatforms)) trialPlatforms = d.onsal_trialPlatforms;
+          if (Array.isArray(d.onsal_trialSnsList)) trialSnsList = d.onsal_trialSnsList;
+          if (Array.isArray(d.onsal_trialTypes)) trialTypes = d.onsal_trialTypes;
+          if (Array.isArray(d.onsal_trialStages)) trialStages = d.onsal_trialStages;
 
           localStorage.setItem('onsal_products', JSON.stringify(products));
           localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
@@ -1389,6 +1559,11 @@
           localStorage.setItem('onsal_stockLogs', JSON.stringify(stockLogs));
           localStorage.setItem('onsal_utmList', JSON.stringify(utmList));
           localStorage.setItem('onsal_categories', JSON.stringify(categories));
+          localStorage.setItem('onsal_trialList', JSON.stringify(trialList));
+          localStorage.setItem('onsal_trialPlatforms', JSON.stringify(trialPlatforms));
+          localStorage.setItem('onsal_trialSnsList', JSON.stringify(trialSnsList));
+          localStorage.setItem('onsal_trialTypes', JSON.stringify(trialTypes));
+          localStorage.setItem('onsal_trialStages', JSON.stringify(trialStages));
         }
 
         syncReady = true;
@@ -1406,6 +1581,15 @@
     const SCHEDULER_API_URL = 'https://script.google.com/macros/s/AKfycbyjLXPILrFl3pbgXQldCbDPTRufIeEXUhpewlt3unU_P9uZ16dj6FL-Q4Zbet9cWLPh1Q/exec';
     const SCHEDULER_KEY = 'global_shared_scheduler_data';
     const KEY_STAGES = ['테스트제품전달', '시딩제품전달', '가이드전달', '기획안전달', '촬영', '초안전달', '최종본전달', '업로드'];
+
+    // 저장이 일어나면 일정 변경분을 자동으로 스케줄러에 반영
+    let schedAutoTimer = null;
+    let schedSyncing = false;
+    function queueSchedulerSync() {
+      if (!syncReady || schedSyncing) return;
+      clearTimeout(schedAutoTimer);
+      schedAutoTimer = setTimeout(() => syncToScheduler(true), 2000);
+    }
 
     function schedulerCategoryOf(p) {
       if (p.types && p.types.freeAmb) return '무엠버서더';
@@ -1431,7 +1615,10 @@
     function mergeFromScheduler(taskList) {
       let changed = 0;
       const byId = {};
-      taskList.forEach(t => { if (t.id && String(t.id).startsWith('ppl_')) byId[t.id] = t; });
+      taskList.forEach(t => {
+        const sid = String(t.id || '');
+        if (sid.startsWith('ppl_') || sid.startsWith('trial_')) byId[t.id] = t;
+      });
 
       pplList.forEach(p => {
         if (!p.stepDates) return;
@@ -1459,10 +1646,35 @@
         });
       });
 
+      // 체험단 일정도 동일하게 반영
+      trialList.forEach(tr => {
+        if (!tr.stages) return;
+        Object.entries(tr.stages).forEach(([stage, info]) => {
+          if (typeof info !== 'object' || !info.sched) return;
+          const key = `trial_${tr.id}_${stage}`;
+          const task = byId[key];
+
+          if (!task) {
+            if (info.syncedAt) { info.sched = false; info.syncedAt = 0; changed++; }
+            return;
+          }
+
+          const taskTime = Number(task.updatedAt || 0);
+          const mineTime = Number(info.updatedAt || 0);
+          if (taskTime > mineTime) {
+            if (task.startDate && task.startDate !== info.date) { info.date = task.startDate; changed++; }
+            if (!!task.done !== !!info.done) { info.done = !!task.done; changed++; }
+            info.updatedAt = taskTime;
+          }
+        });
+      });
+
       return changed;
     }
 
     async function syncToScheduler(silent) {
+      schedSyncing = true;
+      clearTimeout(schedAutoTimer);
       const btn = document.getElementById('schedSyncBtn');
       const label = document.getElementById('schedSyncText');
       if (label) label.innerText = '스케줄러 동기화 중...';
@@ -1498,7 +1710,35 @@
           });
         });
 
-        const kept = existing.taskList.filter(t => !(t.id && String(t.id).startsWith('ppl_')));
+        // 체험단 일정 내보내기
+        trialList.forEach(tr => {
+          if (!tr.stages) return;
+          const order = (tr.stageOrder && tr.stageOrder.length) ? tr.stageOrder : Object.keys(tr.stages);
+          order.forEach(stage => {
+            const info = tr.stages[stage];
+            if (!info || typeof info !== 'object' || !info.sched || !info.date) return;
+            if (!info.updatedAt) info.updatedAt = now;
+            info.syncedAt = now;
+
+            const tag = [tr.platform, tr.sns, tr.type].filter(Boolean).join('/');
+            mine.push({
+              id: `trial_${tr.id}_${stage}`,
+              text: `[${tr.brand}] ${tag} 체험단 ${tr.headcount || 0}명 - ${stage}`,
+              done: !!info.done,
+              category: '체험단',
+              startDate: info.date,
+              endDate: info.date,
+              link: '',
+              src: 'ppl-dashboard',
+              updatedAt: info.updatedAt
+            });
+          });
+        });
+
+        const kept = existing.taskList.filter(t => {
+          const sid = String(t.id || '');
+          return !(sid.startsWith('ppl_') || sid.startsWith('trial_'));
+        });
 
         await fetch(SCHEDULER_API_URL, {
           method: 'POST',
@@ -1518,6 +1758,7 @@
           renderAll();
         }
 
+        schedSyncing = false;
         if (label) label.innerText = `스케줄러 ${mine.length}건${changed ? ` (${changed}건 반영)` : ''}`;
         if (btn) btn.className = 'px-3 py-2 bg-violet-100 text-violet-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5';
         if (!silent) {
@@ -1526,6 +1767,7 @@
             : `스케줄러에 ${mine.length}건의 일정을 반영했습니다.`);
         }
       } catch (e) {
+        schedSyncing = false;
         if (label) label.innerText = '스케줄러 동기화 실패';
         if (btn) btn.className = 'px-3 py-2 bg-rose-100 text-rose-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5';
         if (!silent) alert("스케줄러 연동에 실패했습니다. 잠시 후 다시 시도해 주세요.");
@@ -1607,6 +1849,472 @@
 
     let categories = JSON.parse(localStorage.getItem('onsal_categories')) || ["브이로그", "뷰티", "운동", "여행"];
 
+    /* ==================== 체험단 관리 ==================== */
+    const TRIAL_RECRUIT_DAYS = 4;   // 총 모집 일수
+    const TRIAL_REVIEW_DAYS = 7;    // 후기 작성 기간(발송일 포함)
+
+    const TRIAL_STAGE_RULES = {
+      '소재 전달일': '오픈일로부터 영업일 기준 2일 전 (오후 6시까지)',
+      '모집 시작일': '체험단 오픈일',
+      '모집 마감일': '모집 시작일 + 4일',
+      '당첨자 발표일': '모집 종료 후 +2 영업일',
+      '제품 발송일': '당첨자 발표 +1 영업일',
+      '후기 작성 시작일': '제품 발송 +2 영업일',
+      '후기 작성 마감일': '제품 발송일 포함 7일',
+      '결과 리포트 전달일': '후기 마감일 +6 영업일'
+    };
+    const TRIAL_DEFAULT_STAGES = Object.keys(TRIAL_STAGE_RULES);
+    const TRIAL_STATUSES = ['준비중', '소재전달', '모집중', '발표완료', '발송완료', '후기수집', '완료'];
+
+    let trialList = JSON.parse(localStorage.getItem('onsal_trialList')) || [];
+    let trialPlatforms = JSON.parse(localStorage.getItem('onsal_trialPlatforms')) || ['레뷰', '글로우픽', '디너의여왕', '미블', '체험뷰', '자체 모집'];
+    let trialSnsList = JSON.parse(localStorage.getItem('onsal_trialSnsList')) || ['인스타', '유튜브', '네이버 블로그', '틱톡', '스레드'];
+    let trialTypes = JSON.parse(localStorage.getItem('onsal_trialTypes')) || ['릴스', '피드', '스토리', '숏폼', '포스팅', '이미지'];
+    let trialStages = JSON.parse(localStorage.getItem('onsal_trialStages')) || TRIAL_DEFAULT_STAGES.slice();
+    let trialBrandFilter = '전체';
+
+    function tEsc(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function tArg(s) { return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+
+    function tFmt(d) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    function tDayAdd(dateStr, n) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr + 'T00:00:00');
+      d.setDate(d.getDate() + n);
+      return tFmt(d);
+    }
+    function tBizAdd(dateStr, n) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr + 'T00:00:00');
+      const step = n >= 0 ? 1 : -1;
+      let left = Math.abs(n);
+      while (left > 0) {
+        d.setDate(d.getDate() + step);
+        const w = d.getDay();
+        if (w !== 0 && w !== 6) left--;
+      }
+      return tFmt(d);
+    }
+    function tWeekday(dateStr) {
+      if (!dateStr) return '';
+      const w = ['일', '월', '화', '수', '목', '금', '토'][new Date(dateStr + 'T00:00:00').getDay()];
+      return '(' + w + ')';
+    }
+    function tDday(dateStr) {
+      if (!dateStr) return null;
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      return Math.round((new Date(dateStr + 'T00:00:00') - today) / 86400000);
+    }
+
+    // 이미지 기준 일정 규칙
+    function calcTrialSchedule(openDate) {
+      const recruitEnd = tDayAdd(openDate, TRIAL_RECRUIT_DAYS - 1);
+      const announce = tBizAdd(recruitEnd, 2);
+      const ship = tBizAdd(announce, 1);
+      const reviewEnd = tDayAdd(ship, TRIAL_REVIEW_DAYS - 1);
+      return {
+        '소재 전달일': tBizAdd(openDate, -2),
+        '모집 시작일': openDate,
+        '모집 마감일': recruitEnd,
+        '당첨자 발표일': announce,
+        '제품 발송일': ship,
+        '후기 작성 시작일': tBizAdd(ship, 2),
+        '후기 작성 마감일': reviewEnd,
+        '결과 리포트 전달일': tBizAdd(reviewEnd, 6)
+      };
+    }
+
+    /* ---- 등록 폼: PPL과 동일한 일정 행 방식 ---- */
+    function trialStepRowHtml(stage, date, done, sched, memo) {
+      const opts = trialStages.map(s => `<option value="${tEsc(s)}" ${s === stage ? 'selected' : ''}>${tEsc(s)}</option>`).join('');
+      return `
+        <div class="flex flex-wrap items-center gap-2 trial-step-row">
+          <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold trial-stage-select bg-white w-40">${opts}</select>
+          <input type="date" value="${date || ''}" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg trial-date-input bg-white">
+          <input value="${tEsc(memo || '')}" placeholder="비고" class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg trial-memo-input bg-white flex-1 min-w-[100px]">
+          <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-white px-2 py-1 rounded-lg border border-slate-200 cursor-pointer whitespace-nowrap">
+            <input type="checkbox" ${done ? 'checked' : ''} class="trial-step-done accent-emerald-500"> 완료
+          </label>
+          <label class="flex items-center gap-1 text-[11px] font-semibold text-violet-700 bg-violet-50 px-2 py-1 rounded-lg border border-violet-200 cursor-pointer whitespace-nowrap" title="스케줄러 달력에 표시">
+            <input type="checkbox" ${sched ? 'checked' : ''} class="trial-step-sched accent-violet-600"> 📅
+          </label>
+          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+        </div>`;
+    }
+
+    function addTrialStepRow(stage, date, done, sched, memo) {
+      const c = document.getElementById('trialStepContainer');
+      if (!c) return;
+      c.insertAdjacentHTML('beforeend', trialStepRowHtml(
+        stage || trialStages[0] || '모집 시작일',
+        date || new Date().toISOString().slice(0, 10),
+        !!done, sched !== undefined ? !!sched : true, memo || ''
+      ));
+    }
+
+    function autoFillTrialSteps() {
+      const open = document.getElementById('trialOpenDate').value;
+      if (!open) { alert('모집 시작일(오픈일)을 먼저 선택해 주세요.'); return; }
+      const calc = calcTrialSchedule(open);
+      const c = document.getElementById('trialStepContainer');
+      c.innerHTML = '';
+      trialStages.forEach(st => {
+        if (!calc[st]) return;
+        c.insertAdjacentHTML('beforeend', trialStepRowHtml(st, calc[st], false, true, st === '소재 전달일' ? '오후 6시까지' : ''));
+      });
+      // 기본 규칙에 없는 커스텀 단계는 날짜 비워서 뒤에 붙임
+      trialStages.filter(st => !calc[st]).forEach(st => {
+        c.insertAdjacentHTML('beforeend', trialStepRowHtml(st, '', false, true, ''));
+      });
+    }
+
+    function readTrialStepRows() {
+      const stages = {};
+      const order = [];
+      document.querySelectorAll('#trialStepContainer .trial-step-row').forEach(row => {
+        const st = row.querySelector('.trial-stage-select').value;
+        if (!st || stages[st]) return;
+        stages[st] = {
+          date: row.querySelector('.trial-date-input').value,
+          done: row.querySelector('.trial-step-done').checked,
+          sched: row.querySelector('.trial-step-sched').checked,
+          memo: row.querySelector('.trial-memo-input').value,
+          updatedAt: Date.now()
+        };
+        order.push(st);
+      });
+      return { stages, order };
+    }
+
+    function addTrial() {
+      const brand = document.getElementById('trialBrand').value;
+      const platform = registerTrialValue('platform', document.getElementById('trialPlatform').value);
+      const sns = registerTrialValue('sns', document.getElementById('trialSns').value);
+      const type = registerTrialValue('type', document.getElementById('trialType').value);
+      const product = document.getElementById('trialProduct').value.trim();
+      const headcount = document.getElementById('trialHeadcount').value;
+      const title = document.getElementById('trialTitle').value.trim();
+      const open = document.getElementById('trialOpenDate').value;
+      const notes = document.getElementById('trialNotes').value.trim();
+
+      if (!product) { alert('진행 제품을 입력해 주세요.'); return; }
+      const { stages, order } = readTrialStepRows();
+
+      trialList.unshift({
+        id: Date.now(),
+        brand, platform, sns, type, product,
+        headcount: Number(headcount) || 0,
+        title: title || `${product} ${sns} ${type} 체험단`,
+        openDate: open,
+        notes,
+        status: '준비중',
+        stageOrder: order,
+        stages
+      });
+
+      ['trialProduct', 'trialHeadcount', 'trialTitle', 'trialOpenDate', 'trialNotes'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('trialStepContainer').innerHTML = '';
+      saveAll();
+      renderTrialDashboard();
+    }
+
+    /* ---- 항목(체험단/SNS/유형/단계) 추가·삭제 ---- */
+    const TRIAL_OPT_MAP = {
+      platform: () => trialPlatforms,
+      sns: () => trialSnsList,
+      type: () => trialTypes,
+      stage: () => trialStages
+    };
+    function addTrialOption(kind) {
+      const inputId = { platform: 'newTrialPlatform', sns: 'newTrialSns', type: 'newTrialType', stage: 'newTrialStage' }[kind];
+      const el = document.getElementById(inputId);
+      const v = (el.value || '').trim();
+      if (!v) return;
+      const arr = TRIAL_OPT_MAP[kind]();
+      if (!arr.includes(v)) arr.push(v);
+      el.value = '';
+      saveAll();
+      renderTrialDashboard();
+    }
+    function removeTrialOption(kind, v) {
+      if (kind === 'platform') trialPlatforms = trialPlatforms.filter(x => x !== v);
+      if (kind === 'sns') trialSnsList = trialSnsList.filter(x => x !== v);
+      if (kind === 'type') trialTypes = trialTypes.filter(x => x !== v);
+      if (kind === 'stage') trialStages = trialStages.filter(x => x !== v);
+      saveAll();
+      renderTrialDashboard();
+    }
+
+    /* ---- 개별 체험단 수정 ---- */
+    function updateTrialField(id, field, value) {
+      const t = trialList.find(x => x.id === id);
+      if (!t) return;
+      t[field] = (field === 'headcount') ? (Number(value) || 0) : value;
+      saveAll();
+      renderTrialDashboard();
+    }
+
+    function updateTrialStage(id, stage, field, value) {
+      const t = trialList.find(x => x.id === id);
+      if (!t) return;
+      if (!t.stages) t.stages = {};
+      if (!t.stages[stage]) t.stages[stage] = { date: '', done: false, sched: false, memo: '' };
+      t.stages[stage][field] = value;
+      t.stages[stage].updatedAt = Date.now();
+      saveAll();
+      renderTrialDashboard();
+    }
+
+    function recalcTrial(id) {
+      const t = trialList.find(x => x.id === id);
+      if (!t) return;
+      const open = (t.stages && t.stages['모집 시작일'] && t.stages['모집 시작일'].date) || t.openDate;
+      if (!open) { alert('모집 시작일이 비어 있어 계산할 수 없습니다.'); return; }
+      if (!confirm('모집 시작일 기준으로 나머지 일정을 다시 계산합니다. 진행할까요?')) return;
+      const calc = calcTrialSchedule(open);
+      t.openDate = open;
+      if (!t.stageOrder) t.stageOrder = Object.keys(t.stages || {});
+      Object.entries(calc).forEach(([st, dt]) => {
+        if (!t.stages[st]) { t.stages[st] = { date: '', done: false, sched: true, memo: '' }; t.stageOrder.push(st); }
+        t.stages[st].date = dt;
+        t.stages[st].updatedAt = Date.now();
+      });
+      saveAll();
+      renderTrialDashboard();
+    }
+
+    function addTrialCardStage(id) {
+      const t = trialList.find(x => x.id === id);
+      if (!t) return;
+      const name = prompt('추가할 일정 단계명 (기존 단계명 또는 새 이름)', trialStages.find(s => !t.stages[s]) || '');
+      if (!name || !name.trim()) return;
+      const st = name.trim();
+      if (t.stages[st]) { alert('이미 있는 단계입니다.'); return; }
+      if (!trialStages.includes(st)) trialStages.push(st);
+      t.stages[st] = { date: '', done: false, sched: true, memo: '', updatedAt: Date.now() };
+      if (!t.stageOrder) t.stageOrder = Object.keys(t.stages);
+      else t.stageOrder.push(st);
+      saveAll();
+      renderTrialDashboard();
+    }
+
+    function removeTrialStage(id, stage) {
+      const t = trialList.find(x => x.id === id);
+      if (!t) return;
+      if (!confirm(`'${stage}' 일정을 삭제할까요?`)) return;
+      delete t.stages[stage];
+      t.stageOrder = (t.stageOrder || []).filter(s => s !== stage);
+      saveAll();
+      renderTrialDashboard();
+    }
+
+    function duplicateTrial(id) {
+      const t = trialList.find(x => x.id === id);
+      if (!t) return;
+      const copy = JSON.parse(JSON.stringify(t));
+      copy.id = Date.now();
+      copy.title = t.title + ' (복사)';
+      copy.status = '준비중';
+      Object.values(copy.stages || {}).forEach(s => { s.done = false; delete s.syncedAt; s.updatedAt = Date.now(); });
+      trialList.unshift(copy);
+      saveAll();
+      renderTrialDashboard();
+    }
+
+    function deleteTrial(id) {
+      const t = trialList.find(x => x.id === id);
+      if (!t) return;
+      if (!confirm(`'${t.title}' 체험단을 삭제할까요?`)) return;
+      trialList = trialList.filter(x => x.id !== id);
+      saveAll();
+      renderTrialDashboard();
+    }
+
+    function setTrialBrandFilter(b) { trialBrandFilter = b; renderTrialDashboard(); }
+
+    /* ---- 렌더 ---- */
+    const TRIAL_CHIP_CLASS = {
+      platform: 'px-2 py-1 bg-white border border-pink-200 text-pink-600 text-[11px] font-bold rounded-lg flex items-center gap-1',
+      sns: 'px-2 py-1 bg-white border border-sky-200 text-sky-600 text-[11px] font-bold rounded-lg flex items-center gap-1',
+      type: 'px-2 py-1 bg-white border border-violet-200 text-violet-600 text-[11px] font-bold rounded-lg flex items-center gap-1',
+      stage: 'px-2 py-1 bg-white border border-slate-200 text-slate-600 text-[11px] font-bold rounded-lg flex items-center gap-1'
+    };
+    function renderTrialChips(elId, kind, arr) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.innerHTML = arr.map(v =>
+        `<span class="${TRIAL_CHIP_CLASS[kind]}">${tEsc(v)}
+           <button onclick="removeTrialOption('${kind}','${tArg(v)}')" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-xmark text-[10px]"></i></button>
+         </span>`).join('') || `<span class="text-[11px] text-slate-300">항목 없음</span>`;
+    }
+
+    function fillTrialOptions(id, arr) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.innerHTML = arr.map(v => `<option value="${tEsc(v)}"></option>`).join('');
+    }
+
+    // 폼에 수기로 친 값이면 목록에 자동 등록
+    function registerTrialValue(kind, value) {
+      const v = (value || '').trim();
+      if (!v) return v;
+      const arr = TRIAL_OPT_MAP[kind]();
+      if (!arr.includes(v)) arr.push(v);
+      return v;
+    }
+
+    function renderTrialDashboard() {
+      renderTrialChips('trialPlatformChips', 'platform', trialPlatforms);
+      renderTrialChips('trialSnsChips', 'sns', trialSnsList);
+      renderTrialChips('trialTypeChips', 'type', trialTypes);
+      renderTrialChips('trialStageChips', 'stage', trialStages);
+
+      fillTrialOptions('trialPlatformList', trialPlatforms);
+      fillTrialOptions('trialSnsOptions', trialSnsList);
+      fillTrialOptions('trialTypeOptions', trialTypes);
+
+      const prodList = document.getElementById('trialProductList');
+      if (prodList) prodList.innerHTML = (products || []).map(p => `<option value="${tEsc(p.name)}"></option>`).join('');
+
+      const tabs = document.getElementById('trialBrandTabs');
+      if (tabs) tabs.innerHTML = ['전체', '온살', '루메아카이브'].map(b =>
+        `<button onclick="setTrialBrandFilter('${b}')" class="px-3 py-1.5 rounded-lg transition ${trialBrandFilter === b ? 'bg-white text-pink-600 shadow-xs' : 'text-slate-500'}">${b}</button>`).join('');
+
+      const showDone = document.getElementById('trialShowDone');
+      const includeDone = showDone ? showDone.checked : false;
+      let list = trialList.filter(t => trialBrandFilter === '전체' || t.brand === trialBrandFilter);
+      if (!includeDone) list = list.filter(t => t.status !== '완료');
+
+      const summary = document.getElementById('trialSummary');
+      if (summary) {
+        const running = trialList.filter(t => t.status !== '완료').length;
+        const people = trialList.filter(t => t.status !== '완료').reduce((a, t) => a + (Number(t.headcount) || 0), 0);
+        let upcoming = null;
+        trialList.forEach(t => Object.entries(t.stages || {}).forEach(([st, i]) => {
+          if (!i.date || i.done) return;
+          const d = tDday(i.date);
+          if (d === null || d < 0) return;
+          if (!upcoming || d < upcoming.d) upcoming = { d: d, st: st };
+        }));
+        const cards = [
+          ['진행 중 체험단', running + '건', 'fa-users-rectangle', 'text-pink-400'],
+          ['총 모집 인원', people.toLocaleString() + '명', 'fa-user-group', 'text-violet-400'],
+          ['체험단 채널', trialPlatforms.length + '곳', 'fa-tags', 'text-sky-400'],
+          ['가장 임박한 일정', upcoming ? `D-${upcoming.d} ${upcoming.st}` : '없음', 'fa-bell', 'text-amber-400']
+        ];
+        summary.innerHTML = cards.map(([label, val, icon, cls]) =>
+          `<div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-xs">
+             <p class="text-[11px] text-slate-400 font-semibold mb-1"><i class="fa-solid ${icon} ${cls} mr-1"></i>${label}</p>
+             <p class="text-lg font-extrabold text-slate-900 truncate">${tEsc(val)}</p>
+           </div>`).join('');
+      }
+
+      const box = document.getElementById('trialListContainer');
+      if (!box) return;
+      if (!list.length) {
+        box.innerHTML = `<div class="bg-white rounded-3xl border border-dashed border-slate-200 py-16 text-center text-sm text-slate-400">
+          등록된 체험단이 없습니다. 위에서 체험단을 등록해 주세요.</div>`;
+        return;
+      }
+
+      box.innerHTML = list.map(t => {
+        const order = (t.stageOrder && t.stageOrder.length) ? t.stageOrder : Object.keys(t.stages || {});
+        const doneCnt = order.filter(st => t.stages[st] && t.stages[st].done).length;
+        const pct = order.length ? Math.round(doneCnt / order.length * 100) : 0;
+
+        const rows = order.map(st => {
+          const i = t.stages[st] || { date: '', done: false, sched: false, memo: '' };
+          const dd = tDday(i.date);
+          let badge = '';
+          if (i.done) badge = '<span class="text-[10px] font-bold text-emerald-500">완료</span>';
+          else if (dd === 0) badge = '<span class="text-[10px] font-bold text-rose-500">D-DAY</span>';
+          else if (dd !== null && dd > 0 && dd <= 3) badge = `<span class="text-[10px] font-bold text-amber-500">D-${dd}</span>`;
+          else if (dd !== null && dd < 0) badge = '<span class="text-[10px] font-bold text-slate-300">지남</span>';
+
+          return `<tr class="border-b border-slate-50 ${i.done ? 'bg-emerald-50/30' : ''}">
+            <td class="py-2 px-2 align-top">
+              <p class="text-xs font-bold text-slate-700 whitespace-nowrap">${tEsc(st)}</p>
+              <p class="text-[10px] text-slate-400">${tEsc(TRIAL_STAGE_RULES[st] || '')}</p>
+            </td>
+            <td class="py-2 px-2 whitespace-nowrap">
+              <input type="date" value="${i.date || ''}" onchange="updateTrialStage(${t.id},'${tArg(st)}','date',this.value)"
+                class="px-2 py-1 border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-pink-200">
+              <span class="text-[11px] text-slate-400 ml-1">${tWeekday(i.date)}</span>
+            </td>
+            <td class="py-2 px-2 text-center">${badge}</td>
+            <td class="py-2 px-2 text-center">
+              <input type="checkbox" ${i.done ? 'checked' : ''} onchange="updateTrialStage(${t.id},'${tArg(st)}','done',this.checked)" class="accent-emerald-500 w-4 h-4">
+            </td>
+            <td class="py-2 px-2 text-center">
+              <input type="checkbox" ${i.sched ? 'checked' : ''} title="스케줄러에 표시" onchange="updateTrialStage(${t.id},'${tArg(st)}','sched',this.checked)" class="accent-violet-500 w-4 h-4">
+            </td>
+            <td class="py-2 px-2">
+              <input value="${tEsc(i.memo || '')}" placeholder="비고" onchange="updateTrialStage(${t.id},'${tArg(st)}','memo',this.value)"
+                class="w-full px-2 py-1 border border-transparent hover:border-slate-200 focus:border-slate-200 rounded-lg text-xs outline-none">
+            </td>
+            <td class="py-2 px-1 text-center">
+              <button onclick="removeTrialStage(${t.id},'${tArg(st)}')" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-xmark text-xs"></i></button>
+            </td>
+          </tr>`;
+        }).join('');
+
+        return `<div class="bg-white rounded-3xl border border-pink-100 shadow-sm overflow-hidden">
+          <div class="px-5 py-4 bg-gradient-to-r from-pink-50/70 to-white border-b border-pink-100">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                  <span class="px-2 py-0.5 bg-slate-800 text-white text-[10px] font-bold rounded-md">${tEsc(t.brand)}</span>
+                  <span class="px-2 py-0.5 bg-pink-100 text-pink-600 text-[10px] font-bold rounded-md">${tEsc(t.platform || '-')}</span>
+                  <span class="px-2 py-0.5 bg-sky-100 text-sky-600 text-[10px] font-bold rounded-md">${tEsc(t.sns || '-')}</span>
+                  <span class="px-2 py-0.5 bg-violet-100 text-violet-600 text-[10px] font-bold rounded-md">${tEsc(t.type || '-')}</span>
+                  <span class="px-2 py-0.5 bg-amber-100 text-amber-600 text-[10px] font-bold rounded-md">${Number(t.headcount) || 0}명</span>
+                </div>
+                <p class="text-sm font-extrabold text-slate-900">${tEsc(t.title)}</p>
+                <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-box text-slate-300 mr-1"></i>${tEsc(t.product)}${t.notes ? ' · ' + tEsc(t.notes) : ''}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="text-right">
+                  <p class="text-[10px] text-slate-400 font-semibold mb-0.5">진행률 ${pct}%</p>
+                  <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-pink-400" style="width:${pct}%"></div></div>
+                </div>
+                <select onchange="updateTrialField(${t.id},'status',this.value)" class="px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 outline-none">
+                  ${TRIAL_STATUSES.map(s => `<option ${t.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                </select>
+                <button onclick="recalcTrial(${t.id})" title="일정 다시 계산" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs"><i class="fa-solid fa-rotate"></i></button>
+                <button onclick="duplicateTrial(${t.id})" title="복제" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs"><i class="fa-regular fa-copy"></i></button>
+                <button onclick="deleteTrial(${t.id})" title="삭제" class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </div>
+          </div>
+          <div class="px-5 py-3 overflow-x-auto">
+            <table class="w-full min-w-[680px]">
+              <thead>
+                <tr class="text-[10px] text-slate-400 font-bold border-b border-slate-100">
+                  <th class="text-left py-2 px-2">일정 단계</th>
+                  <th class="text-left py-2 px-2">날짜</th>
+                  <th class="py-2 px-2">D-day</th>
+                  <th class="py-2 px-2">완료</th>
+                  <th class="py-2 px-2">📅</th>
+                  <th class="text-left py-2 px-2">비고</th>
+                  <th class="py-2 px-1"></th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+            <button onclick="addTrialCardStage(${t.id})" class="mt-3 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition">
+              <i class="fa-solid fa-plus"></i> 일정 추가
+            </button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+
     let currentBrandTab = "전체";
     let currentTableBrandFilter = "전체";
     let currentYear = 2026;
@@ -1630,7 +2338,13 @@
       localStorage.setItem('onsal_stockLogs', JSON.stringify(stockLogs));
       localStorage.setItem('onsal_utmList', JSON.stringify(utmList));
       localStorage.setItem('onsal_categories', JSON.stringify(categories));
+      localStorage.setItem('onsal_trialList', JSON.stringify(trialList));
+      localStorage.setItem('onsal_trialPlatforms', JSON.stringify(trialPlatforms));
+      localStorage.setItem('onsal_trialSnsList', JSON.stringify(trialSnsList));
+      localStorage.setItem('onsal_trialTypes', JSON.stringify(trialTypes));
+      localStorage.setItem('onsal_trialStages', JSON.stringify(trialStages));
       queueSync();
+      queueSchedulerSync();
     }
 
     function toggleSection(id) {
@@ -1673,11 +2387,12 @@
       renderProposals();
       renderSeedingDashboard();
       renderUtmDashboard();
+      renderTrialDashboard();
     }
 
     // 페이지 전환 (PPL / 시딩재고 / UTM)
     function switchMainPage(pageId) {
-      const pages = ['ppl', 'seeding', 'utm'];
+      const pages = ['ppl', 'trial', 'seeding', 'utm'];
       const activeClass = "px-4 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
       const idleClass = "px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
 
@@ -1694,6 +2409,7 @@
         }
       });
 
+      if (pageId === 'trial') renderTrialDashboard();
       if (pageId === 'seeding') renderSeedingDashboard();
       if (pageId === 'utm') renderUtmDashboard();
       window.scrollTo({ top: 0, behavior: 'smooth' });
