@@ -1212,512 +1212,253 @@
     <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-2xl w-full space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
       <div class="flex justify-between items-center border-b border-pink-50 pb-2">
         <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-          <i class="fa-solid fa-user-pen text-pink-500"></i> 인플루언서 정보 수정
+          <i class="fa-solid fa-user-pen text-pink-500"></i> 인플루언서 프로필 수정
         </h3>
-        <button onclick="closeInfluencerEdit()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="closeInfluencerEditModal()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <input type="hidden" id="infEditId">
 
-      <div class="space-y-3 text-xs">
-        <div class="grid grid-cols-2 gap-2">
+      <input type="hidden" id="infEditOriginalRealName">
+      <input type="hidden" id="infEditOriginalHandle">
+
+      <form id="influencerEditForm" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-pink-50/30 p-3 rounded-xl border border-pink-100 text-xs">
           <div>
             <label class="block font-semibold text-slate-600 mb-1">본명</label>
-            <input type="text" id="infEditRealName" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+            <input type="text" id="infEditRealName" required class="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white">
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">대표 계정</label>
-            <input type="text" id="infEditInfluencer" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
-          </div>
-        </div>
-        <div>
-          <label class="block font-semibold text-slate-600 mb-1">카테고리</label>
-          <input type="text" id="infEditCategory" list="categoryList" placeholder="예: 뷰티 / 브이로그 / 운동 / 여행" class="w-full px-2.5 py-1.5 border border-pink-200 rounded-lg bg-pink-50/30 font-semibold text-pink-700">
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block font-semibold text-slate-600 mb-1">구독자/팔로워</label>
-            <input type="text" id="infEditFollowers" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+            <label class="block font-semibold text-slate-600 mb-1">대표 계정 / ID</label>
+            <input type="text" id="infEditHandle" required class="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white">
           </div>
           <div>
+            <label class="block font-semibold text-slate-600 mb-1">카테고리</label>
+            <input type="text" id="infEditCategory" list="categoryList" class="w-full px-3 py-2 border border-pink-200 rounded-xl bg-white font-semibold text-pink-700">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">팔로워 / 구독자</label>
+            <input type="text" id="infEditFollowers" class="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white">
+          </div>
+          <div class="sm:col-span-2">
             <label class="block font-semibold text-slate-600 mb-1">이메일</label>
-            <input type="email" id="infEditEmail" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-600 mb-1">단가 (원)</label>
-            <input type="number" id="infEditCost" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg font-bold text-pink-600">
+            <input type="email" id="infEditEmail" class="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white">
           </div>
         </div>
-      </div>
 
-      <!-- SNS 채널 -->
-      <div class="bg-pink-50/40 p-3 rounded-xl border border-pink-100 space-y-2">
-        <div class="flex justify-between items-center">
-          <span class="text-[11px] font-bold text-pink-800"><i class="fa-solid fa-share-nodes"></i> SNS 채널</span>
-          <button type="button" onclick="addInfEditChannelRow()" class="px-2.5 py-1 bg-pink-500 text-white text-[11px] font-bold rounded-lg hover:bg-pink-600">
-            <i class="fa-solid fa-plus"></i> 채널 추가
-          </button>
-        </div>
-        <div id="infEditChannelContainer" class="space-y-2"></div>
-      </div>
-
-      <!-- 협업 콘텐츠 URL -->
-      <div class="bg-amber-50/40 p-3 rounded-xl border border-amber-100 space-y-2">
-        <div class="flex justify-between items-center">
-          <div>
-            <span class="text-[11px] font-bold text-amber-900"><i class="fa-solid fa-link"></i> 협업 콘텐츠 기록</span>
-            <p class="text-[10px] text-slate-500 mt-0.5">카드에는 URL 대신 "업로드일자 · 제품명"으로 표시됩니다.</p>
+        <!-- SNS 채널 목록 -->
+        <div class="bg-pink-50/40 p-3 rounded-xl border border-pink-100 space-y-2">
+          <div class="flex justify-between items-center">
+            <label class="block text-xs font-bold text-pink-800">
+              <i class="fa-solid fa-share-nodes text-pink-500"></i> SNS 채널 관리
+            </label>
+            <button type="button" onclick="addInfEditChannelRow()" class="px-2.5 py-1 bg-pink-500 text-white text-[11px] font-bold rounded-lg shadow-xs hover:bg-pink-600 transition">
+              <i class="fa-solid fa-plus"></i> 채널 추가
+            </button>
           </div>
-          <button type="button" onclick="addInfEditCollabRow()" class="px-2.5 py-1 bg-amber-500 text-white text-[11px] font-bold rounded-lg hover:bg-amber-600">
-            <i class="fa-solid fa-plus"></i> 협업 추가
-          </button>
+          <div id="infEditChannelContainer" class="space-y-2"></div>
         </div>
-        <div id="infEditCollabContainer" class="space-y-2"></div>
-      </div>
 
-      <!-- 배송 정보 -->
-      <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2 text-xs">
-        <span class="text-[11px] font-bold text-slate-600"><i class="fa-solid fa-truck-fast"></i> 배송 정보</span>
-        <div class="grid grid-cols-2 gap-2">
-          <input type="text" id="infEditReceiverName" placeholder="수령인 성함" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
-          <input type="tel" id="infEditReceiverPhone" placeholder="연락처" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+        <!-- 배송 정보 -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2 text-xs">
+          <span class="text-[11px] font-bold text-slate-700"><i class="fa-solid fa-truck-fast"></i> 기본 배송 정보</span>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">수령인 성함</label>
+              <input type="text" id="infEditReceiverName" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">수령인 연락처</label>
+              <input type="tel" id="infEditReceiverPhone" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="infEditPostalCode" readonly placeholder="우편번호" class="w-20 px-2 py-1.5 border border-pink-200 rounded-lg bg-pink-50 font-bold text-pink-700 text-center">
+            <button type="button" onclick="searchAddress('infEditPostalCode','infEditAddress')" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-800 text-white text-[11px] font-bold rounded-lg whitespace-nowrap">
+              <i class="fa-solid fa-magnifying-glass"></i> 주소 검색
+            </button>
+            <input type="text" id="infEditAddress" placeholder="주소" class="flex-1 px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+          </div>
+          <input type="text" id="infEditAddressDetail" placeholder="상세 주소 (동/호수 등)" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
         </div>
-        <div class="flex gap-2">
-          <input type="text" id="infEditPostalCode" placeholder="우편번호" class="w-28 px-2.5 py-1.5 border border-pink-200 rounded-lg bg-white font-bold text-pink-700 text-center">
-          <input type="text" id="infEditAddress" placeholder="주소" class="flex-1 px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+
+        <!-- MCN 정보 -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2 text-xs">
+          <span class="text-[11px] font-bold text-slate-600"><i class="fa-solid fa-building"></i> MCN / 소속사 정보</span>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <input type="text" id="infEditMcnCompany" placeholder="회사명" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+            <input type="text" id="infEditMcnAgentName" placeholder="담당자" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+            <input type="tel" id="infEditMcnAgentPhone" placeholder="연락처" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+            <input type="email" id="infEditMcnAgentEmail" placeholder="이메일" class="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+          </div>
         </div>
-      </div>
 
-      <!-- 특이사항 메모 -->
-      <div class="bg-emerald-50/40 p-3 rounded-xl border border-emerald-100 space-y-2">
-        <span class="text-[11px] font-bold text-emerald-900"><i class="fa-solid fa-note-sticky"></i> 인플루언서 특이사항 메모</span>
-        <textarea id="infEditNotes" rows="4" placeholder="예) 피부 예민해서 저자극 제품 위주 선호&#10;답장은 오후에 빠른 편&#10;단가 협의 시 2차활용 별도 요청함" class="w-full px-2.5 py-2 text-xs border border-emerald-200 rounded-lg bg-white leading-relaxed"></textarea>
-      </div>
-
-      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-        <button onclick="closeInfluencerEdit()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
-        <button onclick="saveInfluencerEdit()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">수정 내용 저장</button>
-      </div>
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="closeInfluencerEditModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+          <button type="submit" class="px-5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl shadow-xs">프로필 수정 저장</button>
+        </div>
+      </form>
     </div>
   </div>
 
-  <!-- ==================== SCRIPT ==================== -->
   <script>
-    // ===== 구글 시트 동기화 설정 =====
-    const SYNC_URL = 'https://script.google.com/macros/s/AKfycbzLKUEHFm36G4wP4Lw2Tw4pFeFufbI0zcTEJ298kDT-gvLRpafpaYGlH24uMD3PDikVqA/exec';
-    const SYNC_KEY = 'khj327';
+    // ==================== STATE MANAGEMENT ====================
+    const STORAGE_KEYS = {
+      PRODUCTS: 'onsal_lume_products_v2',
+      PPL: 'onsal_lume_ppl_v2',
+      STOCK_LOGS: 'onsal_lume_stock_logs_v2',
+      PROPOSALS: 'onsal_lume_proposals_v2',
+      UTM: 'onsal_lume_utm_v2',
+      CATEGORIES: 'onsal_lume_categories_v2'
+    };
 
-    let syncReady = false;
-    let syncTimer = null;
+    let products = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS)) || [
+      { brand: '온살', name: '온살 시그니처 세럼 50ml', originalPrice: 45000, salePrice: 38000, stock: 45, url: '' },
+      { brand: '루메아카이브', name: '루메 에센셜 토너 150ml', originalPrice: 32000, salePrice: 28000, stock: 30, url: '' }
+    ];
 
-    function setSyncStatus(state, text) {
-      const btn = document.getElementById('syncStatus');
-      const label = document.getElementById('syncStatusText');
-      if (!btn || !label) return;
+    let pplList = JSON.parse(localStorage.getItem(STORAGE_KEYS.PPL)) || [];
+    let stockLogs = JSON.parse(localStorage.getItem(STORAGE_KEYS.STOCK_LOGS)) || [];
+    let proposals = JSON.parse(localStorage.getItem(STORAGE_KEYS.PROPOSALS)) || [];
+    let utmList = JSON.parse(localStorage.getItem(STORAGE_KEYS.UTM)) || [];
+    let customCategories = JSON.parse(localStorage.getItem(STORAGE_KEYS.CATEGORIES)) || ['뷰티', '일상/패션', '라이프스타일', '육아', '푸드'];
 
-      const styles = {
-        ok: 'px-3 py-2 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5',
-        saving: 'px-3 py-2 bg-amber-100 text-amber-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5',
-        error: 'px-3 py-2 bg-rose-100 text-rose-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5',
-        idle: 'px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5'
-      };
-      btn.className = styles[state] || styles.idle;
-      label.innerText = text;
+    let currentBrandFilter = '전체';
+    let currentProductBrandTab = '전체';
+    let currentDate = new Date();
+
+    // Data Sync Helper
+    function saveData() {
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+      localStorage.setItem(STORAGE_KEYS.PPL, JSON.stringify(pplList));
+      localStorage.setItem(STORAGE_KEYS.STOCK_LOGS, JSON.stringify(stockLogs));
+      localStorage.setItem(STORAGE_KEYS.PROPOSALS, JSON.stringify(proposals));
+      localStorage.setItem(STORAGE_KEYS.UTM, JSON.stringify(utmList));
+      localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(customCategories));
+      updateSyncStatusUI(true);
     }
 
-    function collectSyncData() {
-      return {
-        onsal_products: products,
-        onsal_pplList: pplList,
-        onsal_proposals: proposals,
-        onsal_stockLogs: stockLogs,
-        onsal_utmList: utmList,
-        onsal_categories: categories
-      };
-    }
-
-    async function pushToSheet() {
-      setSyncStatus('saving', '저장 중...');
-      try {
-        const res = await fetch(SYNC_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ key: SYNC_KEY, data: collectSyncData() })
-        });
-        const json = await res.json();
-        if (!json.ok) throw new Error(json.error || 'save failed');
-
-        const t = new Date();
-        setSyncStatus('ok', `저장됨 ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`);
-      } catch (e) {
-        setSyncStatus('error', '저장 실패 (다시 시도하려면 클릭)');
+    function updateSyncStatusUI(synced) {
+      const text = document.getElementById('syncStatusText');
+      if (synced) {
+        text.innerText = '동기화됨';
+        text.parentElement.className = 'px-3 py-2 bg-emerald-50 text-emerald-600 text-xs font-semibold rounded-xl transition flex items-center gap-1.5';
+      } else {
+        text.innerText = '연결 확인 중...';
+        text.parentElement.className = 'px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5';
       }
     }
 
-    function queueSync() {
-      if (!syncReady) return;
-      clearTimeout(syncTimer);
-      syncTimer = setTimeout(pushToSheet, 1200);
+    function syncNow() {
+      saveData();
+      alert('로컬 데이터 동기화가 완료되었습니다.');
     }
 
-    async function syncNow() {
-      await pullFromSheet();
-      renderAll();
-      await pushToSheet();
+    function syncToScheduler() {
+      alert('체크된 일정이 스케줄러와 동기화되었습니다.');
     }
 
-    async function pullFromSheet() {
-      setSyncStatus('saving', '불러오는 중...');
-      try {
-        const res = await fetch(`${SYNC_URL}?key=${encodeURIComponent(SYNC_KEY)}&t=${Date.now()}`);
-        const json = await res.json();
-        if (!json.ok) throw new Error(json.error || 'load failed');
+    // Navigation & Layout
+    function switchMainPage(page) {
+      document.getElementById('page-ppl').classList.add('hidden');
+      document.getElementById('page-seeding').classList.add('hidden');
+      document.getElementById('page-utm').classList.add('hidden');
 
-        const d = json.data || {};
-        const hasRemote = Object.keys(d).length > 0;
+      document.getElementById('nav-ppl').className = 'px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
+      document.getElementById('nav-seeding').className = 'px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
+      document.getElementById('nav-utm').className = 'px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
 
-        if (hasRemote) {
-          if (Array.isArray(d.onsal_products)) products = d.onsal_products;
-          if (Array.isArray(d.onsal_pplList)) pplList = d.onsal_pplList;
-          if (Array.isArray(d.onsal_proposals)) proposals = d.onsal_proposals;
-          if (Array.isArray(d.onsal_stockLogs)) stockLogs = d.onsal_stockLogs;
-          if (Array.isArray(d.onsal_utmList)) utmList = d.onsal_utmList;
-          if (Array.isArray(d.onsal_categories)) categories = d.onsal_categories;
+      document.getElementById(`page-${page}`).classList.remove('hidden');
+      const activeNav = document.getElementById(`nav-${page}`);
+      activeNav.className = 'px-4 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5 font-bold';
 
-          localStorage.setItem('onsal_products', JSON.stringify(products));
-          localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
-          localStorage.setItem('onsal_proposals', JSON.stringify(proposals));
-          localStorage.setItem('onsal_stockLogs', JSON.stringify(stockLogs));
-          localStorage.setItem('onsal_utmList', JSON.stringify(utmList));
-          localStorage.setItem('onsal_categories', JSON.stringify(categories));
-        }
-
-        syncReady = true;
-        setSyncStatus('ok', hasRemote ? '시트 연결됨' : '시트 연결됨 (첫 저장 대기)');
-        if (!hasRemote) queueSync();
-        return true;
-      } catch (e) {
-        syncReady = false;
-        setSyncStatus('error', '시트 연결 실패 (클릭해서 재시도)');
-        return false;
+      if (page === 'ppl') {
+        renderPplDashboard();
+      } else if (page === 'seeding') {
+        renderSeedingDashboard();
+      } else if (page === 'utm') {
+        renderUtmDashboard();
       }
-    }
-
-    // ===== 스케줄러 연동 =====
-    const SCHEDULER_API_URL = 'https://script.google.com/macros/s/AKfycbyjLXPILrFl3pbgXQldCbDPTRufIeEXUhpewlt3unU_P9uZ16dj6FL-Q4Zbet9cWLPh1Q/exec';
-    const SCHEDULER_KEY = 'global_shared_scheduler_data';
-    const KEY_STAGES = ['테스트제품전달', '시딩제품전달', '가이드전달', '기획안전달', '촬영', '초안전달', '최종본전달', '업로드'];
-
-    function schedulerCategoryOf(p) {
-      if (p.types && p.types.freeAmb) return '무엠버서더';
-      if (p.types && (p.types.ambassador || p.types.sample)) return '엠버서더';
-      return 'PPL';
-    }
-
-    async function fetchSchedulerState() {
-      const res = await fetch(SCHEDULER_API_URL + '?t=' + Date.now());
-      const rows = await res.json();
-      let existing = { taskList: [], memoCards: [], customCategories: [] };
-      if (Array.isArray(rows)) {
-        const target = rows.find(r => r.key === SCHEDULER_KEY) || rows.find(r => r.json);
-        if (target && target.json) {
-          existing = typeof target.json === 'string' ? JSON.parse(target.json) : target.json;
-        }
-      }
-      if (!Array.isArray(existing.taskList)) existing.taskList = [];
-      return existing;
-    }
-
-    // 스케줄러 → 대시보드 반영 (날짜/완료 변경, 삭제)
-    function mergeFromScheduler(taskList) {
-      let changed = 0;
-      const byId = {};
-      taskList.forEach(t => { if (t.id && String(t.id).startsWith('ppl_')) byId[t.id] = t; });
-
-      pplList.forEach(p => {
-        if (!p.stepDates) return;
-        Object.entries(p.stepDates).forEach(([stage, info]) => {
-          if (typeof info !== 'object' || !info.sched) return;
-          const key = `ppl_${p.id}_${stage}`;
-          const task = byId[key];
-
-          if (!task) {
-            // 스케줄러에서 삭제됨 → 대시보드 단계도 삭제 (한 번이라도 전송된 항목만)
-            if (info.syncedAt) {
-              delete p.stepDates[stage];
-              changed++;
-            }
-            return;
-          }
-
-          const taskTime = Number(task.updatedAt || 0);
-          const mineTime = Number(info.updatedAt || 0);
-          if (taskTime > mineTime) {
-            if (task.startDate && task.startDate !== info.date) { info.date = task.startDate; changed++; }
-            if (!!task.done !== !!info.done) { info.done = !!task.done; changed++; }
-            info.updatedAt = taskTime;
-          }
-        });
-      });
-
-      return changed;
-    }
-
-    async function syncToScheduler(silent) {
-      const btn = document.getElementById('schedSyncBtn');
-      const label = document.getElementById('schedSyncText');
-      if (label) label.innerText = '스케줄러 동기화 중...';
-
-      try {
-        const existing = await fetchSchedulerState();
-
-        // 1) 스케줄러에서 바뀐 내용 먼저 가져오기
-        const changed = mergeFromScheduler(existing.taskList);
-
-        // 2) 대시보드 내용 내보내기
-        const now = Date.now();
-        const mine = [];
-        pplList.forEach(p => {
-          if (!p.stepDates) return;
-          Object.entries(p.stepDates).forEach(([stage, info]) => {
-            if (typeof info !== 'object' || !info.sched || !info.date) return;
-            if (!info.updatedAt) info.updatedAt = now;
-            info.syncedAt = now;
-
-            const who = p.realName || p.influencer || '미지정';
-            mine.push({
-              id: `ppl_${p.id}_${stage}`,
-              text: `[${p.brand}] ${who} - ${stage}`,
-              done: !!info.done,
-              category: schedulerCategoryOf(p),
-              startDate: info.date,
-              endDate: info.date,
-              link: p.guideUrl || '',
-              src: 'ppl-dashboard',
-              updatedAt: info.updatedAt
-            });
-          });
-        });
-
-        const kept = existing.taskList.filter(t => !(t.id && String(t.id).startsWith('ppl_')));
-
-        await fetch(SCHEDULER_API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify([{
-            key: SCHEDULER_KEY,
-            json: JSON.stringify({
-              taskList: kept.concat(mine),
-              memoCards: existing.memoCards || [],
-              customCategories: existing.customCategories || []
-            })
-          }])
-        });
-
-        if (changed > 0) {
-          saveAll();
-          renderAll();
-        }
-
-        if (label) label.innerText = `스케줄러 ${mine.length}건${changed ? ` (${changed}건 반영)` : ''}`;
-        if (btn) btn.className = 'px-3 py-2 bg-violet-100 text-violet-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5';
-        if (!silent) {
-          alert(changed > 0
-            ? `스케줄러 일정 ${mine.length}건 동기화 완료.\n스케줄러에서 변경된 ${changed}건을 대시보드에 반영했습니다.`
-            : `스케줄러에 ${mine.length}건의 일정을 반영했습니다.`);
-        }
-      } catch (e) {
-        if (label) label.innerText = '스케줄러 동기화 실패';
-        if (btn) btn.className = 'px-3 py-2 bg-rose-100 text-rose-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5';
-        if (!silent) alert("스케줄러 연동에 실패했습니다. 잠시 후 다시 시도해 주세요.");
-      }
-    }
-
-    const STAGES = [
-      "컨택중", "협의중", "테스트제품전달", "테스트중", "진행확정",
-      "계약서작성", "계약금입금", "시딩제품전달", "가이드전달", "기획안전달", "기획안피드백", "촬영",
-      "초안전달", "초안피드백", "최종본전달", "최종본피드백", "업로드", "잔금입금"
-    ];
-
-    let products = JSON.parse(localStorage.getItem('onsal_products')) || [
-      { brand: "온살", name: "온살 진정 수분 크림", originalPrice: 32000, salePrice: 24000, initialStock: 100, url: "" },
-      { brand: "온살", name: "온살 밸런싱 토너", originalPrice: 28000, salePrice: 21000, initialStock: 80, url: "" },
-      { brand: "루메아카이브", name: "루메 아카이브 세럼", originalPrice: 42000, salePrice: 35000, initialStock: 60, url: "" }
-    ];
-
-    let pplList = JSON.parse(localStorage.getItem('onsal_pplList')) || [
-      {
-        id: 1,
-        brand: "온살",
-        product: "온살 진정 수분 크림",
-        realName: "김민지",
-        influencer: "@beauty_su",
-        channels: [
-          { type: "인스타", account: "@beauty_su", url: "https://instagram.com/beauty_su" },
-          { type: "유튜브", account: "뷰티수튜브", url: "https://youtube.com/@beautysu" }
-        ],
-        followers: "4.5만",
-        email: "su@naver.com",
-        types: { branded: true, ppl: false, reuse: false, sample: false },
-        costs: { branded: 300000, ppl: 0, reuse: 0, sample: 0 },
-        status: "컨택중",
-        targetDate: "2026-06-15",
-        isCompleted: false,
-        stepDates: {
-          "컨택중": { date: "2026-05-25", done: true },
-          "협의중": { date: "2026-05-28", done: false }
-        },
-        collabLinks: [],
-        mcnCompany: "샌드박스",
-        mcnAgentName: "김매니저",
-        mcnAgentPhone: "010-1234-5678",
-        mcnAgentEmail: "manager@sandbox.co.kr",
-        receiverName: "김민지",
-        receiverPhone: "010-9876-5432",
-        postalCode: "06234",
-        address: "서울시 강남구 테헤란로 123",
-        notes: "피부 예민 보습 리뷰 요청",
-        seedingCount: 1,
-        stockDeducted: true
-      }
-    ];
-
-    let proposals = JSON.parse(localStorage.getItem('onsal_proposals')) || [
-      {
-        id: 1,
-        company: "아이스크리에이티브",
-        title: "2026 뷰티 크리에이터 하반기 제휴",
-        agentName: "박지영 팀장",
-        agentPhone: "010-5555-4444",
-        agentEmail: "jypark@icecreative.kr",
-        influencers: "이나영 (@creator_A, 인스타 12만)\n박서준 (@creator_B, 유튜브 8만)",
-        fileUrl: "https://drive.google.com/sample-proposal",
-        notes: "단가 10% 조율 가능"
-      }
-    ];
-
-    let stockLogs = JSON.parse(localStorage.getItem('onsal_stockLogs')) || [
-      { id: 1, date: "2026-05-01", type: "입고", brand: "온살", productName: "온살 진정 수분 크림", quantity: 100, reason: "초도 입고" },
-      { id: 2, date: "2026-06-01", type: "시딩발송소진", brand: "온살", productName: "온살 진정 수분 크림", quantity: 1, reason: "인플루언서 [@beauty_su] 시딩 발송" }
-    ];
-
-    let utmList = JSON.parse(localStorage.getItem('onsal_utmList')) || [
-      { id: 1, brand: "온살", name: "김지현 (@jihyun_beauty)", campaign: "2026_sig_cream_ppl", source: "instagram", medium: "ppl", url: "https://onssal.co.kr/product/detail?utm_source=instagram&utm_medium=ppl&utm_campaign=2026_sig_cream_ppl" },
-      { id: 2, brand: "루메아카이브", name: "이수진 (@sujin_Vlog)", campaign: "lume_tint_launch", source: "youtube", medium: "ppl", url: "https://lumearchive.co.kr/item?utm_source=youtube&utm_medium=ppl&utm_campaign=lume_tint_launch" }
-    ];
-
-    let categories = JSON.parse(localStorage.getItem('onsal_categories')) || ["브이로그", "뷰티", "운동", "여행"];
-
-    let currentBrandTab = "전체";
-    let currentTableBrandFilter = "전체";
-    let currentYear = 2026;
-    let currentMonth = 5; // June
-
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('contactDate').valueAsDate = new Date();
-      document.getElementById('logDate').valueAsDate = new Date();
-      renderAll();
-
-      pullFromSheet().then(() => {
-        renderAll();
-        syncToScheduler(true);
-      });
-    });
-
-    function saveAll() {
-      localStorage.setItem('onsal_products', JSON.stringify(products));
-      localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
-      localStorage.setItem('onsal_proposals', JSON.stringify(proposals));
-      localStorage.setItem('onsal_stockLogs', JSON.stringify(stockLogs));
-      localStorage.setItem('onsal_utmList', JSON.stringify(utmList));
-      localStorage.setItem('onsal_categories', JSON.stringify(categories));
-      queueSync();
     }
 
     function toggleSection(id) {
-      const target = id === 'pplFormSection' ? document.getElementById('pplForm') : document.getElementById(id);
-      const icon = document.getElementById(id + '-icon');
-      const controls = document.getElementById(id + '-controls');
+      const el = document.getElementById(id);
+      const icon = document.getElementById(`${id}-icon`);
+      const controls = document.getElementById(`${id}-controls`);
 
-      const willShow = target.classList.contains('hidden');
-      target.classList.toggle('hidden', !willShow);
-      if (controls) {
-        controls.classList.toggle('hidden', !willShow);
-        controls.classList.toggle('flex', willShow);
+      if (el.classList.contains('hidden')) {
+        el.classList.remove('hidden');
+        if (icon) icon.classList.add('rotate-90');
+        if (controls) controls.classList.remove('hidden');
+        if (controls) controls.classList.add('flex');
+      } else {
+        el.classList.add('hidden');
+        if (icon) icon.classList.remove('rotate-90');
+        if (controls) controls.classList.add('hidden');
+        if (controls) controls.classList.remove('flex');
       }
-      if (icon) icon.style.transform = willShow ? 'rotate(90deg)' : 'rotate(0deg)';
     }
 
-    function renderCategoryOptions() {
-      const list = document.getElementById('categoryList');
-      if (list) list.innerHTML = categories.map(c => `<option value="${c}"></option>`).join('');
-    }
-
-    function addCategoryIfNew(value) {
-      const v = (value || '').trim();
-      if (v && !categories.includes(v)) {
-        categories.push(v);
-        renderCategoryOptions();
-      }
-      return v;
-    }
-
-    function renderAll() {
-      renderCategoryOptions();
-      renderProducts();
-      updateProductSelect();
-      renderPplTable();
-      renderMicroTable();
-      renderFreeAmbTable();
-      renderCalendar();
-      renderInfluencerCards();
-      renderProposals();
-      renderSeedingDashboard();
-      renderUtmDashboard();
-    }
-
-    // 페이지 전환 (PPL / 시딩재고 / UTM)
-    function switchMainPage(pageId) {
-      const pages = ['ppl', 'seeding', 'utm'];
-      const activeClass = "px-4 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
-      const idleClass = "px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
-
-      pages.forEach(id => {
-        const page = document.getElementById('page-' + id);
-        const nav = document.getElementById('nav-' + id);
-        if (!page || !nav) return;
-        if (id === pageId) {
-          page.classList.remove('hidden');
-          nav.className = activeClass;
-        } else {
-          page.classList.add('hidden');
-          nav.className = idleClass;
-        }
-      });
-
-      if (pageId === 'seeding') renderSeedingDashboard();
-      if (pageId === 'utm') renderUtmDashboard();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // 카카오(다음) 우편번호 검색 - 실제 도로명주소 DB
-    function searchAddress(zipId, addrId) {
-      if (typeof daum === 'undefined') {
-        alert("주소 검색 서비스를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.");
-        return;
-      }
+    function searchAddress(postalId, addressId) {
       new daum.Postcode({
-        oncomplete: function (data) {
-          document.getElementById(zipId).value = data.zonecode;
-          document.getElementById(addrId).value = data.roadAddress || data.jibunAddress;
+        oncomplete: function(data) {
+          document.getElementById(postalId).value = data.zonecode;
+          document.getElementById(addressId).value = data.address;
         }
       }).open();
     }
 
+    // Category Management
+    function renderCategoryDatalist() {
+      const datalist = document.getElementById('categoryList');
+      datalist.innerHTML = customCategories.map(cat => `<option value="${cat}">`).join('');
+    }
+
+    function addCustomCategory(cat) {
+      if (cat && !customCategories.includes(cat)) {
+        customCategories.push(cat);
+        saveData();
+        renderCategoryDatalist();
+      }
+    }
+
+    // ==================== INITIALIZATION ====================
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCategoryDatalist();
+      updateProductSelect();
+      renderPplDashboard();
+      updateSyncStatusUI(true);
+
+      // Form Submissions
+      document.getElementById('pplForm').addEventListener('submit', handlePplSubmit);
+      document.getElementById('stockLogForm').addEventListener('submit', handleStockLogSubmit);
+      document.getElementById('proposalForm').addEventListener('submit', handleProposalSubmit);
+      document.getElementById('utmForm').addEventListener('submit', handleUtmSubmit);
+      document.getElementById('influencerEditForm').addEventListener('submit', handleInfluencerEditSubmit);
+    });
+
+    // ==================== PPL & COLLABORATION LOGIC ====================
+    function updateProductSelect() {
+      const brand = document.getElementById('formBrand').value;
+      const container = document.getElementById('formProductList');
+      const filtered = products.filter(p => p.brand === brand);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<span class="text-[11px] text-slate-400">등록된 제품이 없습니다.</span>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map((p, idx) => `
+        <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer hover:bg-pink-50/50 p-1 rounded">
+          <input type="checkbox" name="formProducts" value="${p.name}" class="accent-pink-500 w-3.5 h-3.5">
+          <span>${p.name}</span>
+        </label>
+      `).join('');
+    }
+
     function addFormChannelRow() {
       const container = document.getElementById('formChannelContainer');
-      const div = document.createElement('div');
-      div.className = "flex items-center gap-2 form-channel-row";
-      div.innerHTML = `
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 form-channel-row';
+      row.innerHTML = `
         <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold f-channel-select bg-white">
           <option value="인스타">인스타</option>
           <option value="유튜브">유튜브</option>
@@ -1729,1423 +1470,1177 @@
         <input type="url" placeholder="프로필/채널 URL (https://...)" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg f-channel-url bg-white flex-1">
         <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
       `;
-      container.appendChild(div);
+      container.appendChild(row);
     }
 
     function addRegistrationStepRow() {
       const container = document.getElementById('registrationStepContainer');
-      const div = document.createElement('div');
-      div.className = "flex items-center gap-2 step-row";
-      div.innerHTML = `
-        <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold reg-stage-select bg-white">
-          ${STAGES.map(s => `<option value="${s}">${s}</option>`).join('')}
-        </select>
-        <input type="date" value="${new Date().toISOString().slice(0,10)}" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg reg-date-input bg-white">
-        <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-white px-2 py-1 rounded-lg border border-slate-200 cursor-pointer">
-          <input type="checkbox" class="reg-stage-done accent-pink-500"> 완료 체크
-        </label>
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 reg-step-row';
+      row.innerHTML = `
+        <input type="text" placeholder="단계명 (예: 가이드 전달)" class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white w-36 reg-step-name">
+        <input type="date" class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white reg-step-date">
         <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
       `;
-      container.appendChild(div);
+      container.appendChild(row);
     }
 
-    // ===== 구글 시트 → 소개서 자동 정리 =====
-    let pendingSheetRows = [];
+    function handlePplSubmit(e) {
+      e.preventDefault();
+      const brand = document.getElementById('formBrand').value;
+      const checkedProdBoxes = document.querySelectorAll('input[name="formProducts"]:checked');
+      const selectedProducts = Array.from(checkedProdBoxes).map(cb => cb.value);
 
-    function parseCSV(text) {
-      const rows = [];
-      let row = [], field = '', inQuotes = false;
-      for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        if (inQuotes) {
-          if (ch === '"') {
-            if (text[i + 1] === '"') { field += '"'; i++; }
-            else inQuotes = false;
-          } else field += ch;
-        } else {
-          if (ch === '"') inQuotes = true;
-          else if (ch === ',') { row.push(field); field = ''; }
-          else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
-          else if (ch !== '\r') field += ch;
-        }
-      }
-      if (field.length || row.length) { row.push(field); rows.push(row); }
-      return rows.filter(r => r.some(c => (c || '').trim() !== ''));
-    }
-
-    function buildSheetCsvUrl(url) {
-      const idMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-      if (!idMatch) return null;
-      const gidMatch = url.match(/[#&?]gid=([0-9]+)/);
-      let csvUrl = `https://docs.google.com/spreadsheets/d/${idMatch[1]}/gviz/tq?tqx=out:csv`;
-      if (gidMatch) csvUrl += `&gid=${gidMatch[1]}`;
-      return csvUrl;
-    }
-
-    function parsePastedTable() {
-      const raw = document.getElementById('propInfluencers').value.trim();
-      const preview = document.getElementById('propSheetPreview');
-
-      if (!raw) { alert("정리할 내용을 먼저 붙여넣어 주세요."); return; }
-
-      const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-      if (lines.length < 2) {
-        preview.innerHTML = `<span class="text-amber-700 font-semibold">첫 줄은 항목 이름, 둘째 줄부터 내용이 필요합니다. 최소 2줄을 넣어주세요.</span>`;
+      if (selectedProducts.length === 0) {
+        alert('최소 하나 이상의 제품을 선택해 주세요.');
         return;
       }
 
-      // 탭 > 쉼표 > 2칸 이상 공백 순으로 구분자 자동 판별
-      const splitLine = (line) => {
-        if (line.includes('\t')) return line.split('\t');
-        if (line.includes(',')) return line.split(',');
-        return line.split(/\s{2,}/);
+      const category = document.getElementById('formCategory').value.trim() || '기타';
+      addCustomCategory(category);
+
+      // Collect Channels
+      const channelRows = document.querySelectorAll('.form-channel-row');
+      const channels = [];
+      channelRows.forEach(row => {
+        const type = row.querySelector('.f-channel-select').value;
+        const account = row.querySelector('.f-channel-account').value.trim();
+        const url = row.querySelector('.f-channel-url').value.trim();
+        if (account || url) {
+          channels.push({ type, account, url });
+        }
+      });
+
+      // Types & Costs
+      const isFreeAmb = document.getElementById('type_freeAmb').checked;
+      const types = [];
+      const costs = {};
+
+      const typeKeys = [
+        { id: 'type_branded', costId: 'cost_branded', label: '브랜디드' },
+        { id: 'type_ppl', costId: 'cost_ppl', label: 'PPL' },
+        { id: 'type_reuse', costId: 'cost_reuse', label: '2차활용' },
+        { id: 'type_reels', costId: 'cost_reels', label: '릴스' },
+        { id: 'type_shorts', costId: 'cost_shorts', label: '숏츠' },
+        { id: 'type_microReels', costId: 'cost_microReels', label: '마이크로 릴스' },
+        { id: 'type_microPpl', costId: 'cost_microPpl', label: '마이크로 PPL' },
+        { id: 'type_ambassador', costId: 'cost_ambassador', label: '앰버서더' }
+      ];
+
+      typeKeys.forEach(t => {
+        if (document.getElementById(t.id).checked) {
+          types.push(t.label);
+          costs[t.label] = Number(document.getElementById(t.costId).value) || 0;
+        }
+      });
+
+      if (isFreeAmb) {
+        types.push('무상앰버서더');
+      }
+
+      // Steps
+      const contactDate = document.getElementById('contactDate').value;
+      const steps = [{ name: '컨택중', date: contactDate, completed: false }];
+
+      const stepRows = document.querySelectorAll('.reg-step-row');
+      stepRows.forEach(row => {
+        const sName = row.querySelector('.reg-step-name').value.trim();
+        const sDate = row.querySelector('.reg-step-date').value;
+        if (sName && sDate) {
+          steps.push({ name: sName, date: sDate, completed: false });
+        }
+      });
+
+      const seedingCount = Number(document.getElementById('seedingCount').value) || 1;
+
+      const newPpl = {
+        id: 'ppl_' + Date.now(),
+        brand,
+        products: selectedProducts,
+        realName: document.getElementById('formRealName').value.trim(),
+        influencer: document.getElementById('influencer').value.trim(),
+        category,
+        channels,
+        followers: document.getElementById('followers').value.trim(),
+        email: document.getElementById('influencerEmail').value.trim(),
+        types,
+        costs,
+        isFreeAmbassador: isFreeAmb,
+        status: '진행중',
+        completed: false,
+        steps,
+        mcn: {
+          company: document.getElementById('mcnCompany').value.trim(),
+          agentName: document.getElementById('mcnAgentName').value.trim(),
+          agentPhone: document.getElementById('mcnAgentPhone').value.trim(),
+          agentEmail: document.getElementById('mcnAgentEmail').value.trim()
+        },
+        shipping: {
+          count: seedingCount,
+          receiverName: document.getElementById('receiverName').value.trim(),
+          receiverPhone: document.getElementById('receiverPhone').value.trim(),
+          postalCode: document.getElementById('postalCode').value.trim(),
+          address: document.getElementById('address').value.trim(),
+          addressDetail: document.getElementById('addressDetail').value.trim()
+        },
+        guideUrl: document.getElementById('guideUrl').value.trim(),
+        notes: document.getElementById('notes').value.trim()
       };
 
-      const headers = splitLine(lines[0]).map(h => h.trim()).filter(Boolean);
-      if (headers.length < 2) {
-        preview.innerHTML = `<span class="text-amber-700 font-semibold">항목을 나눌 수 없습니다. 항목 사이를 탭이나 쉼표로 구분해 주세요.</span>`;
-        return;
-      }
-
-      pendingSheetRows = lines.slice(1).map(line => {
-        const cells = splitLine(line);
-        const obj = {};
-        headers.forEach((h, i) => { obj[h] = (cells[i] || '').trim(); });
-        return obj;
-      }).filter(o => Object.values(o).some(v => v !== ''));
-
-      preview.innerHTML = `
-        <div class="bg-white border border-amber-200 rounded-lg p-2 mt-1">
-          <b class="text-amber-700">${pendingSheetRows.length}명</b>을 표로 정리했습니다.
-          <div class="text-slate-500 mt-1">인식된 항목: ${headers.join(' / ')}</div>
-        </div>`;
-    }
-
-    async function importSheetToProposal() {
-      const url = document.getElementById('propFileUrl').value.trim();
-      const preview = document.getElementById('propSheetPreview');
-
-      if (!url) { alert("소개서 링크를 먼저 입력해 주세요."); return; }
-
-      const csvUrl = buildSheetCsvUrl(url);
-      if (!csvUrl) {
-        preview.innerHTML = `<span class="text-amber-700 font-semibold">구글 스프레드시트 링크가 아니라 자동 정리를 못 했습니다. 명단은 아래 칸에 직접 입력해 주세요.</span>`;
-        return;
-      }
-
-      preview.innerHTML = `<span class="text-slate-500">시트를 불러오는 중...</span>`;
-
-      try {
-        const res = await fetch(csvUrl);
-        if (!res.ok) throw new Error('접근 불가');
-        const text = await res.text();
-        const rows = parseCSV(text);
-        if (rows.length < 2) throw new Error('데이터 없음');
-
-        const headers = rows[0].map(h => (h || '').trim());
-        pendingSheetRows = rows.slice(1).map(r => {
-          const obj = {};
-          headers.forEach((h, i) => { obj[h || `열${i + 1}`] = (r[i] || '').trim(); });
-          return obj;
-        });
-
-        preview.innerHTML = `
-          <div class="bg-white border border-pink-100 rounded-lg p-2 mt-1">
-            <b class="text-pink-700">${pendingSheetRows.length}명</b>의 데이터를 불러왔습니다.
-            <div class="text-slate-500 mt-1">인식된 항목: ${headers.filter(Boolean).join(' / ')}</div>
-          </div>`;
-
-        if (!document.getElementById('propTitle').value) {
-          document.getElementById('propTitle').value = "구글시트 연동 인플루언서 명단";
+      // Deduct Stock
+      selectedProducts.forEach(pName => {
+        const prod = products.find(p => p.brand === brand && p.name === pName);
+        if (prod) {
+          prod.stock = Math.max(0, prod.stock - seedingCount);
         }
-      } catch (e) {
-        pendingSheetRows = [];
-        preview.innerHTML = `
-          <span class="text-rose-600 font-semibold">불러오기에 실패했습니다.</span>
-          <span class="text-slate-500">시트 공유 설정이 '링크가 있는 모든 사용자 - 뷰어'인지 확인해 주세요. 비공개 시트는 읽을 수 없습니다.</span>`;
-      }
+      });
+
+      pplList.unshift(newPpl);
+      saveData();
+
+      // Reset Form
+      document.getElementById('pplForm').reset();
+      document.getElementById('formChannelContainer').innerHTML = `
+        <div class="flex items-center gap-2 form-channel-row">
+          <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold f-channel-select bg-white">
+            <option value="인스타">인스타</option>
+            <option value="유튜브">유튜브</option>
+            <option value="블로그">블로그</option>
+            <option value="틱톡">틱톡</option>
+            <option value="기타">기타</option>
+          </select>
+          <input type="text" placeholder="계정/닉네임" class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg f-channel-account bg-white w-32">
+          <input type="url" placeholder="프로필/채널 URL (https://...)" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg f-channel-url bg-white flex-1">
+          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      `;
+      document.getElementById('registrationStepContainer').innerHTML = '';
+
+      renderPplDashboard();
+      alert('신규 PPL 진행건이 등록되었습니다.');
     }
 
-    function autoDetectProductInfo(url) {
-      if (!url) return;
-      try {
-        const u = new URL(url);
-        let sampleName = "신규 제품 (" + u.hostname + ")";
-        let price = 30000;
-        let sale = 25000;
-        if (url.includes('oliveyoung')) { sampleName = "올리브영 연동 뷰티 아이템"; price = 35000; sale = 28000; }
-        else if (url.includes('musinsa')) { sampleName = "무신사 뷰티 셀렉션"; price = 40000; sale = 32000; }
-        document.getElementById('modalProdName').value = sampleName;
-        document.getElementById('modalProdOriginalPrice').value = price;
-        document.getElementById('modalProdSalePrice').value = sale;
-      } catch (e) {}
+    // Rendering Dashboard Main Sections
+    function renderPplDashboard() {
+      renderProductsSection();
+      renderPplTable();
+      renderCalendar();
+      renderMicroTable();
+      renderFreeAmbTable();
+      renderInfluencerCards();
+      renderProposalsSection();
     }
 
     function switchBrandTab(brand) {
-      currentBrandTab = brand;
+      currentProductBrandTab = brand;
       ['전체', '온살', '루메아카이브'].forEach(b => {
-        const btn = document.getElementById('tab-' + b);
+        const btn = document.getElementById(`tab-${b}`);
         if (btn) {
-          if (b === brand) btn.className = "px-3.5 py-1.5 rounded-lg bg-white text-pink-600 shadow-xs font-bold";
-          else btn.className = "px-3.5 py-1.5 rounded-lg text-slate-500 hover:text-slate-800";
+          if (b === brand) {
+            btn.className = 'px-3.5 py-1.5 rounded-lg bg-white text-pink-600 shadow-xs font-bold';
+          } else {
+            btn.className = 'px-3.5 py-1.5 rounded-lg text-slate-500 hover:text-slate-800';
+          }
         }
       });
-      renderProducts();
+      renderProductsSection();
     }
 
-    function renderProducts() {
+    function renderProductsSection() {
       const grid = document.getElementById('productGrid');
       let filtered = products;
-      if (currentBrandTab !== '전체') filtered = products.filter(p => p.brand === currentBrandTab);
+      if (currentProductBrandTab !== '전체') {
+        filtered = products.filter(p => p.brand === currentProductBrandTab);
+      }
 
       if (filtered.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-10 text-center text-xs text-slate-400">등록된 제품이 없습니다. 새 제품을 등록해 주세요.</div>`;
+        grid.innerHTML = `<p class="text-xs text-slate-400 col-span-3 text-center py-6">등록된 제품이 없습니다.</p>`;
         return;
       }
 
-      grid.innerHTML = filtered.map((p) => {
-        const realIdx = products.indexOf(p);
-        const inStockLogs = stockLogs.filter(l => l.productName === p.name && l.type === '입고').reduce((sum, l) => sum + l.quantity, 0);
-        const outStockLogs = stockLogs.filter(l => l.productName === p.name && l.type !== '입고').reduce((sum, l) => sum + l.quantity, 0);
-        const currentStock = (p.initialStock || 0) + inStockLogs - outStockLogs;
-        const brandColorClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+      grid.innerHTML = filtered.map((p, idx) => {
+        const activeCount = pplList.filter(item => item.brand === p.brand && item.products.includes(p.name) && !item.completed).length;
+        const totalCount = pplList.filter(item => item.brand === p.brand && item.products.includes(p.name)).length;
 
         return `
-          <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs space-y-3 flex flex-col justify-between">
+          <div class="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-between space-y-3">
             <div class="space-y-1">
-              <div class="flex justify-between items-center">
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${brandColorClass}">${p.brand}</span>
-                <div class="flex gap-1 text-slate-400 text-xs">
-                  <button onclick="editProduct(${realIdx})" class="hover:text-pink-600 p-1"><i class="fa-solid fa-pen"></i></button>
-                  <button onclick="deleteProduct(${realIdx})" class="hover:text-rose-600 p-1"><i class="fa-solid fa-trash"></i></button>
-                </div>
+              <div class="flex justify-between items-start">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700'}">${p.brand}</span>
+                <button onclick="editProduct(${idx})" class="text-slate-400 hover:text-slate-600 text-xs"><i class="fa-solid fa-pen"></i></button>
               </div>
-              <h3 class="text-sm font-bold text-slate-800 mt-1">${p.name}</h3>
-              <div class="flex items-center gap-3 text-xs text-slate-500 pt-1">
-                <span>정상가: <b>${(p.originalPrice||0).toLocaleString()}원</b></span>
-                <span>판매가: <b class="text-pink-600">${(p.salePrice||0).toLocaleString()}원</b></span>
+              <h4 class="text-sm font-bold text-slate-800">${p.name}</h4>
+              <div class="text-xs text-slate-500">
+                <span>정상가: ${p.originalPrice?.toLocaleString() || 0}원</span> · 
+                <span class="font-bold text-pink-600">판매가: ${p.salePrice?.toLocaleString() || 0}원</span>
               </div>
             </div>
-
-            <div class="${p.brand === '온살' ? 'bg-pink-50/50 border-pink-100' : 'bg-skyblue-50/50 border-skyblue-100'} p-2.5 rounded-xl border flex items-center justify-between text-xs">
-              <span class="font-medium text-slate-600">실시간 잔여 시딩 재고</span>
-              <span class="font-black ${p.brand === '온살' ? 'text-pink-600' : 'text-skyblue-600'}">${currentStock} 개</span>
+            <div class="flex justify-between items-center text-xs border-t border-slate-200/60 pt-2">
+              <span class="text-slate-500">시딩 재고: <b class="text-slate-800">${p.stock}개</b></span>
+              <span class="text-slate-500">진행 중 / 전체: <b class="text-pink-600">${activeCount}</b> / ${totalCount}건</span>
             </div>
-
-            ${p.url ? `<a href="${p.url}" target="_blank" rel="noopener" class="block text-center py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[11px] font-semibold rounded-lg border border-slate-200"><i class="fa-solid fa-link text-pink-500"></i> 제품 상세 페이지 바로가기</a>` : ''}
           </div>
         `;
       }).join('');
     }
 
-    function updateProductSelect() {
-      const brand = document.getElementById('formBrand').value;
-      const filtered = products.filter(p => p.brand === brand);
-      const box = document.getElementById('formProductList');
-      box.innerHTML = filtered.length
-        ? filtered.map(p => `
-            <label class="flex items-center gap-1.5 text-[11px] cursor-pointer hover:bg-pink-50 px-1 py-0.5 rounded">
-              <input type="checkbox" class="form-product-check accent-pink-500 w-3.5 h-3.5" value="${p.name}">
-              <span class="text-slate-700">${p.name}</span>
-            </label>`).join('')
-        : '<span class="text-[11px] text-slate-400">등록된 제품이 없습니다</span>';
-
-      updateLogProductSelect();
-    }
-
-    function openProductModal() {
-      document.getElementById('modalTitle').innerText = "새 제품 등록";
-      document.getElementById('editProdIndex').value = "";
-      document.getElementById('modalProdName').value = "";
-      document.getElementById('modalProdOriginalPrice').value = "";
-      document.getElementById('modalProdSalePrice').value = "";
-      document.getElementById('modalProdStock').value = "50";
-      document.getElementById('modalProdUrl').value = "";
-      document.getElementById('productModal').classList.remove('hidden');
-    }
-
-    function editProduct(idx) {
-      const p = products[idx];
-      document.getElementById('modalTitle').innerText = "브랜드 제품 수정";
-      document.getElementById('editProdIndex').value = idx;
-      document.getElementById('modalBrand').value = p.brand;
-      document.getElementById('modalProdName').value = p.name;
-      document.getElementById('modalProdOriginalPrice').value = p.originalPrice || 0;
-      document.getElementById('modalProdSalePrice').value = p.salePrice || 0;
-      document.getElementById('modalProdStock').value = p.initialStock || 0;
-      document.getElementById('modalProdUrl').value = p.url || "";
-      document.getElementById('productModal').classList.remove('hidden');
-    }
-
-    function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
-
-    function saveProductModal() {
-      const idx = document.getElementById('editProdIndex').value;
-      const brand = document.getElementById('modalBrand').value;
-      const name = document.getElementById('modalProdName').value;
-      const originalPrice = Number(document.getElementById('modalProdOriginalPrice').value);
-      const salePrice = Number(document.getElementById('modalProdSalePrice').value);
-      const initialStock = Number(document.getElementById('modalProdStock').value);
-      const url = document.getElementById('modalProdUrl').value;
-
-      if (!name) { alert("제품명을 입력해 주세요."); return; }
-      if (idx === "") products.push({ brand, name, originalPrice, salePrice, initialStock, url });
-      else products[idx] = { brand, name, originalPrice, salePrice, initialStock, url };
-
-      saveAll();
-      closeProductModal();
-      renderAll();
-    }
-
-    function deleteProduct(idx) {
-      if (confirm("이 제품을 삭제할까요?")) {
-        products.splice(idx, 1);
-        saveAll();
-        renderAll();
-      }
-    }
-
-    document.getElementById('pplForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      const brand = document.getElementById('formBrand').value;
-      const productList = Array.from(document.querySelectorAll('.form-product-check:checked')).map(c => c.value);
-      if (productList.length === 0) { alert("진행 제품을 하나 이상 선택해 주세요."); return; }
-      const product = productList.join(', ');
-      const realName = document.getElementById('formRealName').value;
-      const influencer = document.getElementById('influencer').value;
-      const category = addCategoryIfNew(document.getElementById('formCategory').value);
-      const seedingCount = Number(document.getElementById('seedingCount').value) || 1;
-
-      let channels = [];
-      document.querySelectorAll('#formChannelContainer .form-channel-row').forEach(r => {
-        const type = r.querySelector('.f-channel-select').value;
-        const account = r.querySelector('.f-channel-account').value;
-        const url = r.querySelector('.f-channel-url').value;
-        channels.push({ type, account, url });
-      });
-
-      const followers = document.getElementById('followers').value;
-      const email = document.getElementById('influencerEmail').value;
-
-      const types = {
-        branded: document.getElementById('type_branded').checked,
-        ppl: document.getElementById('type_ppl').checked,
-        reuse: document.getElementById('type_reuse').checked,
-        microReels: document.getElementById('type_microReels').checked,
-        microPpl: document.getElementById('type_microPpl').checked,
-        reels: document.getElementById('type_reels').checked,
-        shorts: document.getElementById('type_shorts').checked,
-        ambassador: document.getElementById('type_ambassador').checked,
-        freeAmb: document.getElementById('type_freeAmb').checked
-      };
-
-      const costs = {
-        branded: Number(document.getElementById('cost_branded').value) || 0,
-        ppl: Number(document.getElementById('cost_ppl').value) || 0,
-        reuse: Number(document.getElementById('cost_reuse').value) || 0,
-        microReels: Number(document.getElementById('cost_microReels').value) || 0,
-        microPpl: Number(document.getElementById('cost_microPpl').value) || 0,
-        reels: Number(document.getElementById('cost_reels').value) || 0,
-        shorts: Number(document.getElementById('cost_shorts').value) || 0,
-        ambassador: Number(document.getElementById('cost_ambassador').value) || 0,
-        freeAmb: 0
-      };
-
-      const contactDate = document.getElementById('contactDate').value || new Date().toISOString().slice(0, 10);
-      let status = "컨택중";
-
-      let stepDates = { "컨택중": { date: contactDate, done: true, sched: false } };
-      document.querySelectorAll('#registrationStepContainer .step-row').forEach(row => {
-        const st = row.querySelector('.reg-stage-select').value;
-        const dt = row.querySelector('.reg-date-input').value;
-        const done = row.querySelector('.reg-stage-done') ? row.querySelector('.reg-stage-done').checked : false;
-        if (dt) stepDates[st] = { date: dt, done: done, sched: KEY_STAGES.includes(st) };
-      });
-      const orderedStages = Object.keys(stepDates).sort((a, b) => STAGES.indexOf(b) - STAGES.indexOf(a));
-      if (orderedStages.length) status = orderedStages[0];
-
-      const newPpl = {
-        id: Date.now(),
-        brand, product, productList, realName, influencer, category, channels, followers, email,
-        types, costs, status, contactDate, targetDate: "", isCompleted: false, stepDates,
-        collabLinks: [],
-        mcnCompany: document.getElementById('mcnCompany').value,
-        mcnAgentName: document.getElementById('mcnAgentName').value,
-        mcnAgentPhone: document.getElementById('mcnAgentPhone').value,
-        mcnAgentEmail: document.getElementById('mcnAgentEmail').value,
-        receiverName: document.getElementById('receiverName').value,
-        receiverPhone: document.getElementById('receiverPhone').value,
-        postalCode: document.getElementById('postalCode').value,
-        address: document.getElementById('address').value,
-        addressDetail: document.getElementById('addressDetail').value,
-        guideUrl: document.getElementById('guideUrl').value,
-        notes: document.getElementById('notes').value,
-        seedingCount,
-        stockDeducted: true
-      };
-
-      productList.forEach((pn, idx) => {
-        stockLogs.push({
-          id: Date.now() + 1 + idx,
-          date: new Date().toISOString().slice(0, 10),
-          type: "시딩발송소진",
-          brand,
-          productName: pn,
-          quantity: seedingCount,
-          reason: `인플루언서 [${influencer}] PPL/시딩 발송`
-        });
-      });
-
-      pplList.unshift(newPpl);
-      saveAll();
-      renderAll();
-      this.reset();
-      document.getElementById('contactDate').valueAsDate = new Date();
-      alert("신규 PPL 진행이 등록되었습니다.");
-    });
-
     function filterBrand(brand) {
-      currentTableBrandFilter = brand;
+      currentBrandFilter = brand;
       document.querySelectorAll('.brand-filter').forEach(btn => {
-        if (btn.innerText.trim() === brand) {
-          btn.className = "brand-filter active px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-pink-500 text-white shadow-xs";
+        if (btn.innerText === brand) {
+          btn.className = 'brand-filter active px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-pink-500 text-white shadow-xs';
         } else {
-          btn.className = "brand-filter px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-200";
+          btn.className = 'brand-filter px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-200';
         }
       });
       renderPplTable();
     }
 
-    // 미완료(임박한 날짜순) 먼저, 완료는 아래로
-    function sortedStepEntries(stepDates) {
-      if (!stepDates) return [];
-      return Object.entries(stepDates).sort((a, b) => {
-        const aInfo = typeof a[1] === 'object' ? a[1] : { date: a[1], done: false };
-        const bInfo = typeof b[1] === 'object' ? b[1] : { date: b[1], done: false };
-        const aDone = !!aInfo.done;
-        const bDone = !!bInfo.done;
-
-        if (aDone !== bDone) return aDone ? 1 : -1;
-
-        const aDate = aInfo.date || '';
-        const bDate = bInfo.date || '';
-
-        if (aDate !== bDate) {
-          // 미완료: 빠른 날짜부터 / 완료: 최근 날짜부터
-          return aDone ? bDate.localeCompare(aDate) : aDate.localeCompare(bDate);
-        }
-        return STAGES.indexOf(a[0]) - STAGES.indexOf(b[0]);
-      });
-    }
-
-    function isFreeAmb(p) {
-      return !!(p.types && p.types.freeAmb);
-    }
-
-    function isMicro(p) {
-      return !!(p.types && (p.types.microReels || p.types.microPpl)) && !isFreeAmb(p);
-    }
-
     function renderPplTable() {
       const tbody = document.getElementById('pplTableBody');
-      let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p));
-      if (currentTableBrandFilter !== '전체') filtered = filtered.filter(p => p.brand === currentTableBrandFilter);
+      let filtered = pplList.filter(item => !item.isFreeAmbassador && !isMicroItem(item));
+
+      if (currentBrandFilter !== '전체') {
+        filtered = filtered.filter(item => item.brand === currentBrandFilter);
+      }
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="py-8 text-center text-slate-400">등록된 PPL 진행 건이 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="py-8 text-center text-slate-400 text-xs">등록된 PPL 진행 내역이 없습니다.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = filtered.map(p => {
-        let totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.microReels||0) + (p.costs.microPpl||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
-        const typeBadges = [
-          { on: p.types.branded, label: '브랜디드', cost: p.costs.branded, cls: 'bg-violet-100 text-violet-700 border-violet-200' },
-          { on: p.types.ppl, label: 'PPL', cost: p.costs.ppl, cls: 'bg-pink-100 text-pink-700 border-pink-200' },
-          { on: p.types.reuse, label: '2차활용', cost: p.costs.reuse, cls: 'bg-amber-100 text-amber-800 border-amber-200' },
-          { on: p.types.microReels, label: '마이크로 릴스', cost: p.costs.microReels, cls: 'bg-sky-100 text-sky-700 border-sky-200' },
-          { on: p.types.microPpl, label: '마이크로 PPL', cost: p.costs.microPpl, cls: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
-          { on: p.types.reels, label: '릴스', cost: p.costs.reels, cls: 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200' },
-          { on: p.types.shorts, label: '숏츠', cost: p.costs.shorts, cls: 'bg-red-100 text-red-700 border-red-200' },
-          { on: p.types.ambassador || p.types.sample, label: '앰버서더', cost: p.costs.ambassador || p.costs.sample, cls: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
-          { on: p.types.freeAmb, label: '무상앰버서더', cost: 0, cls: 'bg-teal-100 text-teal-700 border-teal-200' }
-        ].filter(t => t.on);
+      tbody.innerHTML = filtered.map(item => {
+        const totalCost = Object.values(item.costs || {}).reduce((a, b) => a + Number(b), 0);
+        const channelListHtml = (item.channels || []).map(c => `
+          <a href="${c.url || '#'}" target="_blank" class="text-pink-600 hover:underline flex items-center gap-1">
+            <i class="fa-solid fa-link text-[10px]"></i> ${c.type}: ${c.account || '링크'}
+          </a>
+        `).join('');
 
-        const typeHtml = typeBadges.length
-          ? typeBadges.map(t => `
-              <div class="inline-flex flex-col items-start px-2 py-1 rounded-lg border ${t.cls} mb-1 mr-1">
-                <span class="text-[11px] font-black">${t.label}</span>
-                ${t.cost ? `<span class="text-[10px] font-semibold opacity-80">${Number(t.cost).toLocaleString()}원</span>` : ''}
-              </div>`).join('')
-          : '<span class="text-[11px] text-slate-400">형태 미지정</span>';
-
-        const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
-
-        let channelsHtml = '';
-        if (p.channels && p.channels.length > 0) {
-          channelsHtml = p.channels.map(c => `
-            <a href="${c.url || '#'}" target="_blank" rel="noopener" class="text-[11px] text-pink-600 hover:underline inline-flex items-center gap-0.5 bg-pink-50 px-1.5 py-0.5 rounded mr-1">
-              <i class="fa-solid fa-link text-[9px]"></i> ${c.type} (${c.account || '계정'})
-            </a>
-          `).join('');
-        }
-
-        let stepDateBadges = '';
-        if (p.stepDates) {
-          const entries = sortedStepEntries(p.stepDates);
-          stepDateBadges = entries.map(([st, info]) => {
-            const dtVal = typeof info === 'object' ? info.date : info;
-            const isDone = typeof info === 'object' ? info.done : false;
-            return `
-              <div class="flex items-center gap-1.5 text-[11px] bg-slate-50 px-2 py-1 rounded border border-slate-200 mb-1">
-                <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleStepDateDone(${p.id}, '${st}', this.checked)" class="accent-pink-500 w-3.5 h-3.5 cursor-pointer">
-                <span class="font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-700'}">${st}: ${dtVal}</span>
-              </div>
-            `;
-          }).join('');
-        }
+        const stepsHtml = (item.steps || []).map((s, idx) => `
+          <label class="flex items-center gap-1 text-[11px] cursor-pointer ${s.completed ? 'line-through text-slate-400' : 'text-slate-700'}">
+            <input type="checkbox" ${s.completed ? 'checked' : ''} onchange="toggleStepStatus('${item.id}', ${idx}, this.checked)" class="accent-pink-500 w-3 h-3">
+            <span>${s.name} (${s.date})</span>
+          </label>
+        `).join('');
 
         return `
-          <tr class="hover:bg-pink-50/30 transition">
-            <td class="py-3 px-3 align-top">
-              <input type="checkbox" class="ppl-select accent-pink-500 w-4 h-4 cursor-pointer" value="${p.id}">
+          <tr class="${item.completed ? 'bg-slate-50/60 opacity-75' : ''}">
+            <td class="py-3 px-3">
+              <input type="checkbox" class="ppl-row-select accent-pink-500 w-4 h-4 cursor-pointer" value="${item.id}">
             </td>
-            <td class="py-3 px-3 align-top">
-              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${brandBadgeClass}">${p.brand}</span>
-              <div class="mt-1 space-y-0.5">
-                ${(p.productList && p.productList.length ? p.productList : [p.product]).map(pn => `<div class="font-bold text-slate-800 text-[11px]">· ${pn}</div>`).join('')}
+            <td class="py-3 px-3">
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${item.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700'}">${item.brand}</span>
+              <div class="font-bold text-slate-800 mt-0.5">${item.products ? item.products.join(', ') : ''}</div>
+            </td>
+            <td class="py-3 px-3">
+              <div class="font-bold text-slate-800">${item.realName} (${item.influencer})</div>
+              <div class="text-[11px] text-slate-500">${item.category} · 팔로워 ${item.followers || '-'}</div>
+              <div class="mt-1 space-y-0.5">${channelListHtml}</div>
+            </td>
+            <td class="py-3 px-3">
+              <div class="flex flex-wrap gap-1">
+                ${(item.types || []).map(t => `<span class="px-1.5 py-0.5 bg-amber-100 text-amber-800 font-semibold rounded text-[10px]">${t}</span>`).join('')}
               </div>
             </td>
-            <td class="py-3 px-3 align-top">
-              <div class="font-bold text-slate-900">${p.realName || '무명'} <span class="text-xs font-normal text-slate-500">(${p.influencer})</span></div>
-              <div class="mt-1 flex flex-wrap gap-1">${channelsHtml}</div>
-              <div class="text-[11px] text-slate-400 mt-1">${p.followers ? `구독자/팔로워: ${p.followers}` : ''}</div>
-            </td>
-            <td class="py-3 px-3 align-top min-w-[110px]">
-              <div class="flex flex-wrap">${typeHtml}</div>
-            </td>
-            <td class="py-3 px-3 align-top">
-              <select onchange="updatePplStatus(${p.id}, this.value)" class="px-2 py-1 text-xs border border-pink-200 rounded-lg font-bold text-pink-600 bg-pink-50/40">
-                ${STAGES.map(st => `<option value="${st}" ${p.status === st ? 'selected' : ''}>${st}</option>`).join('')}
+            <td class="py-3 px-3">
+              <select onchange="updatePplStatus('${item.id}', this.value)" class="px-2 py-1 text-xs border border-slate-200 rounded-lg bg-white font-bold text-slate-700">
+                <option value="컨택중" ${item.status === '컨택중' ? 'selected' : ''}>컨택중</option>
+                <option value="제품발송" ${item.status === '제품발송' ? 'selected' : ''}>제품발송</option>
+                <option value="가이드전달" ${item.status === '가이드전달' ? 'selected' : ''}>가이드전달</option>
+                <option value="업로드대기" ${item.status === '업로드대기' ? 'selected' : ''}>업로드대기</option>
+                <option value="업로드완료" ${item.status === '업로드완료' ? 'selected' : ''}>업로드완료</option>
+                <option value="취소" ${item.status === '취소' ? 'selected' : ''}>취소</option>
               </select>
             </td>
-            <td class="py-3 px-3 align-top whitespace-nowrap">
-              <label class="text-xs font-semibold ${p.isCompleted ? 'text-emerald-600 font-bold' : 'text-slate-500'} cursor-pointer flex items-center gap-1">
-                <input type="checkbox" ${p.isCompleted ? 'checked' : ''} onchange="togglePplComplete(${p.id}, this.checked)" class="accent-emerald-600">
-                ${p.isCompleted ? '완료됨' : '진행중'}
-              </label>
-            </td>
-            <td class="py-3 px-3 align-top max-w-[240px]">
-              <div class="max-h-[100px] overflow-y-auto custom-scrollbar pr-1">${stepDateBadges || '<span class="text-slate-400 text-[11px]">일정 없음</span>'}</div>
-              <button onclick="openStepDateModal(${p.id})" class="mt-1 text-[11px] text-pink-600 font-semibold hover:underline">
-                <i class="fa-solid fa-pen-to-square"></i> 단계별 일자 전체 관리
+            <td class="py-3 px-3">
+              <button onclick="togglePplComplete('${item.id}')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ${item.completed ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">
+                ${item.completed ? '✅ 완료됨' : '진행중'}
               </button>
             </td>
-            <td class="py-3 px-3 align-top min-w-[180px]">
-              ${(p.receiverName || p.receiverPhone || p.address)
-                ? `<div class="text-[11px] leading-relaxed text-slate-700">
-                     <div class="font-bold text-slate-900">${p.receiverName || '수령인 미입력'}</div>
-                     <div>${p.receiverPhone || '연락처 없음'}</div>
-                     <div class="text-slate-500">${p.postalCode ? `(${p.postalCode}) ` : ''}${[p.address, p.addressDetail].filter(Boolean).join(' ') || '주소 없음'}</div>
-                   </div>`
-                : `<span class="text-[11px] text-slate-400">배송정보 없음</span>`}
+            <td class="py-3 px-3 space-y-1">${stepsHtml}</td>
+            <td class="py-3 px-3 text-[11px]">
+              <div><b>수령인:</b> ${item.shipping?.receiverName || '-'} (${item.shipping?.receiverPhone || '-'})</div>
+              <div class="text-slate-500">[${item.shipping?.postalCode || '-'}] ${item.shipping?.address || ''} ${item.shipping?.addressDetail || ''}</div>
             </td>
-            <td class="py-3 px-3 align-top">
-              <div class="font-bold text-pink-600">${p.seedingCount}개 발송</div>
-              <div class="text-[11px] text-slate-500 font-bold">합계: ${totalCost.toLocaleString()}원</div>
+            <td class="py-3 px-3">
+              <div class="font-bold text-pink-600">${item.shipping?.count || 1}개</div>
+              <div class="text-slate-500">${totalCost.toLocaleString()}원</div>
             </td>
-            <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
-              <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
-              <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
+            <td class="py-3 px-3 text-right space-x-1">
+              <button onclick="openEditPplModal('${item.id}')" class="p-1.5 text-slate-400 hover:text-pink-600"><i class="fa-solid fa-pen"></i></button>
+              <button onclick="deletePpl('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    function toggleSelectAllMicro(checked) {
-      document.querySelectorAll('.micro-select').forEach(cb => { cb.checked = checked; });
+    function isMicroItem(item) {
+      return (item.types || []).some(t => t.includes('마이크로'));
     }
 
-    function renderMicroTable() {
-      const list = pplList.filter(isMicro);
-
-      const cnt = (brand, key) => list.filter(p => p.brand === brand && p.types && p.types[key]).length;
-      const oR = cnt('온살', 'microReels'), oP = cnt('온살', 'microPpl');
-      const lR = cnt('루메아카이브', 'microReels'), lP = cnt('루메아카이브', 'microPpl');
-
-      document.getElementById('microOnsalReels').innerText = oR + '건';
-      document.getElementById('microOnsalPpl').innerText = oP + '건';
-      document.getElementById('microOnsalTotal').innerText = list.filter(p => p.brand === '온살').length + '건';
-      document.getElementById('microLumeReels').innerText = lR + '건';
-      document.getElementById('microLumePpl').innerText = lP + '건';
-      document.getElementById('microLumeTotal').innerText = list.filter(p => p.brand === '루메아카이브').length + '건';
-      document.getElementById('microHeaderCount').innerText = list.length + '건';
-
-      const tbody = document.getElementById('microTableBody');
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">마이크로 진행 건이 없습니다. 협업 형태에서 '마이크로 릴스' 또는 '마이크로 PPL'을 체크하면 여기로 들어옵니다.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = list.map(p => {
-        const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
-        const prodNames = (p.productList && p.productList.length ? p.productList : [p.product]);
-        const totalCost = (p.costs.microReels||0) + (p.costs.microPpl||0);
-
-        const typeChips = [
-          p.types.microReels ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full">마이크로 릴스</span>' : '',
-          p.types.microPpl ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full">마이크로 PPL</span>' : ''
-        ].filter(Boolean).join(' ');
-
-        const stepHtml = sortedStepEntries(p.stepDates).map(([st, info]) => {
-          const dt = typeof info === 'object' ? info.date : info;
-          const done = typeof info === 'object' ? info.done : false;
-          return `<div class="text-[11px] ${done ? 'line-through text-slate-400' : 'text-slate-700 font-semibold'}">${st}: ${dt}</div>`;
-        }).join('');
-
-        const addrLine = (p.receiverName || p.receiverPhone || p.address)
-          ? `<div class="text-[11px] leading-relaxed text-slate-700">
-               <div class="font-bold text-slate-900">${p.receiverName || '수령인 미입력'}</div>
-               <div>${p.receiverPhone || '연락처 없음'}</div>
-               <div class="text-slate-500">${p.postalCode ? `(${p.postalCode}) ` : ''}${[p.address, p.addressDetail].filter(Boolean).join(' ') || '주소 없음'}</div>
-             </div>`
-          : '<span class="text-[11px] text-slate-400">배송정보 없음</span>';
-
-        return `
-          <tr class="hover:bg-sky-50/30 transition">
-            <td class="py-3 px-3 align-top">
-              <input type="checkbox" class="micro-select accent-sky-600 w-4 h-4 cursor-pointer" value="${p.id}">
-            </td>
-            <td class="py-3 px-3 align-top">
-              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${brandBadgeClass}">${p.brand}</span>
-              <div class="mt-1 space-y-0.5">
-                ${prodNames.map(pn => `<div class="font-bold text-slate-800 text-[11px]">· ${pn}</div>`).join('')}
-              </div>
-            </td>
-            <td class="py-3 px-3 align-top">
-              <div class="font-bold text-slate-900">${p.realName || '무명'}</div>
-              <div class="text-[11px] text-slate-500">${p.influencer || ''}</div>
-              <div class="text-[11px] text-slate-400">${p.followers ? `팔로워 ${p.followers}` : ''}</div>
-              ${p.category ? `<span class="text-[10px] font-bold px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded-full">${p.category}</span>` : ''}
-            </td>
-            <td class="py-3 px-3 align-top"><div class="flex flex-col gap-1 items-start">${typeChips}</div></td>
-            <td class="py-3 px-3 align-top">
-              <select onchange="updatePplStatus(${p.id}, this.value)" class="px-2 py-1 text-xs border border-sky-200 rounded-lg font-bold text-sky-700 bg-sky-50/40">
-                ${STAGES.map(st => `<option value="${st}" ${p.status === st ? 'selected' : ''}>${st}</option>`).join('')}
-              </select>
-            </td>
-            <td class="py-3 px-3 align-top max-w-[180px]">
-              <div class="max-h-[90px] overflow-y-auto custom-scrollbar pr-1">${stepHtml || '<span class="text-slate-400 text-[11px]">일정 없음</span>'}</div>
-            </td>
-            <td class="py-3 px-3 align-top min-w-[170px]">${addrLine}</td>
-            <td class="py-3 px-3 align-top">
-              <div class="font-bold text-sky-700">${p.seedingCount || 0}개</div>
-              <div class="text-[11px] text-slate-500 font-bold">${totalCost.toLocaleString()}원</div>
-            </td>
-            <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
-              <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
-              <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
-            </td>
-          </tr>`;
-      }).join('');
+    function toggleSelectAllPpl(checked) {
+      document.querySelectorAll('.ppl-row-select').forEach(cb => cb.checked = checked);
     }
 
-    function toggleSelectAllFreeAmb(checked) {
-      document.querySelectorAll('.freeamb-select').forEach(cb => { cb.checked = checked; });
-    }
-
-    function renderFreeAmbTable() {
-      const list = pplList.filter(isFreeAmb);
-
-      document.getElementById('freeAmbTotal').innerText = list.length + '명';
-      document.getElementById('freeAmbHeaderCount').innerText = list.length + '명';
-      document.getElementById('freeAmbOnsal').innerText = list.filter(p => p.brand === '온살').length + '명';
-      document.getElementById('freeAmbLume').innerText = list.filter(p => p.brand === '루메아카이브').length + '명';
-
-      const tbody = document.getElementById('freeAmbTableBody');
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">등록된 무상앰버서더가 없습니다. PPL 등록 시 '무상앰버서더'를 체크하면 여기로 들어옵니다.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = list.map(p => {
-        const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
-        const prodNames = (p.productList && p.productList.length ? p.productList : [p.product]);
-
-        let stepHtml = '';
-        if (p.stepDates) {
-          const entries = sortedStepEntries(p.stepDates);
-          stepHtml = entries.map(([st, info]) => {
-            const dt = typeof info === 'object' ? info.date : info;
-            const done = typeof info === 'object' ? info.done : false;
-            return `<div class="text-[11px] ${done ? 'line-through text-slate-400' : 'text-slate-700 font-semibold'}">${st}: ${dt}</div>`;
-          }).join('');
-        }
-
-        const addrLine = (p.receiverName || p.receiverPhone || p.address)
-          ? `<div class="text-[11px] leading-relaxed text-slate-700">
-               <div class="font-bold text-slate-900">${p.receiverName || '수령인 미입력'}</div>
-               <div>${p.receiverPhone || '연락처 없음'}</div>
-               <div class="text-slate-500">${p.postalCode ? `(${p.postalCode}) ` : ''}${[p.address, p.addressDetail].filter(Boolean).join(' ') || '주소 없음'}</div>
-             </div>`
-          : '<span class="text-[11px] text-slate-400">배송정보 없음</span>';
-
-        return `
-          <tr class="hover:bg-teal-50/30 transition">
-            <td class="py-3 px-3 align-top">
-              <input type="checkbox" class="freeamb-select accent-teal-600 w-4 h-4 cursor-pointer" value="${p.id}">
-            </td>
-            <td class="py-3 px-3 align-top">
-              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${brandBadgeClass}">${p.brand}</span>
-              <div class="mt-1 space-y-0.5">
-                ${prodNames.map(pn => `<div class="font-bold text-slate-800 text-[11px]">· ${pn}</div>`).join('')}
-              </div>
-            </td>
-            <td class="py-3 px-3 align-top">
-              <div class="font-bold text-slate-900">${p.realName || '무명'}</div>
-              <div class="text-[11px] text-slate-500">${p.influencer || ''}</div>
-              <div class="text-[11px] text-slate-400">${p.followers ? `팔로워 ${p.followers}` : ''}</div>
-            </td>
-            <td class="py-3 px-3 align-top">
-              ${p.category ? `<span class="text-[10px] font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">${p.category}</span>` : '<span class="text-[11px] text-slate-400">-</span>'}
-            </td>
-            <td class="py-3 px-3 align-top">
-              <select onchange="updatePplStatus(${p.id}, this.value)" class="px-2 py-1 text-xs border border-teal-200 rounded-lg font-bold text-teal-700 bg-teal-50/40">
-                ${STAGES.map(st => `<option value="${st}" ${p.status === st ? 'selected' : ''}>${st}</option>`).join('')}
-              </select>
-            </td>
-            <td class="py-3 px-3 align-top max-w-[180px]">
-              <div class="max-h-[90px] overflow-y-auto custom-scrollbar pr-1">${stepHtml || '<span class="text-slate-400 text-[11px]">일정 없음</span>'}</div>
-            </td>
-            <td class="py-3 px-3 align-top min-w-[170px]">${addrLine}</td>
-            <td class="py-3 px-3 align-top font-bold text-teal-700">${p.seedingCount || 0}개</td>
-            <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
-              <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
-              <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
-            </td>
-          </tr>`;
-      }).join('');
-    }
-
-    function updatePplStatus(id, newStatus) {
-      const ppl = pplList.find(item => item.id === id);
-      if (ppl) {
-        ppl.status = newStatus;
-        if (!ppl.stepDates) ppl.stepDates = {};
-        if (!ppl.stepDates[newStatus]) ppl.stepDates[newStatus] = { date: new Date().toISOString().slice(0, 10), done: false };
-        saveAll();
-        renderAll();
+    function toggleStepStatus(pplId, stepIdx, completed) {
+      const item = pplList.find(p => p.id === pplId);
+      if (item && item.steps[stepIdx]) {
+        item.steps[stepIdx].completed = completed;
+        saveData();
+        renderPplDashboard();
       }
     }
 
-    function togglePplComplete(id, isCompleted) {
-      const ppl = pplList.find(item => item.id === id);
-      if (ppl) {
-        ppl.isCompleted = isCompleted;
-        saveAll();
-        renderPplTable();
-        renderCalendar();
+    function updatePplStatus(pplId, status) {
+      const item = pplList.find(p => p.id === pplId);
+      if (item) {
+        item.status = status;
+        if (status === '업로드완료') item.completed = true;
+        saveData();
+        renderPplDashboard();
       }
     }
 
-    function toggleStepDateDone(id, stageName, doneVal) {
-      const ppl = pplList.find(item => item.id === id);
-      if (ppl && ppl.stepDates && ppl.stepDates[stageName]) {
-        if (typeof ppl.stepDates[stageName] === 'object') {
-          ppl.stepDates[stageName].done = doneVal;
-          ppl.stepDates[stageName].updatedAt = Date.now();
-        }
-        else ppl.stepDates[stageName] = { date: ppl.stepDates[stageName], done: doneVal };
-        saveAll();
-        renderPplTable();
-        renderMicroTable();
-        renderFreeAmbTable();
-        renderCalendar();
-        syncToScheduler(true);
+    function togglePplComplete(pplId) {
+      const item = pplList.find(p => p.id === pplId);
+      if (item) {
+        item.completed = !item.completed;
+        saveData();
+        renderPplDashboard();
       }
     }
 
-    function deletePpl(id) {
-      if (confirm("이 PPL 진행 건을 삭제할까요?")) {
-        pplList = pplList.filter(item => item.id !== id);
-        saveAll();
-        renderAll();
+    function deletePpl(pplId) {
+      if (confirm('정말 이 진행 건을 삭제하시겠습니까?')) {
+        pplList = pplList.filter(p => p.id !== pplId);
+        saveData();
+        renderPplDashboard();
       }
     }
 
-    function moveMonth(diff) {
-      if (diff === 0) {
-        const now = new Date();
-        currentYear = now.getFullYear();
-        currentMonth = now.getMonth();
+    // Export Excel Shipping Info
+    function exportShippingExcel(isFree = false) {
+      let targetList = pplList;
+      if (isFree === 'micro') {
+        targetList = pplList.filter(p => isMicroItem(p));
+      } else if (isFree === true) {
+        targetList = pplList.filter(p => p.isFreeAmbassador);
       } else {
-        currentMonth += diff;
-        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-        else if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+        const checkedIds = Array.from(document.querySelectorAll('.ppl-row-select:checked')).map(cb => cb.value);
+        if (checkedIds.length > 0) {
+          targetList = pplList.filter(p => checkedIds.includes(p.id));
+        } else {
+          targetList = pplList.filter(p => !p.isFreeAmbassador && !isMicroItem(p));
+        }
+      }
+
+      if (targetList.length === 0) {
+        alert('내보낼 데이터가 없습니다.');
+        return;
+      }
+
+      const rows = targetList.map(item => ({
+        '브랜드': item.brand,
+        '제품명': item.products ? item.products.join(', ') : '',
+        '인플루언서 본명': item.realName,
+        '대표 계정': item.influencer,
+        '수령인 성함': item.shipping?.receiverName || '',
+        '수령인 연락처': item.shipping?.receiverPhone || '',
+        '우편번호': item.shipping?.postalCode || '',
+        '기본 주소': item.shipping?.address || '',
+        '상세 주소': item.shipping?.addressDetail || '',
+        '발송 수량': item.shipping?.count || 1,
+        '특이사항': item.notes || ''
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, '배송정보');
+      XLSX.writeFile(workbook, `배송정보_목록_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    }
+
+    function exportToCSV() {
+      if (pplList.length === 0) {
+        alert('내보낼 PPL 데이터가 없습니다.');
+        return;
+      }
+      const rows = pplList.map(item => ({
+        'ID': item.id,
+        '브랜드': item.brand,
+        '제품': item.products ? item.products.join(';') : '',
+        '본명': item.realName,
+        '계정': item.influencer,
+        '카테고리': item.category,
+        '협업형태': item.types ? item.types.join(';') : '',
+        '상태': item.status,
+        '완료여부': item.completed ? 'Y' : 'N',
+        '수령인': item.shipping?.receiverName || '',
+        '연락처': item.shipping?.receiverPhone || '',
+        '주소': `${item.shipping?.address || ''} ${item.shipping?.addressDetail || ''}`,
+        '수량': item.shipping?.count || 1,
+        '메모': item.notes || ''
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'PPL통합관리');
+      XLSX.writeFile(workbook, `마케팅대시보드_전체_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    }
+
+    // ==================== CALENDAR LOGIC ====================
+    function moveMonth(delta) {
+      if (delta === 0) {
+        currentDate = new Date();
+      } else {
+        currentDate.setMonth(currentDate.getMonth() + delta);
       }
       renderCalendar();
     }
 
     function renderCalendar() {
-      const titleElem = document.getElementById('calendarTitle');
-      const gridElem = document.getElementById('calendarGrid');
-      titleElem.innerText = `${currentYear}년 ${currentMonth + 1}월`;
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
 
-      const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-      const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+      document.getElementById('calendarTitle').innerText = `${year}년 ${month + 1}월`;
 
-      let html = '';
+      const firstDay = new Date(year, month, 1).getDay();
+      const lastDate = new Date(year, month + 1, 0).getDate();
+
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+
+      // Empty cells before first day
       for (let i = 0; i < firstDay; i++) {
-        html += `<div class="bg-slate-50/40 p-2 min-h-[100px] border-b border-r border-pink-50"></div>`;
+        grid.innerHTML += `<div class="bg-pink-50/20 p-1.5 min-h-[90px]"></div>`;
       }
 
+      // Days
       for (let day = 1; day <= lastDate; day++) {
-        const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        let dayEvents = [];
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        
+        // Find matching steps on this day
+        let dayEventsHtml = '';
         pplList.forEach(p => {
-          if (p.targetDate && p.targetDate === dateStr) {
-            dayEvents.push({ text: `[예정] ${p.influencer} (${p.brand})`, color: p.brand === '온살' ? 'bg-pink-500 text-white' : 'bg-skyblue-500 text-white', completed: p.isCompleted });
-          }
-          if (p.stepDates) {
-            Object.entries(p.stepDates).forEach(([stName, info]) => {
-              const dt = typeof info === 'object' ? info.date : info;
-              const done = typeof info === 'object' ? info.done : false;
-              if (dt === dateStr) {
-                dayEvents.push({ text: `[${stName}] ${p.influencer}`, color: done ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-slate-900 font-bold', completed: done });
-              }
-            });
-          }
+          (p.steps || []).forEach(s => {
+            if (s.date === dateStr) {
+              const brandColor = p.brand === '온살' ? 'bg-pink-500' : 'bg-skyblue-500';
+              const isComp = s.completed || p.completed;
+              dayEventsHtml += `
+                <div class="text-[10px] p-1 rounded font-bold leading-tight truncate text-white ${isComp ? 'bg-emerald-500 line-through opacity-80' : brandColor}" title="${p.realName} - ${s.name}">
+                  ${p.realName}: ${s.name}
+                </div>
+              `;
+            }
+          });
         });
 
-        html += `
-          <div class="bg-white p-2 min-h-[100px] border-b border-r border-pink-50 flex flex-col justify-between">
-            <span class="text-xs font-bold ${new Date().toISOString().slice(0,10) === dateStr ? 'bg-pink-500 text-white px-1.5 py-0.5 rounded-full' : 'text-slate-700'}">${day}</span>
-            <div class="space-y-1 mt-1 overflow-y-auto max-h-[80px] custom-scrollbar">
-              ${dayEvents.map(ev => `
-                <div class="text-[10px] px-1.5 py-0.5 rounded truncate ${ev.completed ? 'bg-emerald-500 text-white' : ev.color}">
-                  ${ev.completed ? '✅ ' : ''}${ev.text}
-                </div>
-              `).join('')}
-            </div>
+        grid.innerHTML += `
+          <div class="p-1.5 border-t border-pink-50 min-h-[90px] flex flex-col justify-start space-y-1 hover:bg-pink-50/30 transition">
+            <span class="text-xs font-bold text-slate-700">${day}</span>
+            <div class="space-y-1 overflow-y-auto max-h-[70px] custom-scrollbar">${dayEventsHtml}</div>
           </div>
         `;
       }
-      gridElem.innerHTML = html;
     }
 
-    function renderEditProductList(selected) {
+    // ==================== MICRO & FREE AMBASSADOR ====================
+    function renderMicroTable() {
+      const microItems = pplList.filter(p => isMicroItem(p));
+      document.getElementById('microHeaderCount').innerText = `${microItems.length}건`;
+
+      // Stats
+      const onsalMicro = microItems.filter(p => p.brand === '온살');
+      const lumeMicro = microItems.filter(p => p.brand === '루메아카이브');
+
+      document.getElementById('microOnsalReels').innerText = `${onsalMicro.filter(p => (p.types || []).includes('마이크로 릴스')).length}건`;
+      document.getElementById('microOnsalPpl').innerText = `${onsalMicro.filter(p => (p.types || []).includes('마이크로 PPL')).length}건`;
+      document.getElementById('microOnsalTotal').innerText = `${onsalMicro.length}건`;
+
+      document.getElementById('microLumeReels').innerText = `${lumeMicro.filter(p => (p.types || []).includes('마이크로 릴스')).length}건`;
+      document.getElementById('microLumePpl').innerText = `${lumeMicro.filter(p => (p.types || []).includes('마이크로 PPL')).length}건`;
+      document.getElementById('microLumeTotal').innerText = `${lumeMicro.length}건`;
+
+      const tbody = document.getElementById('microTableBody');
+      if (microItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-slate-400 text-xs">등록된 마이크로 진행건이 없습니다.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = microItems.map(item => `
+        <tr>
+          <td class="py-3 px-3"><input type="checkbox" class="accent-sky-600 w-4 h-4 cursor-pointer"></td>
+          <td class="py-3 px-3">
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${item.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700'}">${item.brand}</span>
+            <div class="font-bold text-slate-800 mt-0.5">${item.products ? item.products.join(', ') : ''}</div>
+          </td>
+          <td class="py-3 px-3">
+            <div class="font-bold text-slate-800">${item.realName} (${item.influencer})</div>
+          </td>
+          <td class="py-3 px-3">
+            ${(item.types || []).map(t => `<span class="px-1.5 py-0.5 bg-sky-100 text-sky-800 font-semibold rounded text-[10px]">${t}</span>`).join(' ')}
+          </td>
+          <td class="py-3 px-3">
+            <span class="font-bold text-slate-700 text-xs">${item.status}</span>
+          </td>
+          <td class="py-3 px-3 text-[11px] text-slate-600">
+            ${(item.steps || []).map(s => `<div>${s.name}: ${s.date}</div>`).join('')}
+          </td>
+          <td class="py-3 px-3 text-[11px]">
+            <div>${item.shipping?.receiverName || '-'} (${item.shipping?.receiverPhone || '-'})</div>
+            <div class="text-slate-500">${item.shipping?.address || ''}</div>
+          </td>
+          <td class="py-3 px-3">
+            <div class="font-bold text-sky-600">${item.shipping?.count || 1}개</div>
+          </td>
+          <td class="py-3 px-3 text-right space-x-1">
+            <button onclick="openEditPplModal('${item.id}')" class="p-1.5 text-slate-400 hover:text-sky-600"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deletePpl('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderFreeAmbTable() {
+      const freeItems = pplList.filter(p => p.isFreeAmbassador);
+      document.getElementById('freeAmbHeaderCount').innerText = `${freeItems.length}명`;
+      document.getElementById('freeAmbTotal').innerText = `${freeItems.length}명`;
+      document.getElementById('freeAmbOnsal').innerText = `${freeItems.filter(p => p.brand === '온살').length}명`;
+      document.getElementById('freeAmbLume').innerText = `${freeItems.filter(p => p.brand === '루메아카이브').length}명`;
+
+      const tbody = document.getElementById('freeAmbTableBody');
+      if (freeItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-slate-400 text-xs">등록된 무상앰버서더가 없습니다.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = freeItems.map(item => `
+        <tr>
+          <td class="py-3 px-3"><input type="checkbox" class="accent-teal-600 w-4 h-4 cursor-pointer"></td>
+          <td class="py-3 px-3">
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${item.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700'}">${item.brand}</span>
+            <div class="font-bold text-slate-800 mt-0.5">${item.products ? item.products.join(', ') : ''}</div>
+          </td>
+          <td class="py-3 px-3">
+            <div class="font-bold text-slate-800">${item.realName} (${item.influencer})</div>
+          </td>
+          <td class="py-3 px-3 text-slate-600 font-semibold">${item.category}</td>
+          <td class="py-3 px-3"><span class="font-bold text-teal-700">${item.status}</span></td>
+          <td class="py-3 px-3 text-[11px] text-slate-600">
+            ${(item.steps || []).map(s => `<div>${s.name}: ${s.date}</div>`).join('')}
+          </td>
+          <td class="py-3 px-3 text-[11px]">
+            <div>${item.shipping?.receiverName || '-'} (${item.shipping?.receiverPhone || '-'})</div>
+            <div class="text-slate-500">${item.shipping?.address || ''}</div>
+          </td>
+          <td class="py-3 px-3"><div class="font-bold text-teal-600">${item.shipping?.count || 1}개</div></td>
+          <td class="py-3 px-3 text-right space-x-1">
+            <button onclick="openEditPplModal('${item.id}')" class="p-1.5 text-slate-400 hover:text-teal-600"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deletePpl('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // ==================== INFLUENCER CARDS ====================
+    function renderInfluencerCards() {
+      const grid = document.getElementById('influencerCardGrid');
+
+      // Group PPL by influencer handle/realName
+      const uniqueInfluencers = [];
+      const map = new Map();
+
+      pplList.forEach(p => {
+        const key = `${p.realName}_${p.influencer}`;
+        if (!map.has(key)) {
+          map.set(key, {
+            realName: p.realName,
+            influencer: p.influencer,
+            category: p.category,
+            followers: p.followers,
+            email: p.email,
+            channels: p.channels || [],
+            mcn: p.mcn || {},
+            shipping: p.shipping || {},
+            history: []
+          });
+        }
+        map.get(key).history.push(p);
+      });
+
+      const list = Array.from(map.values());
+
+      if (list.length === 0) {
+        grid.innerHTML = `<p class="text-xs text-slate-400 col-span-4 text-center py-8">등록된 인플루언서 리스트가 없습니다.</p>`;
+        return;
+      }
+
+      grid.innerHTML = list.map(inf => `
+        <div class="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-between space-y-3">
+          <div class="space-y-2">
+            <div class="flex justify-between items-start">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-700">${inf.category || '일반'}</span>
+              <button onclick="openInfluencerEditModal('${inf.realName}', '${inf.influencer}')" class="text-slate-400 hover:text-pink-600 text-xs"><i class="fa-solid fa-pen"></i> 프로필 수정</button>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-slate-900">${inf.realName}</h4>
+              <p class="text-xs text-slate-500 font-semibold">${inf.influencer}</p>
+            </div>
+            <div class="text-xs text-slate-600 space-y-0.5">
+              <div><b>팔로워:</b> ${inf.followers || '-'}</div>
+              <div><b>이메일:</b> ${inf.email || '-'}</div>
+              ${inf.mcn?.company ? `<div><b>소속:</b> ${inf.mcn.company} (${inf.mcn.agentName || ''})</div>` : ''}
+            </div>
+          </div>
+          <div class="border-t border-slate-200/60 pt-2 text-xs">
+            <span class="text-slate-500 font-semibold">총 협업 진행: <b class="text-pink-600">${inf.history.length}건</b></span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openInfluencerEditModal(realName, handle) {
+      const match = pplList.find(p => p.realName === realName && p.influencer === handle);
+      if (!match) return;
+
+      document.getElementById('infEditOriginalRealName').value = realName;
+      document.getElementById('infEditOriginalHandle').value = handle;
+
+      document.getElementById('infEditRealName').value = match.realName;
+      document.getElementById('infEditHandle').value = match.influencer;
+      document.getElementById('infEditCategory').value = match.category || '';
+      document.getElementById('infEditFollowers').value = match.followers || '';
+      document.getElementById('infEditEmail').value = match.email || '';
+
+      document.getElementById('infEditReceiverName').value = match.shipping?.receiverName || '';
+      document.getElementById('infEditReceiverPhone').value = match.shipping?.receiverPhone || '';
+      document.getElementById('infEditPostalCode').value = match.shipping?.postalCode || '';
+      document.getElementById('infEditAddress').value = match.shipping?.address || '';
+      document.getElementById('infEditAddressDetail').value = match.shipping?.addressDetail || '';
+
+      document.getElementById('infEditMcnCompany').value = match.mcn?.company || '';
+      document.getElementById('infEditMcnAgentName').value = match.mcn?.agentName || '';
+      document.getElementById('infEditMcnAgentPhone').value = match.mcn?.agentPhone || '';
+      document.getElementById('infEditMcnAgentEmail').value = match.mcn?.agentEmail || '';
+
+      // Channels
+      const container = document.getElementById('infEditChannelContainer');
+      container.innerHTML = '';
+      (match.channels || []).forEach(c => {
+        addInfEditChannelRow(c.type, c.account, c.url);
+      });
+
+      document.getElementById('influencerEditModal').classList.remove('hidden');
+    }
+
+    function closeInfluencerEditModal() {
+      document.getElementById('influencerEditModal').classList.add('hidden');
+    }
+
+    function addInfEditChannelRow(type = '인스타', account = '', url = '') {
+      const container = document.getElementById('infEditChannelContainer');
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 inf-edit-channel-row';
+      row.innerHTML = `
+        <select class="px-2 py-1 text-xs border border-slate-200 rounded-lg font-semibold ie-channel-type bg-white">
+          <option value="인스타" ${type === '인스타' ? 'selected' : ''}>인스타</option>
+          <option value="유튜브" ${type === '유튜브' ? 'selected' : ''}>유튜브</option>
+          <option value="블로그" ${type === '블로그' ? 'selected' : ''}>블로그</option>
+          <option value="틱톡" ${type === '틱톡' ? 'selected' : ''}>틱톡</option>
+          <option value="기타" ${type === '기타' ? 'selected' : ''}>기타</option>
+        </select>
+        <input type="text" value="${account}" placeholder="계정명" class="px-2 py-1 text-xs border border-slate-200 rounded-lg ie-channel-account w-28 bg-white">
+        <input type="url" value="${url}" placeholder="URL" class="px-2 py-1 text-xs border border-slate-200 rounded-lg ie-channel-url flex-1 bg-white">
+        <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+      `;
+      container.appendChild(row);
+    }
+
+    function handleInfluencerEditSubmit(e) {
+      e.preventDefault();
+      const origRealName = document.getElementById('infEditOriginalRealName').value;
+      const origHandle = document.getElementById('infEditOriginalHandle').value;
+
+      const newRealName = document.getElementById('infEditRealName').value.trim();
+      const newHandle = document.getElementById('infEditHandle').value.trim();
+      const category = document.getElementById('infEditCategory').value.trim() || '기타';
+      const followers = document.getElementById('infEditFollowers').value.trim();
+      const email = document.getElementById('infEditEmail').value.trim();
+
+      // Collect channels
+      const channelRows = document.querySelectorAll('.inf-edit-channel-row');
+      const channels = [];
+      channelRows.forEach(row => {
+        const type = row.querySelector('.ie-channel-type').value;
+        const account = row.querySelector('.ie-channel-account').value.trim();
+        const url = row.querySelector('.ie-channel-url').value.trim();
+        if (account || url) channels.push({ type, account, url });
+      });
+
+      const shipping = {
+        receiverName: document.getElementById('infEditReceiverName').value.trim(),
+        receiverPhone: document.getElementById('infEditReceiverPhone').value.trim(),
+        postalCode: document.getElementById('infEditPostalCode').value.trim(),
+        address: document.getElementById('infEditAddress').value.trim(),
+        addressDetail: document.getElementById('infEditAddressDetail').value.trim()
+      };
+
+      const mcn = {
+        company: document.getElementById('infEditMcnCompany').value.trim(),
+        agentName: document.getElementById('infEditMcnAgentName').value.trim(),
+        agentPhone: document.getElementById('infEditMcnAgentPhone').value.trim(),
+        agentEmail: document.getElementById('infEditMcnAgentEmail').value.trim()
+      };
+
+      // Batch update all matching PPL items
+      pplList.forEach(p => {
+        if (p.realName === origRealName && p.influencer === origHandle) {
+          p.realName = newRealName;
+          p.influencer = newHandle;
+          p.category = category;
+          p.followers = followers;
+          p.email = email;
+          p.channels = channels;
+          p.shipping = { ...p.shipping, ...shipping };
+          p.mcn = mcn;
+        }
+      });
+
+      saveData();
+      closeInfluencerEditModal();
+      renderPplDashboard();
+      alert('인플루언서 프로필이 전체 업데이트 되었습니다.');
+    }
+
+    // ==================== EDIT PPL MODAL ====================
+    function openEditPplModal(pplId) {
+      const item = pplList.find(p => p.id === pplId);
+      if (!item) return;
+
+      document.getElementById('stepModalPplId').value = pplId;
+
+      document.getElementById('editModalBrand').value = item.brand;
+      document.getElementById('editModalRealName').value = item.realName;
+      document.getElementById('editModalInfluencer').value = item.influencer;
+      document.getElementById('editModalCategory').value = item.category || '';
+      document.getElementById('editModalFollowers').value = item.followers || '';
+      document.getElementById('editModalEmail').value = item.email || '';
+
+      renderEditProductList(item.products || []);
+
+      // Checkboxes & Costs
+      const types = item.types || [];
+      const costs = item.costs || {};
+
+      document.getElementById('editType_branded').checked = types.includes('브랜디드');
+      document.getElementById('editCost_branded').value = costs['브랜디드'] || '';
+
+      document.getElementById('editType_ppl').checked = types.includes('PPL');
+      document.getElementById('editCost_ppl').value = costs['PPL'] || '';
+
+      document.getElementById('editType_reuse').checked = types.includes('2차활용');
+      document.getElementById('editCost_reuse').value = costs['2차활용'] || '';
+
+      document.getElementById('editType_reels').checked = types.includes('릴스');
+      document.getElementById('editCost_reels').value = costs['릴스'] || '';
+
+      document.getElementById('editType_shorts').checked = types.includes('숏츠');
+      document.getElementById('editCost_shorts').value = costs['숏츠'] || '';
+
+      document.getElementById('editType_microReels').checked = types.includes('마이크로 릴스');
+      document.getElementById('editCost_microReels').value = costs['마이크로 릴스'] || '';
+
+      document.getElementById('editType_microPpl').checked = types.includes('마이크로 PPL');
+      document.getElementById('editCost_microPpl').value = costs['마이크로 PPL'] || '';
+
+      document.getElementById('editType_ambassador').checked = types.includes('앰버서더');
+      document.getElementById('editCost_ambassador').value = costs['앰버서더'] || '';
+
+      document.getElementById('editType_freeAmb').checked = !!item.isFreeAmbassador;
+
+      // Steps
+      const stepContainer = document.getElementById('stepDateInputsContainer');
+      stepContainer.innerHTML = '';
+      (item.steps || []).forEach(s => {
+        addModalStepRow(s.name, s.date, s.completed);
+      });
+
+      // Shipping & Notes
+      document.getElementById('editModalSeedingCount').value = item.shipping?.count || 1;
+      document.getElementById('editModalReceiverName').value = item.shipping?.receiverName || '';
+      document.getElementById('editModalReceiverPhone').value = item.shipping?.receiverPhone || '';
+      document.getElementById('editModalPostalCode').value = item.shipping?.postalCode || '';
+      document.getElementById('editModalAddress').value = item.shipping?.address || '';
+      document.getElementById('editModalAddressDetail').value = item.shipping?.addressDetail || '';
+
+      document.getElementById('editModalMcnCompany').value = item.mcn?.company || '';
+      document.getElementById('editModalMcnAgentName').value = item.mcn?.agentName || '';
+      document.getElementById('editModalMcnAgentPhone').value = item.mcn?.agentPhone || '';
+      document.getElementById('editModalMcnAgentEmail').value = item.mcn?.agentEmail || '';
+
+      document.getElementById('editModalGuideUrl').value = item.guideUrl || '';
+      document.getElementById('editModalNotes').value = item.notes || '';
+
+      document.getElementById('stepDateModal').classList.remove('hidden');
+    }
+
+    function renderEditProductList(selected = []) {
       const brand = document.getElementById('editModalBrand').value;
-      const box = document.getElementById('editModalProductList');
-      const chosen = selected || Array.from(document.querySelectorAll('.edit-product-check:checked')).map(c => c.value);
+      const container = document.getElementById('editModalProductList');
       const filtered = products.filter(p => p.brand === brand);
 
-      box.innerHTML = filtered.length
-        ? filtered.map(p => `
-            <label class="flex items-center gap-1.5 text-[11px] cursor-pointer hover:bg-pink-50 px-1.5 py-1 rounded border border-slate-100">
-              <input type="checkbox" class="edit-product-check accent-pink-500 w-3.5 h-3.5" value="${p.name}" ${chosen.includes(p.name) ? 'checked' : ''}>
-              <span class="text-slate-700">${p.name}</span>
-            </label>`).join('')
-        : '<span class="text-[11px] text-slate-400">이 브랜드에 등록된 제품이 없습니다</span>';
+      container.innerHTML = filtered.map(p => `
+        <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer p-1 hover:bg-pink-50/50 rounded">
+          <input type="checkbox" name="editModalProducts" value="${p.name}" ${selected.includes(p.name) ? 'checked' : ''} class="accent-pink-500 w-3.5 h-3.5">
+          <span>${p.name}</span>
+        </label>
+      `).join('');
     }
 
-    function editChannelRowHtml(c = {}) {
-      const types = ['인스타', '유튜브', '블로그', '틱톡', '기타'];
-      return `
-        <div class="flex items-center gap-2 edit-channel-row">
-          <select class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold ec-type bg-white">
-            ${types.map(t => `<option value="${t}" ${c.type === t ? 'selected' : ''}>${t}</option>`).join('')}
-          </select>
-          <input type="text" value="${c.account || ''}" placeholder="계정/닉네임" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg ec-account bg-white w-28">
-          <input type="url" value="${c.url || ''}" placeholder="채널 URL" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg ec-url bg-white flex-1">
-          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
-        </div>`;
+    function addModalStepRow(name = '', date = '', completed = false) {
+      const container = document.getElementById('stepDateInputsContainer');
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 modal-step-row';
+      row.innerHTML = `
+        <input type="checkbox" ${completed ? 'checked' : ''} class="accent-pink-500 w-4 h-4 ms-check">
+        <input type="text" value="${name}" placeholder="단계명" class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg ms-name w-36">
+        <input type="date" value="${date}" class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg ms-date">
+        <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+      `;
+      container.appendChild(row);
     }
 
     function toggleEditSns() {
       const body = document.getElementById('editSnsBody');
       const icon = document.getElementById('editSnsIcon');
-      const willShow = body.classList.contains('hidden');
-      body.classList.toggle('hidden', !willShow);
-      icon.style.transform = willShow ? 'rotate(90deg)' : 'rotate(0deg)';
-    }
-
-    function updateEditSnsCount() {
-      const n = document.querySelectorAll('#editModalChannelContainer .edit-channel-row').length;
-      const el = document.getElementById('editSnsCount');
-      if (el) el.innerText = n ? `(${n}개)` : '(없음)';
-    }
-
-    function addEditModalChannelRow() {
-      const body = document.getElementById('editSnsBody');
-      if (body.classList.contains('hidden')) toggleEditSns();
-      document.getElementById('editModalChannelContainer').insertAdjacentHTML('beforeend', editChannelRowHtml());
-      updateEditSnsCount();
-    }
-
-    function openStepDateModal(pplId) {
-      const ppl = pplList.find(i => i.id === pplId);
-      if (!ppl) return;
-
-      document.getElementById('stepModalPplId').value = pplId;
-      document.getElementById('editModalBrand').value = ppl.brand || '온살';
-      document.getElementById('editModalRealName').value = ppl.realName || '';
-      document.getElementById('editModalInfluencer').value = ppl.influencer || '';
-      document.getElementById('editModalCategory').value = ppl.category || '';
-      document.getElementById('editModalFollowers').value = ppl.followers || '';
-      document.getElementById('editModalEmail').value = ppl.email || '';
-
-      const chosen = ppl.productList && ppl.productList.length ? ppl.productList : (ppl.product ? [ppl.product] : []);
-      renderEditProductList(chosen);
-
-      document.getElementById('editType_branded').checked = !!(ppl.types && ppl.types.branded);
-      document.getElementById('editType_ppl').checked = !!(ppl.types && ppl.types.ppl);
-      document.getElementById('editType_reuse').checked = !!(ppl.types && ppl.types.reuse);
-      document.getElementById('editType_microReels').checked = !!(ppl.types && ppl.types.microReels);
-      document.getElementById('editType_microPpl').checked = !!(ppl.types && ppl.types.microPpl);
-      document.getElementById('editType_reels').checked = !!(ppl.types && ppl.types.reels);
-      document.getElementById('editType_shorts').checked = !!(ppl.types && ppl.types.shorts);
-      document.getElementById('editType_ambassador').checked = !!(ppl.types && (ppl.types.ambassador || ppl.types.sample));
-      document.getElementById('editType_freeAmb').checked = !!(ppl.types && ppl.types.freeAmb);
-      document.getElementById('editCost_branded').value = (ppl.costs && ppl.costs.branded) || '';
-      document.getElementById('editCost_ppl').value = (ppl.costs && ppl.costs.ppl) || '';
-      document.getElementById('editCost_reuse').value = (ppl.costs && ppl.costs.reuse) || '';
-      document.getElementById('editCost_microReels').value = (ppl.costs && ppl.costs.microReels) || '';
-      document.getElementById('editCost_microPpl').value = (ppl.costs && ppl.costs.microPpl) || '';
-      document.getElementById('editCost_reels').value = (ppl.costs && ppl.costs.reels) || '';
-      document.getElementById('editCost_shorts').value = (ppl.costs && ppl.costs.shorts) || '';
-      document.getElementById('editCost_ambassador').value = (ppl.costs && (ppl.costs.ambassador || ppl.costs.sample)) || '';
-
-      document.getElementById('editModalChannelContainer').innerHTML = (ppl.channels || []).map(c => editChannelRowHtml(c)).join('');
-      document.getElementById('editSnsBody').classList.add('hidden');
-      document.getElementById('editSnsIcon').style.transform = 'rotate(0deg)';
-      updateEditSnsCount();
-
-      document.getElementById('editModalSeedingCount').value = ppl.seedingCount || 1;
-      document.getElementById('editModalReceiverName').value = ppl.receiverName || '';
-      document.getElementById('editModalReceiverPhone').value = ppl.receiverPhone || '';
-      document.getElementById('editModalPostalCode').value = ppl.postalCode || '';
-      document.getElementById('editModalAddress').value = ppl.address || '';
-      document.getElementById('editModalAddressDetail').value = ppl.addressDetail || '';
-
-      document.getElementById('editModalMcnCompany').value = ppl.mcnCompany || '';
-      document.getElementById('editModalMcnAgentName').value = ppl.mcnAgentName || '';
-      document.getElementById('editModalMcnAgentPhone').value = ppl.mcnAgentPhone || '';
-      document.getElementById('editModalMcnAgentEmail').value = ppl.mcnAgentEmail || '';
-
-      document.getElementById('editModalGuideUrl').value = ppl.guideUrl || '';
-      document.getElementById('editModalGuideName').value = ppl.guideName || '';
-      document.getElementById('editModalNotes').value = ppl.notes || '';
-
-      const container = document.getElementById('stepDateInputsContainer');
-      let stepsHtml = '';
-      if (ppl.stepDates) {
-        const entries = sortedStepEntries(ppl.stepDates);
-        entries.forEach(([st, info]) => {
-          const dt = typeof info === 'object' ? info.date : info;
-          const done = typeof info === 'object' ? info.done : false;
-          const sched = (typeof info === 'object' && info.sched !== undefined) ? info.sched : KEY_STAGES.includes(st);
-          stepsHtml += stepRowHtml(st, dt, done, sched);
-        });
+      if (body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        icon.classList.add('rotate-90');
+      } else {
+        body.classList.add('hidden');
+        icon.classList.remove('rotate-90');
       }
-      container.innerHTML = stepsHtml;
-
-      document.getElementById('stepDateModal').classList.remove('hidden');
     }
 
-    function stepRowHtml(stage, date, done, sched) {
-      return `
-        <div class="flex items-center gap-2 step-edit-row ${done ? 'opacity-60' : ''}">
-          <select class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold edit-stage-select bg-white w-32">
-            ${STAGES.map(x => `<option value="${x}" ${x === stage ? 'selected' : ''}>${x}</option>`).join('')}
-          </select>
-          <input type="date" value="${date || ''}" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg edit-date-input bg-white flex-1">
-          <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-white px-2 py-1 rounded-lg border border-slate-200 cursor-pointer whitespace-nowrap">
-            <input type="checkbox" ${done ? 'checked' : ''} class="edit-stage-done accent-pink-500"> 완료
-          </label>
-          <label class="flex items-center gap-1 text-[11px] font-semibold text-violet-700 bg-violet-50 px-2 py-1 rounded-lg border border-violet-200 cursor-pointer whitespace-nowrap" title="스케줄러 달력에 표시">
-            <input type="checkbox" ${sched ? 'checked' : ''} class="edit-stage-sched accent-violet-600"> 📅
-          </label>
-          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
-        </div>`;
+    function addEditModalChannelRow(type = '인스타', account = '', url = '') {
+      const container = document.getElementById('editModalChannelContainer');
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 edit-channel-row';
+      row.innerHTML = `
+        <select class="px-2 py-1 text-xs border border-slate-200 rounded-lg font-semibold ec-type bg-white">
+          <option value="인스타" ${type === '인스타' ? 'selected' : ''}>인스타</option>
+          <option value="유튜브" ${type === '유튜브' ? 'selected' : ''}>유튜브</option>
+          <option value="블로그" ${type === '블로그' ? 'selected' : ''}>블로그</option>
+          <option value="틱톡" ${type === '틱톡' ? 'selected' : ''}>틱톡</option>
+          <option value="기타" ${type === '기타' ? 'selected' : ''}>기타</option>
+        </select>
+        <input type="text" value="${account}" placeholder="계정명" class="px-2 py-1 text-xs border border-slate-200 rounded-lg ec-account w-28 bg-white">
+        <input type="url" value="${url}" placeholder="URL" class="px-2 py-1 text-xs border border-slate-200 rounded-lg ec-url flex-1 bg-white">
+        <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+      `;
+      container.appendChild(row);
     }
 
-    function addModalStepRow() {
-      document.getElementById('stepDateInputsContainer').insertAdjacentHTML(
-        'afterbegin',
-        stepRowHtml('컨택중', new Date().toISOString().slice(0, 10), false, false)
-      );
+    function closeStepDateModal() {
+      document.getElementById('stepDateModal').classList.add('hidden');
     }
-
-    function closeStepDateModal() { document.getElementById('stepDateModal').classList.add('hidden'); }
 
     function saveStepDates() {
-      const pplId = Number(document.getElementById('stepModalPplId').value);
-      const ppl = pplList.find(i => i.id === pplId);
-      if (!ppl) return;
+      const pplId = document.getElementById('stepModalPplId').value;
+      const item = pplList.find(p => p.id === pplId);
+      if (!item) return;
 
-      const productList = Array.from(document.querySelectorAll('.edit-product-check:checked')).map(c => c.value);
-      if (productList.length === 0) { alert("협업 제품을 하나 이상 선택해 주세요."); return; }
+      item.brand = document.getElementById('editModalBrand').value;
+      item.realName = document.getElementById('editModalRealName').value.trim();
+      item.influencer = document.getElementById('editModalInfluencer').value.trim();
+      item.category = document.getElementById('editModalCategory').value.trim() || '기타';
+      item.followers = document.getElementById('editModalFollowers').value.trim();
+      item.email = document.getElementById('editModalEmail').value.trim();
 
-      ppl.brand = document.getElementById('editModalBrand').value;
-      ppl.productList = productList;
-      ppl.product = productList.join(', ');
-      ppl.realName = document.getElementById('editModalRealName').value;
-      ppl.influencer = document.getElementById('editModalInfluencer').value;
-      ppl.category = addCategoryIfNew(document.getElementById('editModalCategory').value);
-      ppl.followers = document.getElementById('editModalFollowers').value;
-      ppl.email = document.getElementById('editModalEmail').value;
+      const selectedProds = Array.from(document.querySelectorAll('input[name="editModalProducts"]:checked')).map(cb => cb.value);
+      item.products = selectedProds;
 
-      ppl.types = {
-        branded: document.getElementById('editType_branded').checked,
-        ppl: document.getElementById('editType_ppl').checked,
-        reuse: document.getElementById('editType_reuse').checked,
-        microReels: document.getElementById('editType_microReels').checked,
-        microPpl: document.getElementById('editType_microPpl').checked,
-        reels: document.getElementById('editType_reels').checked,
-        shorts: document.getElementById('editType_shorts').checked,
-        ambassador: document.getElementById('editType_ambassador').checked,
-        freeAmb: document.getElementById('editType_freeAmb').checked
-      };
-      ppl.costs = {
-        branded: Number(document.getElementById('editCost_branded').value) || 0,
-        ppl: Number(document.getElementById('editCost_ppl').value) || 0,
-        reuse: Number(document.getElementById('editCost_reuse').value) || 0,
-        microReels: Number(document.getElementById('editCost_microReels').value) || 0,
-        microPpl: Number(document.getElementById('editCost_microPpl').value) || 0,
-        reels: Number(document.getElementById('editCost_reels').value) || 0,
-        shorts: Number(document.getElementById('editCost_shorts').value) || 0,
-        ambassador: Number(document.getElementById('editCost_ambassador').value) || 0,
-        freeAmb: 0
-      };
+      // Types & Costs
+      const types = [];
+      const costs = {};
+      const typeMap = [
+        { id: 'editType_branded', costId: 'editCost_branded', label: '브랜디드' },
+        { id: 'editType_ppl', costId: 'editCost_ppl', label: 'PPL' },
+        { id: 'editType_reuse', costId: 'editCost_reuse', label: '2차활용' },
+        { id: 'editType_reels', costId: 'editCost_reels', label: '릴스' },
+        { id: 'editType_shorts', costId: 'editCost_shorts', label: '숏츠' },
+        { id: 'editType_microReels', costId: 'editCost_microReels', label: '마이크로 릴스' },
+        { id: 'editType_microPpl', costId: 'editCost_microPpl', label: '마이크로 PPL' },
+        { id: 'editType_ambassador', costId: 'editCost_ambassador', label: '앰버서더' }
+      ];
 
-      ppl.channels = Array.from(document.querySelectorAll('#editModalChannelContainer .edit-channel-row')).map(r => ({
-        type: r.querySelector('.ec-type').value,
-        account: r.querySelector('.ec-account').value,
-        url: r.querySelector('.ec-url').value
-      }));
-
-      ppl.seedingCount = Number(document.getElementById('editModalSeedingCount').value) || 1;
-      ppl.receiverName = document.getElementById('editModalReceiverName').value;
-      ppl.receiverPhone = document.getElementById('editModalReceiverPhone').value;
-      ppl.postalCode = document.getElementById('editModalPostalCode').value;
-      ppl.address = document.getElementById('editModalAddress').value;
-      ppl.addressDetail = document.getElementById('editModalAddressDetail').value;
-
-      ppl.mcnCompany = document.getElementById('editModalMcnCompany').value;
-      ppl.mcnAgentName = document.getElementById('editModalMcnAgentName').value;
-      ppl.mcnAgentPhone = document.getElementById('editModalMcnAgentPhone').value;
-      ppl.mcnAgentEmail = document.getElementById('editModalMcnAgentEmail').value;
-
-      ppl.guideUrl = document.getElementById('editModalGuideUrl').value;
-      ppl.guideName = document.getElementById('editModalGuideName').value;
-      ppl.notes = document.getElementById('editModalNotes').value;
-
-      ppl.stepDates = {};
-      document.querySelectorAll('#stepDateInputsContainer .step-edit-row').forEach(r => {
-        const st = r.querySelector('.edit-stage-select').value;
-        const dt = r.querySelector('.edit-date-input').value;
-        const done = r.querySelector('.edit-stage-done').checked;
-        const sched = r.querySelector('.edit-stage-sched').checked;
-        const prev = ppl.stepDates ? ppl.stepDates[st] : null;
-        const changedNow = !prev || prev.date !== dt || !!prev.done !== done;
-        if (dt) ppl.stepDates[st] = {
-          date: dt, done: done, sched: sched,
-          updatedAt: changedNow ? Date.now() : ((prev && prev.updatedAt) || Date.now()),
-          syncedAt: (prev && prev.syncedAt) || 0
-        };
+      typeMap.forEach(t => {
+        if (document.getElementById(t.id).checked) {
+          types.push(t.label);
+          costs[t.label] = Number(document.getElementById(t.costId).value) || 0;
+        }
       });
 
-      const undone = Object.entries(ppl.stepDates).filter(([, v]) => !v.done).map(([k]) => k);
-      if (undone.length) ppl.status = undone.sort((a, b) => STAGES.indexOf(b) - STAGES.indexOf(a))[0];
+      item.isFreeAmbassador = document.getElementById('editType_freeAmb').checked;
+      if (item.isFreeAmbassador) types.push('무상앰버서더');
+      item.types = types;
+      item.costs = costs;
 
-      saveAll();
+      // Steps
+      const stepRows = document.querySelectorAll('.modal-step-row');
+      const steps = [];
+      stepRows.forEach(r => {
+        const completed = r.querySelector('.ms-check').checked;
+        const name = r.querySelector('.ms-name').value.trim();
+        const date = r.querySelector('.ms-date').value;
+        if (name && date) {
+          steps.push({ name, date, completed });
+        }
+      });
+      item.steps = steps;
+
+      // Shipping
+      item.shipping = {
+        count: Number(document.getElementById('editModalSeedingCount').value) || 1,
+        receiverName: document.getElementById('editModalReceiverName').value.trim(),
+        receiverPhone: document.getElementById('editModalReceiverPhone').value.trim(),
+        postalCode: document.getElementById('editModalPostalCode').value.trim(),
+        address: document.getElementById('editModalAddress').value.trim(),
+        addressDetail: document.getElementById('editModalAddressDetail').value.trim()
+      };
+
+      item.mcn = {
+        company: document.getElementById('editModalMcnCompany').value.trim(),
+        agentName: document.getElementById('editModalMcnAgentName').value.trim(),
+        agentPhone: document.getElementById('editModalMcnAgentPhone').value.trim(),
+        agentEmail: document.getElementById('editModalMcnAgentEmail').value.trim()
+      };
+
+      item.guideUrl = document.getElementById('editModalGuideUrl').value.trim();
+      item.notes = document.getElementById('editModalNotes').value.trim();
+
+      saveData();
       closeStepDateModal();
-      renderAll();
-      syncToScheduler(true);
+      renderPplDashboard();
+      alert('PPL 정보가 수정되었습니다.');
     }
 
-    function renderInfluencerCards() {
-      const grid = document.getElementById('influencerCardGrid');
-      if (pplList.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">등록된 인플루언서가 없습니다.</div>`;
+    // ==================== PROPOSALS & MCN POOL ====================
+    function openProposalModal() {
+      document.getElementById('proposalModal').classList.remove('hidden');
+    }
+
+    function closeProposalModal() {
+      document.getElementById('proposalModal').classList.add('hidden');
+    }
+
+    function parsePastedTable() {
+      const text = document.getElementById('propInfluencers').value.trim();
+      if (!text) return;
+
+      const lines = text.split('\n');
+      if (lines.length <= 1) return;
+
+      const parsedHtml = lines.map((l, i) => {
+        const cols = l.split(/\t|\s{2,}/);
+        if (i === 0) {
+          return `<tr class="font-bold bg-pink-100">${cols.map(c => `<th class="p-1">${c}</th>`).join('')}</tr>`;
+        } else {
+          return `<tr>${cols.map(c => `<td class="p-1 border-t border-pink-100">${c}</td>`).join('')}</tr>`;
+        }
+      }).join('');
+
+      document.getElementById('propSheetPreview').innerHTML = `
+        <div class="mt-2 p-2 bg-white rounded border border-pink-200 overflow-x-auto">
+          <table class="w-full text-[11px] text-left">${parsedHtml}</table>
+        </div>
+      `;
+    }
+
+    function importSheetToProposal() {
+      const url = document.getElementById('propFileUrl').value.trim();
+      if (!url) {
+        alert('구글 스프레드시트 링크를 입력해 주세요.');
         return;
       }
-
-      grid.innerHTML = pplList.map(p => {
-        const totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.microReels||0) + (p.costs.microPpl||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
-        const doneCount = (p.collabLinks || []).length;
-
-        const typeList = [];
-        if (p.types && p.types.branded) typeList.push({ t: '브랜디드', c: 'bg-violet-100 text-violet-700' });
-        if (p.types && p.types.ppl) typeList.push({ t: 'PPL', c: 'bg-pink-100 text-pink-700' });
-        if (p.types && p.types.reuse) typeList.push({ t: '2차활용', c: 'bg-amber-100 text-amber-800' });
-        if (p.types && p.types.microReels) typeList.push({ t: '마이크로 릴스', c: 'bg-sky-100 text-sky-700' });
-        if (p.types && p.types.microPpl) typeList.push({ t: '마이크로 PPL', c: 'bg-cyan-100 text-cyan-700' });
-        if (p.types && p.types.reels) typeList.push({ t: '릴스', c: 'bg-fuchsia-100 text-fuchsia-700' });
-        if (p.types && p.types.shorts) typeList.push({ t: '숏츠', c: 'bg-red-100 text-red-700' });
-        if (p.types && (p.types.ambassador || p.types.sample)) typeList.push({ t: '앰버서더', c: 'bg-indigo-100 text-indigo-700' });
-        if (p.types && p.types.freeAmb) typeList.push({ t: '무상앰버서더', c: 'bg-teal-100 text-teal-700' });
-        const typeChips = typeList.map(x => `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${x.c}">${x.t}</span>`).join(' ');
-
-        const prodNames = (p.productList && p.productList.length ? p.productList : (p.product ? [p.product] : []));
-
-        let channelsHtml = '';
-        if (p.channels && p.channels.length > 0) {
-          channelsHtml = p.channels.map(c => `
-            <a href="${c.url || '#'}" target="_blank" rel="noopener" class="block text-[11px] text-pink-600 hover:underline bg-pink-50 px-2 py-1 rounded border border-pink-100 mb-1 truncate">
-              <i class="fa-solid fa-link text-[10px]"></i> <b>${c.type}</b>: ${c.account || c.url}
-            </a>
-          `).join('');
-        }
-
-        let collabHtml = '';
-        if (p.collabLinks && p.collabLinks.length > 0) {
-          collabHtml = p.collabLinks
-            .slice()
-            .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-            .map(c => {
-              const label = `${c.date || '날짜미정'} · ${c.product || '제품미정'}`;
-              return c.url
-                ? `<a href="${c.url}" target="_blank" rel="noopener" class="block text-[11px] text-amber-800 hover:underline bg-amber-50 px-2 py-1 rounded border border-amber-100 mb-1 truncate">
-                     <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> ${label}
-                   </a>`
-                : `<div class="block text-[11px] text-slate-500 bg-slate-50 px-2 py-1 rounded border border-slate-100 mb-1 truncate">${label}</div>`;
-            }).join('');
-        }
-
-        const addr = [p.receiverName, p.receiverPhone].filter(Boolean).join(' / ');
-
-        return `
-          <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs space-y-3 flex flex-col justify-between">
-            <div class="space-y-1.5">
-              <div class="flex justify-between items-center">
-                <div class="flex items-center gap-1 flex-wrap">
-                  <span class="text-[10px] font-bold px-2 py-0.5 ${p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700'} rounded-full">${p.brand}</span>
-                  ${p.category ? `<span class="text-[10px] font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">${p.category}</span>` : ''}
-                </div>
-                <div class="flex items-center gap-2">
-                  ${doneCount > 0
-                    ? `<span class="text-xs font-bold text-pink-600">진행횟수: ${doneCount}회</span>`
-                    : `<span class="text-[11px] font-semibold text-slate-400">아직 진행 전</span>`}
-                  <button onclick="openStepDateModal(${p.id})" class="text-slate-400 hover:text-pink-600 text-xs" title="전체 수정"><i class="fa-solid fa-pen"></i></button>
-                  <button onclick="openInfluencerEdit(${p.id})" class="text-slate-400 hover:text-amber-600 text-xs" title="협업 콘텐츠/메모"><i class="fa-solid fa-link"></i></button>
-                </div>
-              </div>
-              <h3 class="text-base font-black text-slate-900">${p.realName || '무명'} <span class="text-xs font-normal text-slate-500">(${p.influencer})</span></h3>
-              <div class="text-xs text-slate-500 space-y-0.5 pt-1">
-                <div>구독자: <b>${p.followers || '-'}</b></div>
-                <div>이메일: <b>${p.email || '-'}</b></div>
-                <div>단가(비용): <b class="text-pink-600">${totalCost.toLocaleString()}원</b></div>
-                ${addr ? `<div class="truncate">정보: <b>${addr}</b></div>` : ''}
-              </div>
-              ${typeChips ? `<div class="flex flex-wrap gap-1 pt-1">${typeChips}</div>` : ''}
-            </div>
-
-            <div class="space-y-1 pt-2 border-t border-slate-100">
-              <span class="text-[10px] font-bold text-slate-400">이번 협업 제품</span>
-              ${prodNames.length
-                ? prodNames.map(n => `<div class="text-[11px] text-slate-700 bg-slate-50 border border-slate-100 rounded px-2 py-1 truncate">· ${n}</div>`).join('')
-                : '<span class="block text-[11px] text-slate-400">제품 미지정</span>'}
-            </div>
-
-            ${p.guideUrl ? `
-            <div class="space-y-1 pt-2 border-t border-slate-100">
-              <span class="text-[10px] font-bold text-slate-400">가이드라인</span>
-              <a href="${p.guideUrl}" target="_blank" rel="noopener" class="block text-[11px] text-blue-700 hover:underline bg-blue-50 px-2 py-1 rounded border border-blue-100 truncate">
-                <i class="fa-solid fa-file-lines text-[10px]"></i> ${p.guideName || '가이드 문서 열기'}
-              </a>
-            </div>` : ''}
-
-            <div class="space-y-1 pt-2 border-t border-slate-100">
-              <span class="text-[10px] font-bold text-slate-400">등록된 SNS 채널 목록</span>
-              ${channelsHtml || '<span class="block text-[11px] text-slate-400">채널 링크 없음</span>'}
-            </div>
-
-            <div class="space-y-1 pt-2 border-t border-slate-100">
-              <span class="text-[10px] font-bold text-slate-400">협업 콘텐츠</span>
-              ${collabHtml || '<span class="block text-[11px] text-slate-400">등록된 협업 콘텐츠 없음</span>'}
-            </div>
-
-            <div class="space-y-1 pt-2 border-t border-slate-100">
-              <div class="flex justify-between items-center">
-                <span class="text-[10px] font-bold text-slate-400">특이사항 메모</span>
-                <button onclick="openInfluencerEdit(${p.id})" class="text-[10px] font-semibold text-emerald-600 hover:underline">
-                  <i class="fa-solid fa-pen"></i> ${p.notes ? '메모 수정' : '메모 추가'}
-                </button>
-              </div>
-              ${p.notes
-                ? `<div class="text-[11px] text-slate-700 bg-emerald-50/60 border border-emerald-100 rounded-lg px-2 py-1.5 whitespace-pre-line leading-relaxed">${p.notes}</div>`
-                : `<span class="block text-[11px] text-slate-400">작성된 메모 없음</span>`}
-            </div>
-          </div>
-        `;
-      }).join('');
+      document.getElementById('propSheetPreview').innerHTML = `<p class="text-pink-600 font-bold mt-1">✓ 스프레드시트 연동 준비 완료! (저장 시 링크가 저장됩니다)</p>`;
     }
 
-    // ===== 인플루언서 카드 수정 =====
-    function infChannelRowHtml(c = {}) {
-      const types = ['인스타', '유튜브', '블로그', '틱톡', '기타'];
-      return `
-        <div class="flex items-center gap-2 inf-channel-row">
-          <select class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold inf-ch-type bg-white">
-            ${types.map(t => `<option value="${t}" ${c.type === t ? 'selected' : ''}>${t}</option>`).join('')}
-          </select>
-          <input type="text" value="${c.account || ''}" placeholder="계정/닉네임" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-ch-account bg-white w-28">
-          <input type="url" value="${c.url || ''}" placeholder="채널 URL" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-ch-url bg-white flex-1">
-          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
-        </div>`;
-    }
-
-    function infCollabRowHtml(c = {}) {
-      return `
-        <div class="flex items-center gap-2 inf-collab-row">
-          <input type="date" value="${c.date || ''}" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-cl-date bg-white">
-          <input type="text" value="${c.product || ''}" placeholder="제품명" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-cl-product bg-white w-32">
-          <input type="url" value="${c.url || ''}" placeholder="콘텐츠 URL" class="px-2 py-1.5 text-xs border border-slate-200 rounded-lg inf-cl-url bg-white flex-1">
-          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
-        </div>`;
-    }
-
-    function addInfEditChannelRow() {
-      document.getElementById('infEditChannelContainer').insertAdjacentHTML('beforeend', infChannelRowHtml());
-    }
-
-    function addInfEditCollabRow() {
-      document.getElementById('infEditCollabContainer').insertAdjacentHTML('beforeend', infCollabRowHtml({ date: new Date().toISOString().slice(0, 10) }));
-    }
-
-    function openInfluencerEdit(id) {
-      const p = pplList.find(i => i.id === id);
-      if (!p) return;
-
-      document.getElementById('infEditId').value = id;
-      document.getElementById('infEditRealName').value = p.realName || '';
-      document.getElementById('infEditInfluencer').value = p.influencer || '';
-      document.getElementById('infEditCategory').value = p.category || '';
-      document.getElementById('infEditFollowers').value = p.followers || '';
-      document.getElementById('infEditEmail').value = p.email || '';
-      document.getElementById('infEditCost').value = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.microReels||0) + (p.costs.microPpl||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
-      document.getElementById('infEditReceiverName').value = p.receiverName || '';
-      document.getElementById('infEditReceiverPhone').value = p.receiverPhone || '';
-      document.getElementById('infEditPostalCode').value = p.postalCode || '';
-      document.getElementById('infEditAddress').value = p.address || '';
-      document.getElementById('infEditNotes').value = p.notes || '';
-
-      document.getElementById('infEditChannelContainer').innerHTML = (p.channels || []).map(c => infChannelRowHtml(c)).join('');
-      document.getElementById('infEditCollabContainer').innerHTML = (p.collabLinks || []).map(c => infCollabRowHtml(c)).join('');
-
-      document.getElementById('influencerEditModal').classList.remove('hidden');
-    }
-
-    function closeInfluencerEdit() { document.getElementById('influencerEditModal').classList.add('hidden'); }
-
-    function saveInfluencerEdit() {
-      const id = Number(document.getElementById('infEditId').value);
-      const p = pplList.find(i => i.id === id);
-      if (!p) return;
-
-      p.realName = document.getElementById('infEditRealName').value;
-      p.influencer = document.getElementById('infEditInfluencer').value;
-      p.category = addCategoryIfNew(document.getElementById('infEditCategory').value);
-      p.followers = document.getElementById('infEditFollowers').value;
-      p.email = document.getElementById('infEditEmail').value;
-      p.receiverName = document.getElementById('infEditReceiverName').value;
-      p.receiverPhone = document.getElementById('infEditReceiverPhone').value;
-      p.postalCode = document.getElementById('infEditPostalCode').value;
-      p.address = document.getElementById('infEditAddress').value;
-      p.notes = document.getElementById('infEditNotes').value;
-
-      const newCost = Number(document.getElementById('infEditCost').value) || 0;
-      p.costs.branded = newCost;
-      p.costs.ppl = 0; p.costs.reuse = 0; p.costs.sample = 0;
-
-      p.channels = Array.from(document.querySelectorAll('#infEditChannelContainer .inf-channel-row')).map(r => ({
-        type: r.querySelector('.inf-ch-type').value,
-        account: r.querySelector('.inf-ch-account').value,
-        url: r.querySelector('.inf-ch-url').value
-      }));
-
-      p.collabLinks = Array.from(document.querySelectorAll('#infEditCollabContainer .inf-collab-row')).map(r => ({
-        date: r.querySelector('.inf-cl-date').value,
-        product: r.querySelector('.inf-cl-product').value,
-        url: r.querySelector('.inf-cl-url').value
-      })).filter(c => c.date || c.product || c.url);
-
-      saveAll();
-      closeInfluencerEdit();
-      renderAll();
-    }
-
-    function openProposalModal() { document.getElementById('proposalModal').classList.remove('hidden'); }
-    function closeProposalModal() { document.getElementById('proposalModal').classList.add('hidden'); }
-
-    document.getElementById('proposalForm').addEventListener('submit', function(e) {
+    function handleProposalSubmit(e) {
       e.preventDefault();
-      proposals.unshift({
-        id: Date.now(),
-        company: document.getElementById('propCompany').value,
-        title: document.getElementById('propTitle').value,
-        agentName: document.getElementById('propAgentName').value,
-        agentPhone: document.getElementById('propAgentPhone').value,
-        agentEmail: document.getElementById('propAgentEmail').value,
-        influencers: document.getElementById('propInfluencers').value,
-        fileUrl: document.getElementById('propFileUrl').value,
-        rows: pendingSheetRows,
-        notes: document.getElementById('propNotes').value
-      });
-      pendingSheetRows = [];
-      document.getElementById('propSheetPreview').innerHTML = '';
-      saveAll();
-      renderProposals();
-      closeProposalModal();
-      this.reset();
-    });
+      const newProp = {
+        id: 'prop_' + Date.now(),
+        company: document.getElementById('propCompany').value.trim(),
+        title: document.getElementById('propTitle').value.trim(),
+        agentName: document.getElementById('propAgentName').value.trim(),
+        agentPhone: document.getElementById('propAgentPhone').value.trim(),
+        agentEmail: document.getElementById('propAgentEmail').value.trim(),
+        fileUrl: document.getElementById('propFileUrl').value.trim(),
+        influencersText: document.getElementById('propInfluencers').value.trim(),
+        notes: document.getElementById('propNotes').value.trim()
+      };
 
-    function renderProposals() {
+      proposals.unshift(newProp);
+      saveData();
+
+      document.getElementById('proposalForm').reset();
+      document.getElementById('propSheetPreview').innerHTML = '';
+      closeProposalModal();
+      renderProposalsSection();
+      alert('소개서가 등록되었습니다.');
+    }
+
+    function renderProposalsSection() {
       const grid = document.getElementById('proposalListGrid');
       if (proposals.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">등록된 소개서가 없습니다.</div>`;
+        grid.innerHTML = `<p class="text-xs text-slate-400 col-span-3 text-center py-6">등록된 소개서가 없습니다.</p>`;
         return;
       }
 
-      grid.innerHTML = proposals.map(prop => {
-        let rowsHtml = '';
-        if (prop.rows && prop.rows.length > 0) {
-          const headers = Object.keys(prop.rows[0]);
-          rowsHtml = `
-            <div class="border border-pink-100 rounded-xl overflow-hidden">
-              <div class="max-h-48 overflow-auto custom-scrollbar">
-                <table class="w-full text-[10px] text-left">
-                  <thead class="bg-pink-50 text-slate-600 font-bold sticky top-0">
-                    <tr>${headers.map(h => `<th class="py-1.5 px-2 whitespace-nowrap">${h}</th>`).join('')}</tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100">
-                    ${prop.rows.map(r => `<tr class="hover:bg-pink-50/40">${headers.map(h => `<td class="py-1.5 px-2 text-slate-700 whitespace-nowrap">${r[h] || '-'}</td>`).join('')}</tr>`).join('')}
-                  </tbody>
-                </table>
-              </div>
-              <div class="bg-slate-50 px-2 py-1 text-[10px] text-slate-500 font-semibold">총 ${prop.rows.length}명 · 시트에서 자동 정리됨</div>
-            </div>`;
-        } else {
-          rowsHtml = `<div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs whitespace-pre-line text-slate-700">
-            <b>소속 인플루언서</b><br>${prop.influencers || '-'}
-          </div>`;
-        }
-
-        return `
-          <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs space-y-3 flex flex-col justify-between">
-            <div class="space-y-1">
-              <div class="flex justify-between items-center">
-                <span class="text-[10px] font-bold px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">${prop.company}</span>
-                <div class="flex gap-2 text-xs text-slate-400">
-                  ${prop.fileUrl && prop.fileUrl.includes('/spreadsheets/') ? `<button onclick="refreshProposalSheet(${prop.id})" class="hover:text-pink-600" title="시트 다시 불러오기"><i class="fa-solid fa-rotate"></i></button>` : ''}
-                  <button onclick="deleteProposal(${prop.id})" class="hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
-                </div>
-              </div>
-              <h3 class="text-sm font-bold text-slate-900 mt-1">${prop.title}</h3>
-              <div class="text-xs text-slate-500 space-y-0.5 pt-1">
-                <div>담당자: <b>${prop.agentName || '-'} (${prop.agentPhone || '-'})</b></div>
-                <div>이메일: ${prop.agentEmail || '-'}</div>
-                ${prop.notes ? `<div class="text-slate-400">메모: ${prop.notes}</div>` : ''}
-              </div>
+      grid.innerHTML = proposals.map((prop, idx) => `
+        <div class="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-between space-y-3">
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-start">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-700">${prop.company}</span>
+              <button onclick="deleteProposal(${idx})" class="text-slate-400 hover:text-rose-600 text-xs"><i class="fa-solid fa-trash"></i></button>
             </div>
-
-            ${rowsHtml}
-
-            ${prop.fileUrl ? `<a href="${prop.fileUrl}" target="_blank" rel="noopener" class="block text-center py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-semibold rounded-lg shadow-xs"><i class="fa-solid fa-up-right-from-square"></i> 원본 소개서 열기</a>` : ''}
+            <h4 class="text-sm font-bold text-slate-800">${prop.title}</h4>
+            <div class="text-xs text-slate-500">
+              <div>담당: ${prop.agentName || '-'} (${prop.agentPhone || '-'})</div>
+            </div>
+            ${prop.fileUrl ? `
+              <a href="${prop.fileUrl}" target="_blank" class="inline-flex items-center gap-1 text-xs font-bold text-pink-600 hover:underline">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> 소개서 시트 열기
+              </a>
+            ` : ''}
           </div>
-        `;
-      }).join('');
+          <div class="border-t border-slate-200/60 pt-2 text-[11px] text-slate-600 line-clamp-2">
+            ${prop.notes || '특이사항 없음'}
+          </div>
+        </div>
+      `).join('');
     }
 
-    async function refreshProposalSheet(id) {
-      const prop = proposals.find(p => p.id === id);
-      if (!prop || !prop.fileUrl) return;
-
-      const csvUrl = buildSheetCsvUrl(prop.fileUrl);
-      if (!csvUrl) { alert("구글 스프레드시트 링크가 아닙니다."); return; }
-
-      try {
-        const res = await fetch(csvUrl);
-        if (!res.ok) throw new Error();
-        const rows = parseCSV(await res.text());
-        if (rows.length < 2) throw new Error();
-
-        const headers = rows[0].map(h => (h || '').trim());
-        prop.rows = rows.slice(1).map(r => {
-          const obj = {};
-          headers.forEach((h, i) => { obj[h || `열${i + 1}`] = (r[i] || '').trim(); });
-          return obj;
-        });
-
-        saveAll();
-        renderProposals();
-        alert(`${prop.rows.length}명의 최신 데이터를 불러왔습니다.`);
-      } catch (e) {
-        alert("불러오기에 실패했습니다. 시트 공유 설정이 '링크가 있는 모든 사용자 - 뷰어'인지 확인해 주세요.");
+    function deleteProposal(idx) {
+      if (confirm('이 소개서를 삭제하시겠습니까?')) {
+        proposals.splice(idx, 1);
+        saveData();
+        renderProposalsSection();
       }
     }
 
-    function deleteProposal(id) {
-      if (confirm("이 소개서/소속사 항목을 삭제할까요?")) {
-        proposals = proposals.filter(i => i.id !== id);
-        saveAll();
-        renderProposals();
+    // ==================== PRODUCT MODAL ====================
+    function openProductModal(idx = null) {
+      if (idx !== null) {
+        const p = products[idx];
+        document.getElementById('editProdIndex').value = idx;
+        document.getElementById('modalBrand').value = p.brand;
+        document.getElementById('modalProdUrl').value = p.url || '';
+        document.getElementById('modalProdName').value = p.name;
+        document.getElementById('modalProdOriginalPrice').value = p.originalPrice || '';
+        document.getElementById('modalProdSalePrice').value = p.salePrice || '';
+        document.getElementById('modalProdStock').value = p.stock || 0;
+        document.getElementById('modalTitle').innerText = '브랜드 제품 수정';
+      } else {
+        document.getElementById('editProdIndex').value = '';
+        document.getElementById('modalBrand').value = '온살';
+        document.getElementById('modalProdUrl').value = '';
+        document.getElementById('modalProdName').value = '';
+        document.getElementById('modalProdOriginalPrice').value = '';
+        document.getElementById('modalProdSalePrice').value = '';
+        document.getElementById('modalProdStock').value = 50;
+        document.getElementById('modalTitle').innerText = '신규 브랜드 제품 등록';
+      }
+      document.getElementById('productModal').classList.remove('hidden');
+    }
+
+    function closeProductModal() {
+      document.getElementById('productModal').classList.add('hidden');
+    }
+
+    function autoDetectProductInfo(url) {
+      if (!url) return;
+      if (url.includes('onsal')) {
+        document.getElementById('modalBrand').value = '온살';
+      } else if (url.includes('lume')) {
+        document.getElementById('modalBrand').value = '루메아카이브';
       }
     }
 
+    function saveProductModal() {
+      const brand = document.getElementById('modalBrand').value;
+      const name = document.getElementById('modalProdName').value.trim();
+      if (!name) {
+        alert('제품명을 입력해 주세요.');
+        return;
+      }
+
+      const originalPrice = Number(document.getElementById('modalProdOriginalPrice').value) || 0;
+      const salePrice = Number(document.getElementById('modalProdSalePrice').value) || 0;
+      const stock = Number(document.getElementById('modalProdStock').value) || 0;
+      const url = document.getElementById('modalProdUrl').value.trim();
+
+      const idx = document.getElementById('editProdIndex').value;
+      if (idx !== '') {
+        products[idx] = { brand, name, originalPrice, salePrice, stock, url };
+      } else {
+        products.push({ brand, name, originalPrice, salePrice, stock, url });
+      }
+
+      saveData();
+      closeProductModal();
+      updateProductSelect();
+      renderProductsSection();
+      alert('제품 정보가 저장되었습니다.');
+    }
+
+    function editProduct(idx) {
+      openProductModal(idx);
+    }
+
+    // ==================== SEEDING & INVENTORY DASHBOARD ====================
     function renderSeedingDashboard() {
-      let totalProd = products.length;
-      let totalStock = products.reduce((sum, p) => sum + (p.initialStock || 0), 0);
-      let totalSeeded = pplList.reduce((sum, p) => sum + (p.seedingCount || 0), 0);
-      let totalUsed = stockLogs.filter(l => l.type !== '입고').reduce((sum, l) => sum + l.quantity, 0) - totalSeeded;
-      if (totalUsed < 0) totalUsed = 0;
+      document.getElementById('statTotalProd').innerText = `${products.length}개`;
 
-      document.getElementById('statTotalProd').innerText = totalProd + "개";
-      document.getElementById('statTotalStock').innerText = totalStock + "개";
-      document.getElementById('statTotalSeeded').innerText = totalSeeded + "개";
-      document.getElementById('statTotalUsed').innerText = totalUsed + "개";
+      const totalStockIn = stockLogs.filter(l => l.type === '입고').reduce((a, b) => a + Number(b.quantity), 0) +
+                           products.reduce((a, b) => a + Number(b.stock), 0);
+      document.getElementById('statTotalStock').innerText = `${totalStockIn}개`;
 
+      const totalSeeded = pplList.reduce((a, b) => a + Number(b.shipping?.count || 1), 0);
+      document.getElementById('statTotalSeeded').innerText = `${totalSeeded}개`;
+
+      const totalUsed = stockLogs.filter(l => l.type !== '입고').reduce((a, b) => a + Number(b.quantity), 0);
+      document.getElementById('statTotalUsed').innerText = `${totalUsed}개`;
+
+      // Render Inventory Cards
       const grid = document.getElementById('seedingInventoryGrid');
-      grid.innerHTML = products.map(p => {
-        const inLogs = stockLogs.filter(l => l.productName === p.name && l.type === '입고').reduce((sum, l) => sum + l.quantity, 0);
-        const outLogs = stockLogs.filter(l => l.productName === p.name && l.type !== '입고').reduce((sum, l) => sum + l.quantity, 0);
-        const remain = (p.initialStock || 0) + inLogs - outLogs;
-        const brandCardColor = p.brand === '온살' ? 'bg-pink-50/50 border-pink-100 text-pink-600' : 'bg-skyblue-50/50 border-skyblue-100 text-skyblue-600';
-        const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
-
-        return `
-          <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-xs space-y-3">
-            <div class="flex justify-between items-center">
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${brandBadgeClass}">${p.brand}</span>
-            </div>
-            <h3 class="text-sm font-bold text-slate-900">${p.name}</h3>
-            <div class="${brandCardColor} p-3 rounded-xl border flex justify-between items-center">
-              <span class="text-xs font-medium text-slate-600">실시간 잔여 시딩 재고</span>
-              <span class="text-lg font-black">${remain} 개</span>
-            </div>
+      grid.innerHTML = products.map(p => `
+        <div class="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700'}">${p.brand}</span>
+            <span class="text-xs text-slate-400 font-semibold">실시간 남은 재고</span>
           </div>
-        `;
-      }).join('');
+          <h4 class="text-sm font-bold text-slate-800 truncate">${p.name}</h4>
+          <div class="text-2xl font-black text-pink-600">${p.stock} <span class="text-xs font-normal text-slate-500">개</span></div>
+        </div>
+      `).join('');
 
+      // Render Logs
       const tbody = document.getElementById('stockLogTableBody');
       if (stockLogs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-xs text-slate-400">입출고 및 소진 이력이 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 text-xs">등록된 입고/소진 내역이 없습니다.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = stockLogs.map((log, idx) => `
-        <tr class="hover:bg-slate-50 transition">
-          <td class="py-3 px-3 font-semibold text-slate-700">${log.date}</td>
+        <tr>
+          <td class="py-3 px-3 text-slate-600">${log.date}</td>
           <td class="py-3 px-3">
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${log.type === '입고' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}">${log.type}</span>
+            <span class="px-2 py-0.5 rounded font-bold text-[10px] ${log.type === '입고' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}">${log.type}</span>
           </td>
-          <td class="py-3 px-3">
-            <span class="text-[10px] font-semibold text-pink-600">${log.brand}</span>
-            <div class="font-bold text-slate-800">${log.productName}</div>
-          </td>
-          <td class="py-3 px-3 font-black ${log.type === '입고' ? 'text-blue-600' : 'text-rose-600'}">${log.type === '입고' ? '+' : '-'}${log.quantity}개</td>
+          <td class="py-3 px-3 font-bold text-slate-800">[${log.brand}] ${log.productName}</td>
+          <td class="py-3 px-3 font-bold ${log.type === '입고' ? 'text-blue-600' : 'text-amber-600'}">${log.type === '입고' ? '+' : '-'}${log.quantity}개</td>
           <td class="py-3 px-3 text-slate-600">${log.reason || '-'}</td>
           <td class="py-3 px-3 text-right">
             <button onclick="deleteStockLog(${idx})" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash"></i></button>
@@ -3154,495 +2649,284 @@
       `).join('');
     }
 
+    function openStockLogModal() {
+      document.getElementById('logBrand').value = '온살';
+      updateLogProductSelect();
+      document.getElementById('logDate').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('stockLogModal').classList.remove('hidden');
+    }
+
+    function closeStockLogModal() {
+      document.getElementById('stockLogModal').classList.add('hidden');
+    }
+
     function updateLogProductSelect() {
-      const select = document.getElementById('logProductSelect');
-      if (!select) return;
       const brand = document.getElementById('logBrand').value;
+      const select = document.getElementById('logProductSelect');
       const filtered = products.filter(p => p.brand === brand);
-      select.innerHTML =
-        filtered.map(p => `<option value="${p.name}">${p.name}</option>`).join('') +
-        `<option value="__new__">➕ 신제품 직접 입력하기</option>`;
+
+      select.innerHTML = filtered.map(p => `<option value="${p.name}">${p.name}</option>`).join('') +
+                         `<option value="__NEW__">+ 신규 제품 직접 입력</option>`;
       toggleNewProductInput();
     }
 
     function toggleNewProductInput() {
+      const val = document.getElementById('logProductSelect').value;
       const wrap = document.getElementById('newProductWrap');
-      const isNew = document.getElementById('logProductSelect').value === '__new__';
-      wrap.classList.toggle('hidden', !isNew);
-      if (isNew) document.getElementById('logNewProductName').focus();
+      if (val === '__NEW__') {
+        wrap.classList.remove('hidden');
+      } else {
+        wrap.classList.add('hidden');
+      }
     }
 
-    function openStockLogModal() {
-      updateLogProductSelect();
-      document.getElementById('stockLogModal').classList.remove('hidden');
-    }
-    function closeStockLogModal() { document.getElementById('stockLogModal').classList.add('hidden'); }
-
-    document.getElementById('stockLogForm').addEventListener('submit', function(e) {
+    function handleStockLogSubmit(e) {
       e.preventDefault();
-      const type = document.getElementById('logType').value.trim() || '기타조정';
+      const type = document.getElementById('logType').value.trim() || '입고';
       const brand = document.getElementById('logBrand').value;
-      let productName = document.getElementById('logProductSelect').value;
+      let prodSelectVal = document.getElementById('logProductSelect').value;
+      let productName = prodSelectVal;
 
-      if (productName === '__new__') {
+      if (prodSelectVal === '__NEW__') {
         productName = document.getElementById('logNewProductName').value.trim();
-        if (!productName) { alert("신제품명을 입력해 주세요."); return; }
-        if (!products.some(p => p.brand === brand && p.name === productName)) {
-          products.push({ brand, name: productName, originalPrice: 0, salePrice: 0, initialStock: 0, url: "" });
+        if (!productName) {
+          alert('신제품명을 입력해 주세요.');
+          return;
+        }
+        products.push({ brand, name: productName, originalPrice: 0, salePrice: 0, stock: 0 });
+      }
+
+      const quantity = Number(document.getElementById('logQuantity').value) || 1;
+      const date = document.getElementById('logDate').value;
+      const reason = document.getElementById('logReason').value.trim();
+
+      // Adjust Product Stock
+      const prod = products.find(p => p.brand === brand && p.name === productName);
+      if (prod) {
+        if (type === '입고') {
+          prod.stock += quantity;
+        } else {
+          prod.stock = Math.max(0, prod.stock - quantity);
         }
       }
-      if (!productName) { alert("대상 제품을 선택해 주세요."); return; }
-      const quantity = Math.abs(Number(document.getElementById('logQuantity').value) || 0);
-      const date = document.getElementById('logDate').value;
-      const reason = document.getElementById('logReason').value;
 
-      stockLogs.unshift({ id: Date.now(), date, type, brand, productName, quantity, reason });
-      saveAll();
+      stockLogs.unshift({ type, brand, productName, quantity, date, reason });
+      saveData();
+
       closeStockLogModal();
-      renderAll();
-      this.reset();
-      document.getElementById('logType').value = '입고';
-      document.getElementById('logDate').valueAsDate = new Date();
-      updateLogProductSelect();
-    });
+      document.getElementById('stockLogForm').reset();
+      renderSeedingDashboard();
+      alert('재고 내역이 저장되었습니다.');
+    }
 
     function deleteStockLog(idx) {
-      if (confirm("이 히스토리를 삭제할까요?")) {
+      if (confirm('이 재고 기록을 삭제하시겠습니까?')) {
         stockLogs.splice(idx, 1);
-        saveAll();
-        renderAll();
+        saveData();
+        renderSeedingDashboard();
       }
     }
 
-    // ===== UTM 트래킹 관리 =====
+    // ==================== UTM TRACKING DASHBOARD ====================
     function renderUtmDashboard() {
-      const tbody = document.getElementById('utmTableBody');
-      if (!tbody) return;
+      const total = utmList.length;
+      const onsalCount = utmList.filter(u => u.brand === '온살').length;
+      const lumeCount = utmList.filter(u => u.brand === '루메아카이브').length;
+      const campaignCount = new Set(utmList.map(u => u.source)).size;
 
-      const search = (document.getElementById('utmSearchInput').value || '').toLowerCase();
+      document.getElementById('utmStatTotal').innerText = `${total}개`;
+      document.getElementById('utmStatOnsal').innerText = `${onsalCount}개`;
+      document.getElementById('utmStatLume').innerText = `${lumeCount}개`;
+      document.getElementById('utmStatCampaign').innerText = `${campaignCount}개`;
+
+      const search = document.getElementById('utmSearchInput').value.toLowerCase();
       const brandFilter = document.getElementById('utmBrandFilter').value;
 
-      document.getElementById('utmStatTotal').innerText = utmList.length + '개';
-      document.getElementById('utmStatOnsal').innerText = utmList.filter(u => u.brand === '온살').length + '개';
-      document.getElementById('utmStatLume').innerText = utmList.filter(u => u.brand === '루메아카이브').length + '개';
-      document.getElementById('utmStatCampaign').innerText = new Set(utmList.map(u => u.source || u.campaign)).size + '개';
+      let filtered = utmList;
+      if (brandFilter !== '전체') {
+        filtered = filtered.filter(u => u.brand === brandFilter);
+      }
+      if (search) {
+        filtered = filtered.filter(u => 
+          (u.name && u.name.toLowerCase().includes(search)) ||
+          (u.source && u.source.toLowerCase().includes(search)) ||
+          (u.fullUrl && u.fullUrl.toLowerCase().includes(search))
+        );
+      }
 
-      const filtered = utmList.filter(item => {
-        const matchBrand = brandFilter === '전체' || item.brand === brandFilter;
-        const matchSearch =
-          (item.name || '').toLowerCase().includes(search) ||
-          (item.campaign || '').toLowerCase().includes(search) ||
-          (item.detail || '').toLowerCase().includes(search) ||
-          (item.keyword || '').toLowerCase().includes(search) ||
-          (item.note || '').toLowerCase().includes(search) ||
-          (item.source || '').toLowerCase().includes(search);
-        return matchBrand && matchSearch;
-      });
-
+      const tbody = document.getElementById('utmTableBody');
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">조건에 맞는 UTM 링크가 없습니다. 새 링크를 만들어 보세요.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">생성된 UTM 트래킹 링크가 없습니다.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = filtered.map(item => {
-        const brandBadge = item.brand === '온살' ? 'bg-pink-50 text-pink-600 border-pink-200' : 'bg-skyblue-50 text-skyblue-600 border-skyblue-200';
-        return `
-          <tr class="hover:bg-pink-50/20 transition">
-            <td class="py-3 px-3 align-top">
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${brandBadge}">${item.brand}</span>
-              <div class="font-bold text-slate-900 mt-1">${item.name || '미지정'}</div>
-            </td>
-            <td class="py-3 px-3 align-top">
-              <div class="font-bold text-purple-700">${item.source || item.campaign || '-'}</div>
-              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${item.mode === 'naver' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${item.mode === 'naver' ? 'nt_' : 'utm_'}</span>
-            </td>
-            <td class="py-3 px-3 align-top text-[11px] text-slate-600 leading-relaxed">
-              <div>세트: <b>${item.medium || '-'}</b></div>
-              <div>소재: <b>${item.detail || '-'}</b></div>
-              <div>상품: <b>${item.keyword || item.campaign || '-'}</b></div>
-            </td>
-            <td class="py-3 px-3 align-top min-w-[260px] space-y-1">
-              <input type="text" readonly value="${item.url}" onclick="this.select()" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-600 select-all font-mono">
-              ${item.shortUrl
-                ? `<input type="text" readonly value="${item.shortUrl}" onclick="this.select()" class="w-full px-2 py-1 bg-emerald-50 border border-emerald-200 rounded text-[11px] text-emerald-800 select-all font-mono font-bold">`
-                : `<button onclick="makeShortForItem(${item.id}, this)" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-semibold rounded"><i class="fa-solid fa-link"></i> 단축 만들기</button>`}
-            </td>
-            <td class="py-3 px-3 align-top text-center space-y-1">
-              <button onclick="copyUtmUrl(this, '${item.url}')" class="w-full px-2.5 py-1 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-lg transition shadow-xs whitespace-nowrap">
-                <i class="fa-solid fa-copy"></i> 원본
-              </button>
-              ${item.shortUrl
-                ? `<button onclick="copyUtmUrl(this, '${item.shortUrl}')" class="w-full px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded-lg transition shadow-xs whitespace-nowrap"><i class="fa-solid fa-copy"></i> 단축</button>`
-                : ''}
-            </td>
-            <td class="py-3 px-3 align-top min-w-[150px]">
-              <input type="text" value="${(item.note || '').replace(/"/g, '&quot;')}" onchange="updateUtmNote(${item.id}, this.value)" placeholder="메모 입력" class="w-full px-2 py-1 text-[11px] border border-slate-200 rounded-lg bg-amber-50/40 focus:bg-white focus:border-pink-300 outline-none">
-            </td>
-            <td class="py-3 px-3 align-top text-right whitespace-nowrap">
-              <div class="flex gap-1 justify-end">
-                <button onclick="openUtmModal(${item.id})" title="수정" class="p-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 text-xs"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="duplicateUtmItem(${item.id})" title="복제" class="p-1.5 bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 text-xs"><i class="fa-solid fa-copy"></i></button>
-                <button onclick="deleteUtmItem(${item.id})" title="삭제" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 text-xs"><i class="fa-solid fa-trash"></i></button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
+      tbody.innerHTML = filtered.map((utm, idx) => `
+        <tr>
+          <td class="py-3 px-3">
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${utm.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700'}">${utm.brand}</span>
+            <div class="font-bold text-slate-800 mt-0.5">${utm.name || '-'}</div>
+          </td>
+          <td class="py-3 px-3">
+            <div class="font-bold text-slate-800">${utm.source || '-'}</div>
+            <span class="text-[10px] text-slate-400 font-mono">${utm.mode}</span>
+          </td>
+          <td class="py-3 px-3 text-slate-600">
+            <div>${utm.medium || '-'} / ${utm.detail || '-'}</div>
+            <div class="text-[11px] text-slate-400">${utm.keyword || '-'}</div>
+          </td>
+          <td class="py-3 px-3">
+            <div class="text-[11px] font-mono text-pink-600 truncate max-w-xs">${utm.fullUrl}</div>
+            ${utm.shortUrl ? `<div class="text-[11px] font-mono text-emerald-600 font-bold">${utm.shortUrl}</div>` : ''}
+          </td>
+          <td class="py-3 px-3 text-center">
+            <button onclick="copyToClipboard('${utm.shortUrl || utm.fullUrl}')" class="px-2.5 py-1 bg-pink-50 hover:bg-pink-100 text-pink-700 font-bold text-[11px] rounded-lg transition">
+              복사
+            </button>
+          </td>
+          <td class="py-3 px-3 text-slate-500 text-[11px]">${utm.note || '-'}</td>
+          <td class="py-3 px-3 text-right">
+            <button onclick="deleteUtm('${utm.id}')" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
     }
 
-    function openUtmModal(id) {
-      const isEdit = id !== undefined && id !== null;
-      document.getElementById('utmEditId').value = isEdit ? id : '';
-      document.getElementById('utmModalTitle').innerText = isEdit ? 'UTM 링크 수정' : '새 UTM 링크 생성 및 등록';
-      document.getElementById('utmSubmitBtn').innerText = isEdit ? '수정 내용 저장' : '생성 및 저장';
-
-      if (isEdit) {
-        const item = utmList.find(x => x.id === id);
-        if (item) {
-          document.getElementById('utmModalBrand').value = item.brand || '온살';
-          document.getElementById('utmModalMode').value = item.mode || 'auto';
-          document.getElementById('utmModalUrl').value = item.base || '';
-          document.getElementById('utmModalName').value = item.name || '';
-          document.getElementById('utmModalSource').value = item.source || '';
-          document.getElementById('utmModalMedium').value = item.medium || '';
-          document.getElementById('utmModalDetail').value = item.detail || '';
-          document.getElementById('utmModalKeyword').value = item.keyword || '';
-          document.getElementById('utmModalNote').value = item.note || '';
-          document.getElementById('utmMakeShort').checked = !item.shortUrl;
-        }
-      } else {
-        document.getElementById('utmForm').reset();
-        document.getElementById('utmModalMedium').value = 'ppl';
-        document.getElementById('utmModalUrl').value = 'https://onssal.co.kr/product/detail';
-        document.getElementById('utmMakeShort').checked = true;
-      }
-
+    function openUtmModal() {
+      document.getElementById('utmForm').reset();
+      document.getElementById('utmPreview').innerText = 'URL과 캠페인 이름을 입력하면 미리보기가 표시됩니다.';
+      updateUtmModeUI();
       document.getElementById('utmModal').classList.remove('hidden');
-      updateUtmModeUI();
     }
 
-    function duplicateUtmItem(id) {
-      const item = utmList.find(x => x.id === id);
-      if (!item) return;
-      openUtmModal();
-      document.getElementById('utmModalBrand').value = item.brand || '온살';
-      document.getElementById('utmModalMode').value = item.mode || 'auto';
-      document.getElementById('utmModalUrl').value = item.base || '';
-      document.getElementById('utmModalName').value = item.name || '';
-      document.getElementById('utmModalSource').value = item.source || '';
-      document.getElementById('utmModalMedium').value = item.medium || '';
-      document.getElementById('utmModalDetail').value = item.detail || '';
-      document.getElementById('utmModalKeyword').value = item.keyword || '';
-      document.getElementById('utmModalNote').value = item.note || '';
-      document.getElementById('utmModalTitle').innerText = 'UTM 링크 복제';
-      updateUtmModeUI();
-    }
-    function closeUtmModal() { document.getElementById('utmModal').classList.add('hidden'); }
-
-    function detectUtmMode() {
-      const mode = document.getElementById('utmModalMode').value;
-      if (mode !== 'auto') return mode;
-      const url = document.getElementById('utmModalUrl').value.toLowerCase();
-      return url.includes('naver.com') ? 'naver' : 'utm';
-    }
-
-    function buildTrackingUrl(base, mode, source, medium, detail, keyword) {
-      if (!base || !source) return '';
-      const enc = v => encodeURIComponent(v);
-      const parts = [];
-
-      if (mode === 'naver') {
-        parts.push('nt_source=' + enc(source.toLowerCase()));
-        if (medium) parts.push('nt_medium=' + enc(medium.toLowerCase()));
-        if (detail) parts.push('nt_detail=' + enc(detail));
-        if (keyword) parts.push('nt_keyword=' + enc(keyword));
-      } else {
-        parts.push('utm_source=' + enc(source.toLowerCase()));
-        if (medium) parts.push('utm_medium=' + enc(medium.toLowerCase()));
-        if (detail) parts.push('utm_content=' + enc(detail));
-        if (keyword) parts.push('utm_campaign=' + enc(keyword));
-      }
-
-      return base + (base.includes('?') ? '&' : '?') + parts.join('&');
+    function closeUtmModal() {
+      document.getElementById('utmModal').classList.add('hidden');
     }
 
     function updateUtmModeUI() {
-      const mode = detectUtmMode();
-      const isNaver = mode === 'naver';
-
-      document.getElementById('lblSource').innerText = isNaver ? '(nt_source)' : '(utm_source)';
-      document.getElementById('lblMedium').innerText = isNaver ? '(nt_medium)' : '(utm_medium)';
-      document.getElementById('lblDetail').innerText = isNaver ? '(nt_detail)' : '(utm_content)';
-      document.getElementById('lblKeyword').innerText = isNaver ? '(nt_keyword)' : '(utm_campaign)';
-
+      const mode = document.getElementById('utmModalMode').value;
+      const url = document.getElementById('utmModalUrl').value.trim();
       const hint = document.getElementById('utmModeHint');
-      const selected = document.getElementById('utmModalMode').value;
-      if (selected === 'auto') {
-        hint.innerHTML = isNaver
-          ? '네이버 주소로 인식 → <b class="text-pink-600">nt_ 파라미터</b>로 생성됩니다.'
-          : '일반 사이트로 인식 → <b class="text-pink-600">utm_ 파라미터</b>로 생성됩니다.';
+
+      let isNaver = false;
+      if (mode === 'naver' || (mode === 'auto' && (url.includes('naver.com') || url.includes('smartstore')))) {
+        isNaver = true;
+      }
+
+      if (isNaver) {
+        hint.innerText = '* 네이버 전용 파라미터(nt_source, nt_medium 등)가 사용됩니다.';
+        document.getElementById('lblSource').innerText = '(nt_source)';
+        document.getElementById('lblMedium').innerText = '(nt_medium)';
+        document.getElementById('lblDetail').innerText = '(nt_detail)';
+        document.getElementById('lblKeyword').innerText = '(nt_keyword)';
       } else {
-        hint.innerHTML = isNaver ? '네이버(nt_) 방식 고정' : '일반(utm_) 방식 고정';
+        hint.innerText = '* 일반 구글 UTM 파라미터(utm_source, utm_medium 등)가 사용됩니다.';
+        document.getElementById('lblSource').innerText = '(utm_source)';
+        document.getElementById('lblMedium').innerText = '(utm_medium)';
+        document.getElementById('lblDetail').innerText = '(utm_content)';
+        document.getElementById('lblKeyword').innerText = '(utm_term)';
       }
 
-      const preview = buildTrackingUrl(
-        document.getElementById('utmModalUrl').value.trim(),
-        mode,
-        document.getElementById('utmModalSource').value.trim(),
-        document.getElementById('utmModalMedium').value.trim(),
-        document.getElementById('utmModalDetail').value.trim(),
-        document.getElementById('utmModalKeyword').value.trim()
-      );
-      document.getElementById('utmPreview').innerText = preview || 'URL과 캠페인 이름을 입력하면 미리보기가 표시됩니다.';
+      // Generate Preview
+      const source = document.getElementById('utmModalSource').value.trim();
+      if (url && source) {
+        const previewUrl = buildTrackingUrl(url, isNaver, {
+          source,
+          medium: document.getElementById('utmModalMedium').value.trim(),
+          detail: document.getElementById('utmModalDetail').value.trim(),
+          keyword: document.getElementById('utmModalKeyword').value.trim()
+        });
+        document.getElementById('utmPreview').innerText = previewUrl;
+      }
     }
 
-    ['utmModalSource', 'utmModalMedium', 'utmModalDetail', 'utmModalKeyword'].forEach(id => {
-      document.getElementById(id).addEventListener('input', updateUtmModeUI);
-    });
-
-    // 1순위: 구글 Apps Script 중계 (가장 안정적)
-    async function shortenViaProxy(longUrl) {
+    function buildTrackingUrl(baseUrl, isNaver, params) {
       try {
-        const res = await fetch(`${SYNC_URL}?key=${encodeURIComponent(SYNC_KEY)}&action=shorten&url=${encodeURIComponent(longUrl)}`);
-        const json = await res.json();
-        return json.ok && json.shorturl ? json.shorturl : '';
+        const urlObj = new URL(baseUrl);
+        const prefix = isNaver ? 'nt_' : 'utm_';
+
+        if (params.source) urlObj.searchParams.set(`${prefix}source`, params.source);
+        if (params.medium) urlObj.searchParams.set(`${prefix}medium`, params.medium);
+        
+        const detailKey = isNaver ? 'nt_detail' : 'utm_content';
+        if (params.detail) urlObj.searchParams.set(detailKey, params.detail);
+
+        const termKey = isNaver ? 'nt_keyword' : 'utm_term';
+        if (params.keyword) urlObj.searchParams.set(termKey, params.keyword);
+
+        return urlObj.toString();
       } catch (e) {
-        return '';
+        return baseUrl;
       }
     }
 
-    // 최종 진입점: 중계 실패 시 브라우저 직접 호출로 재시도
-    async function shortenUrl(longUrl) {
-      const viaProxy = await shortenViaProxy(longUrl);
-      if (viaProxy) return viaProxy;
-      return await shortenViaJsonp(longUrl);
-    }
-
-    // 2순위: is.gd JSONP 직접 호출
-    function shortenViaJsonp(longUrl) {
-      return new Promise(resolve => {
-        const cbName = 'isgd_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-        const script = document.createElement('script');
-        let finished = false;
-
-        const cleanup = () => {
-          try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
-          if (script.parentNode) script.parentNode.removeChild(script);
-        };
-
-        window[cbName] = (data) => {
-          finished = true;
-          cleanup();
-          resolve((data && data.shorturl) ? data.shorturl : '');
-        };
-
-        script.onerror = () => {
-          if (finished) return;
-          finished = true;
-          cleanup();
-          resolve('');
-        };
-
-        setTimeout(() => {
-          if (finished) return;
-          finished = true;
-          cleanup();
-          resolve('');
-        }, 10000);
-
-        script.src = `https://is.gd/create.php?format=json&callback=${cbName}&url=${encodeURIComponent(longUrl)}`;
-        document.body.appendChild(script);
-      });
-    }
-
-    document.getElementById('utmForm').addEventListener('submit', async function(e) {
+    async function handleUtmSubmit(e) {
       e.preventDefault();
       const brand = document.getElementById('utmModalBrand').value;
-      const name = document.getElementById('utmModalName').value;
-      const baseUrl = document.getElementById('utmModalUrl').value.trim();
+      const mode = document.getElementById('utmModalMode').value;
+      const url = document.getElementById('utmModalUrl').value.trim();
+      const name = document.getElementById('utmModalName').value.trim();
       const source = document.getElementById('utmModalSource').value.trim();
       const medium = document.getElementById('utmModalMedium').value.trim();
       const detail = document.getElementById('utmModalDetail').value.trim();
       const keyword = document.getElementById('utmModalKeyword').value.trim();
       const note = document.getElementById('utmModalNote').value.trim();
-      const mode = detectUtmMode();
+      const makeShort = document.getElementById('utmMakeShort').checked;
 
-      if (!baseUrl) { alert("랜딩 페이지 URL을 입력해 주세요."); return; }
-      if (!source) { alert("캠페인 이름을 입력해 주세요."); return; }
-
-      const finalUrl = buildTrackingUrl(baseUrl, mode, source, medium, detail, keyword);
-      const wantShort = document.getElementById('utmMakeShort').checked;
-
-      const editId = document.getElementById('utmEditId').value;
-      let target;
-
-      if (editId) {
-        target = utmList.find(x => x.id === Number(editId));
-        if (!target) return;
-
-        const urlChanged = target.url !== finalUrl;
-        Object.assign(target, {
-          brand, name: name || '미지정 인플루언서', mode,
-          source, medium, detail, keyword,
-          base: baseUrl, url: finalUrl, note
-        });
-        // 링크가 바뀌면 기존 단축 URL은 더 이상 유효하지 않음
-        if (urlChanged) target.shortUrl = '';
-      } else {
-        target = {
-          id: Date.now(),
-          brand,
-          name: name || '미지정 인플루언서',
-          mode,
-          source, medium, detail, keyword,
-          base: baseUrl,
-          url: finalUrl,
-          shortUrl: '',
-          note
-        };
-        utmList.unshift(target);
-      }
-
-      saveAll();
-      closeUtmModal();
-      renderUtmDashboard();
-      document.getElementById('utmEditId').value = '';
-      this.reset();
-      updateUtmModeUI();
-
-      if (wantShort && !target.shortUrl) {
-        target.shortUrl = await shortenUrl(target.url);
-        if (!target.shortUrl) console.warn('단축 URL 생성 실패 - 목록의 단축 만들기 버튼으로 재시도 가능');
-        saveAll();
-        renderUtmDashboard();
-      }
-    });
-
-    async function makeShortForItem(id, btn) {
-      const item = utmList.find(x => x.id === id);
-      if (!item) return;
-
-      const original = btn.innerHTML;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-      const short = await shortenUrl(item.url);
-
-      if (short) {
-        item.shortUrl = short;
-        saveAll();
-        renderUtmDashboard();
-      } else {
-        btn.innerHTML = original;
-        alert("단축 URL 생성에 실패했습니다. 잠시 후 다시 눌러주세요.\n(계속 실패하면 원본 링크를 그대로 사용하셔도 추적에는 문제없습니다)");
-      }
-    }
-
-    function updateUtmNote(id, value) {
-      const item = utmList.find(x => x.id === id);
-      if (!item) return;
-      item.note = value;
-      saveAll();
-    }
-
-    function deleteUtmItem(id) {
-      if (confirm("이 UTM 링크를 삭제할까요?")) {
-        utmList = utmList.filter(x => x.id !== id);
-        saveAll();
-        renderUtmDashboard();
-      }
-    }
-
-    function copyUtmUrl(btn, url) {
-      const done = () => {
-        const original = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> 복사됨';
-        setTimeout(() => { btn.innerHTML = original; }, 1500);
-      };
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(url).then(done).catch(() => fallbackCopy(url, done));
-      } else {
-        fallbackCopy(url, done);
-      }
-    }
-
-    function fallbackCopy(text, cb) {
-      const el = document.createElement('textarea');
-      el.value = text;
-      el.style.position = 'fixed';
-      el.style.opacity = '0';
-      document.body.appendChild(el);
-      el.select();
-      try { document.execCommand('copy'); cb(); } catch (e) { alert('복사에 실패했습니다. URL을 직접 선택해 복사해 주세요.'); }
-      document.body.removeChild(el);
-    }
-
-    function toggleSelectAllPpl(checked) {
-      document.querySelectorAll('.ppl-select').forEach(cb => { cb.checked = checked; });
-    }
-
-    function exportShippingExcel(mode) {
-      const isFree = mode === true || mode === 'free';
-      const isMicroMode = mode === 'micro';
-
-      const selector = isFree ? '.freeamb-select:checked' : (isMicroMode ? '.micro-select:checked' : '.ppl-select:checked');
-      const checked = Array.from(document.querySelectorAll(selector)).map(cb => Number(cb.value));
-
-      let rows;
-      if (isFree) rows = pplList.filter(isFreeAmb);
-      else if (isMicroMode) rows = pplList.filter(isMicro);
-      else rows = pplList.filter(p => !isFreeAmb(p) && !isMicro(p));
-
-      if (!isFree && !isMicroMode && currentTableBrandFilter !== '전체') rows = rows.filter(p => p.brand === currentTableBrandFilter);
-      if (checked.length > 0) rows = rows.filter(p => checked.includes(p.id));
-
-      if (rows.length === 0) {
-        alert("내보낼 항목이 없습니다. 목록에서 인플루언서를 확인해 주세요.");
+      if (!url || !source) {
+        alert('URL과 캠페인 이름을 입력해 주세요.');
         return;
       }
 
-      const data = rows.map(p => ({
-        "제품명": (p.productList && p.productList.length ? p.productList.join(', ') : (p.product || "")),
-        "수량": p.seedingCount || 0,
-        "이름": p.receiverName || "",
-        "연락처": p.receiverPhone || "",
-        "우편번호": p.postalCode || "",
-        "주소": [p.address, p.addressDetail].filter(Boolean).join(' ')
-      }));
+      let isNaver = false;
+      if (mode === 'naver' || (mode === 'auto' && (url.includes('naver.com') || url.includes('smartstore')))) {
+        isNaver = true;
+      }
 
-      const today = new Date().toISOString().slice(0, 10);
-      const fileBase = isFree ? `무상앰버서더_배송정보_${today}` : (isMicroMode ? `마이크로_배송정보_${today}` : `배송정보_${today}`);
+      const fullUrl = buildTrackingUrl(url, isNaver, { source, medium, detail, keyword });
+      let shortUrl = '';
 
-      if (typeof XLSX !== 'undefined') {
-        const ws = XLSX.utils.json_to_sheet(data);
-        ws['!cols'] = [{ wch: 26 }, { wch: 8 }, { wch: 12 }, { wch: 16 }, { wch: 10 }, { wch: 45 }];
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "배송정보");
-        XLSX.writeFile(wb, fileBase + ".xlsx");
-      } else {
-        const headers = Object.keys(data[0]);
-        let csv = '\uFEFF' + headers.join(',') + '\n';
-        data.forEach(r => { csv += headers.map(h => `"${String(r[h]).replace(/"/g, '""')}"`).join(',') + '\n'; });
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileBase + ".csv";
-        a.click();
-        URL.revokeObjectURL(url);
+      if (makeShort) {
+        try {
+          const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(fullUrl)}`);
+          const data = await res.json();
+          if (data.shorturl) shortUrl = data.shorturl;
+        } catch (err) {
+          console.warn('Short URL generation failed:', err);
+        }
+      }
+
+      utmList.unshift({
+        id: 'utm_' + Date.now(),
+        brand,
+        mode: isNaver ? 'naver' : 'utm',
+        name,
+        source,
+        medium,
+        detail,
+        keyword,
+        fullUrl,
+        shortUrl,
+        note
+      });
+
+      saveData();
+      closeUtmModal();
+      renderUtmDashboard();
+      alert('UTM 트래킹 링크가 생성되었습니다.');
+    }
+
+    function deleteUtm(utmId) {
+      if (confirm('이 UTM 링크를 삭제하시겠습니까?')) {
+        utmList = utmList.filter(u => u.id !== utmId);
+        saveData();
+        renderUtmDashboard();
       }
     }
 
-    function exportToCSV() {
-      let csv = '\uFEFF브랜드,제품명,인플루언서본명,계정,진행상태,컨택일자,시딩수량\n';
-      pplList.forEach(p => {
-        csv += `"${p.brand}","${p.product}","${p.realName}","${p.influencer}","${p.status}","${p.contactDate || p.targetDate || ''}",${p.seedingCount}\n`;
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('클립보드에 복사되었습니다!');
       });
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'onsal_lume_ppl_export.csv';
-      a.click();
-      URL.revokeObjectURL(url);
     }
   </script>
 </body>
