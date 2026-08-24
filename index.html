@@ -52,7 +52,7 @@
             <i class="fa-solid fa-address-book"></i> 컨택 리스트
           </button>
           <button onclick="switchMainPage('ppl')" id="nav-ppl" class="px-3 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5">
-            <i class="fa-solid fa-bullhorn"></i> PPL & 협찬 관리
+            <i class="fa-solid fa-bullhorn"></i> PPL &amp; 협찬 관리
           </button>
           <button onclick="switchMainPage('micro')" id="nav-micro" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-users-rays"></i> 마이크로 관리
@@ -60,17 +60,20 @@
           <button onclick="switchMainPage('amb')" id="nav-amb" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-crown"></i> 앰버서더 관리
           </button>
-          <button onclick="switchMainPage('creator')" id="nav-creator" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-video"></i> 크리에이터 관리
+          <button onclick="switchMainPage('sup')" id="nav-sup" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-hand-holding-heart"></i> 크리에이터
           </button>
           <button onclick="switchMainPage('trial')" id="nav-trial" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-users-rectangle"></i> 체험단 관리
           </button>
           <button onclick="switchMainPage('seeding')" id="nav-seeding" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-boxes-stacked"></i> 시딩 샘플 & 재고
+            <i class="fa-solid fa-boxes-stacked"></i> 시딩 샘플 &amp; 재고
           </button>
           <button onclick="switchMainPage('utm')" id="nav-utm" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-link"></i> UTM
+          </button>
+          <button onclick="switchMainPage('creator')" id="nav-creator" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-video"></i> 인플루언서 관리
           </button>
         </div>
         <button onclick="exportToCSV()" class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-xl transition flex items-center gap-1 shadow-xs">
@@ -111,7 +114,8 @@
         </div>
       </div>
 
-      <div id="monthlyCards" class="grid grid-cols-2 md:grid-cols-6 gap-3"></div>
+      <div id="monthlyCards" class="grid grid-cols-2 md:grid-cols-7 gap-3"></div>
+      <div id="monthlyUtmBar" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
 
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left text-xs">
@@ -487,12 +491,19 @@
               </label>
               <input type="number" id="cost_shorts" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
             </div>
+            <div class="bg-cyan-50 p-2.5 rounded-xl border border-cyan-200 space-y-1.5">
+              <label class="flex items-center gap-1.5 font-bold text-cyan-800 cursor-pointer">
+                <input type="checkbox" id="type_supporters" class="w-4 h-4 accent-cyan-600 rounded"> 크리에이터
+              </label>
+              <input type="number" id="cost_supporters" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-cyan-200 rounded-lg">
+              <p class="text-[10px] text-cyan-700 leading-tight">체크 시 <b>크리에이터</b> 페이지로 분리됩니다</p>
+            </div>
             <div class="bg-violet-50 p-2.5 rounded-xl border border-violet-200 space-y-1.5">
               <label class="flex items-center gap-1.5 font-bold text-violet-800 cursor-pointer">
-                <input type="checkbox" id="type_creator" class="w-4 h-4 accent-violet-600 rounded"> 크리에이터
+                <input type="checkbox" id="type_creator" class="w-4 h-4 accent-violet-600 rounded"> 인플루언서
               </label>
               <input type="number" id="cost_creator" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-violet-200 rounded-lg">
-              <p class="text-[10px] text-violet-700 leading-tight">체크 시 <b>크리에이터 관리</b> 페이지로 분리됩니다</p>
+              <p class="text-[10px] text-violet-700 leading-tight">체크 시 <b>인플루언서 관리</b> 페이지로 분리됩니다</p>
             </div>
             <div class="bg-sky-50 p-2.5 rounded-xl border border-sky-200 space-y-1.5">
               <label class="flex items-center gap-1.5 font-bold text-sky-800 cursor-pointer">
@@ -1029,47 +1040,47 @@
 
   </main>
 
-  <!-- ==================== PAGE: 크리에이터 관리 ==================== -->
-  <main id="page-creator" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+  <!-- ==================== PAGE: 크리에이터 ==================== -->
+  <main id="page-sup" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
-    <div class="bg-violet-50/60 border border-violet-100 rounded-2xl px-5 py-3.5 text-xs text-violet-900">
-      <b>크리에이터 전용 페이지</b> · PPL 등록 시 <b>크리에이터</b>를 체크하면 이 페이지로 분리됩니다. 아래에서 인플루언서 풀(리스트)과 MCN 소개서도 함께 관리해요.
+    <div class="bg-cyan-50/60 border border-cyan-100 rounded-2xl px-5 py-3.5 text-xs text-cyan-900">
+      <b>크리에이터 전용 페이지</b> · PPL 등록 시 <b>크리에이터</b>를 체크하면 이 페이지로 분리됩니다. 아래에서 <b>월간 미션 · 활동비</b>와 <b>상위노출 키워드 · 순위 · 캡쳐</b>를 함께 관리해요.
     </div>
 
-    <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
-      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-violet-100 pb-3">
+    <section class="bg-white p-5 rounded-2xl border border-cyan-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-cyan-100 pb-3">
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-video text-violet-600"></i> 크리에이터 협업 관리
-            <span id="creatorHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">0명</span>
+            <i class="fa-solid fa-hand-holding-heart text-cyan-600"></i> 크리에이터 진행 관리
+            <span id="supHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full">0명</span>
           </h2>
-          <p class="text-xs text-slate-500">크리에이터 형태로 진행하는 협업 건입니다.</p>
+          <p class="text-xs text-slate-500">크리에이터로 진행하는 협업 건입니다.</p>
         </div>
-        <button onclick="exportShippingExcel('creator')" class="px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+        <button onclick="exportShippingExcel('sup')" class="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
           <i class="fa-solid fa-file-arrow-down"></i> 배송정보 다운로드
         </button>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div class="bg-violet-50/60 p-4 rounded-xl border border-violet-100">
+        <div class="bg-cyan-50/60 p-4 rounded-xl border border-cyan-100">
           <span class="text-[11px] text-slate-500 font-semibold">전체</span>
-          <div id="creatorTotal" class="text-2xl font-black text-violet-700 mt-0.5">0명</div>
+          <div id="supTotal" class="text-2xl font-black text-cyan-700 mt-0.5">0명</div>
         </div>
         <div class="bg-pink-50/60 p-4 rounded-xl border border-pink-100">
           <span class="text-[11px] text-slate-500 font-semibold">온살</span>
-          <div id="creatorOnsal" class="text-2xl font-black text-pink-600 mt-0.5">0명</div>
+          <div id="supOnsal" class="text-2xl font-black text-pink-600 mt-0.5">0명</div>
         </div>
         <div class="bg-skyblue-50/60 p-4 rounded-xl border border-skyblue-100">
           <span class="text-[11px] text-slate-500 font-semibold">루메아카이브</span>
-          <div id="creatorLume" class="text-2xl font-black text-skyblue-600 mt-0.5">0명</div>
+          <div id="supLume" class="text-2xl font-black text-skyblue-600 mt-0.5">0명</div>
         </div>
       </div>
 
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left text-xs">
-          <thead class="bg-violet-50/60 text-slate-600 font-semibold border-y border-violet-100">
+          <thead class="bg-cyan-50/60 text-slate-600 font-semibold border-y border-cyan-100">
             <tr>
-              <th class="py-3 px-3 w-8"><input type="checkbox" onchange="toggleSelectAllBy('creator-select', this.checked)" class="accent-violet-600 w-4 h-4 cursor-pointer"></th>
+              <th class="py-3 px-3 w-8"><input type="checkbox" onchange="toggleSelectAllBy('sup-select', this.checked)" class="accent-cyan-600 w-4 h-4 cursor-pointer"></th>
               <th class="py-3 px-3">브랜드 / 제품</th>
               <th class="py-3 px-3">인플루언서</th>
               <th class="py-3 px-3">협업 형태 / 단가</th>
@@ -1080,28 +1091,175 @@
               <th class="py-3 px-3 text-right">수정 / 삭제</th>
             </tr>
           </thead>
-          <tbody id="creatorTableBody" class="divide-y divide-slate-100" data-empty="등록된 크리에이터 협업이 없습니다. PPL 등록 시 '크리에이터'를 체크하면 여기로 들어옵니다."></tbody>
+          <tbody id="supTableBody" class="divide-y divide-slate-100" data-empty="등록된 크리에이터가 없습니다. PPL 등록 시 '크리에이터'를 체크하면 여기로 들어옵니다."></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 월간 미션 · 활동비 관리 -->
+    <section class="bg-white p-5 rounded-2xl border border-cyan-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-cyan-100 pb-3">
+        <div class="flex items-center gap-3">
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-flag-checkered text-cyan-600"></i> 월간 미션 · 활동비
+          </h2>
+          <span id="missionTitle" class="text-base font-black text-cyan-700"></span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex items-center gap-1">
+            <button onclick="moveCreatorMonth(-1)" class="p-2 hover:bg-cyan-50 rounded-xl text-slate-600 text-xs"><i class="fa-solid fa-chevron-left"></i></button>
+            <button onclick="moveCreatorMonth(0)" class="px-3 py-1.5 text-xs font-semibold border border-cyan-200 rounded-xl hover:bg-cyan-50 text-cyan-700">이번 달</button>
+            <button onclick="moveCreatorMonth(1)" class="p-2 hover:bg-cyan-50 rounded-xl text-slate-600 text-xs"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+          <button onclick="exportMissionExcel()" class="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-arrow-down"></i> 활동비 정산 다운로드
+          </button>
+        </div>
+      </div>
+
+      <!-- 이번 달 미션 정의 -->
+      <div class="bg-cyan-50/50 p-4 rounded-2xl border border-cyan-200 space-y-3">
+        <h3 class="text-xs font-black text-cyan-900 flex items-center gap-1.5"><i class="fa-solid fa-list-check"></i> 이번 달 미션 내용</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-cyan-800 mb-1">월 미션 ①</label>
+            <input id="missionM1" onchange="updateMissionSetting('m1', this.value)" placeholder="예) 제품 사용 릴스 1회 업로드" class="w-full px-3 py-2 text-xs border border-cyan-200 rounded-xl bg-white">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-cyan-800 mb-1">월 미션 ②</label>
+            <input id="missionM2" onchange="updateMissionSetting('m2', this.value)" placeholder="예) 블로그 후기 1건 작성" class="w-full px-3 py-2 text-xs border border-cyan-200 rounded-xl bg-white">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-cyan-800 mb-1">월 미션 활동비 (원)</label>
+            <input type="number" id="missionBaseFee" onchange="updateMissionSetting('baseFee', Number(this.value)||0)" class="w-full px-3 py-2 text-xs border border-cyan-200 rounded-xl bg-white font-bold">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-amber-700 mb-1">추가미션 활동비 (원)</label>
+            <input type="number" id="missionBonusFee" onchange="updateMissionSetting('bonusFee', Number(this.value)||0)" class="w-full px-3 py-2 text-xs border border-amber-200 rounded-xl bg-white font-bold">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-amber-700 mb-1">추가미션 조건 (키워드 수)</label>
+            <input type="number" id="missionGoal" onchange="updateMissionSetting('keywordGoal', Number(this.value)||0)" class="w-full px-3 py-2 text-xs border border-amber-200 rounded-xl bg-white font-bold">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-amber-700 mb-1">상위노출 인정 순위 (이내)</label>
+            <input type="number" id="missionRankLimit" onchange="updateMissionSetting('rankLimit', Number(this.value)||0)" class="w-full px-3 py-2 text-xs border border-amber-200 rounded-xl bg-white font-bold">
+          </div>
+        </div>
+        <p class="text-[11px] text-cyan-800/80">
+          <i class="fa-solid fa-circle-info"></i> 월 미션 <b>2가지를 모두 완료</b>하면 월 활동비가 지급되고,
+          <b>추가미션(키워드 <span id="missionGoalText">5</span>개 상위노출)</b>을 달성하면 활동비가 추가로 지급됩니다.
+          상위노출 달성 수는 <b>상위노출 현황판</b>에 기록한 내용에서 자동으로 계산돼요.
+        </p>
+      </div>
+
+      <div id="missionSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-cyan-50/60 text-slate-600 font-semibold border-y border-cyan-100">
+            <tr>
+              <th class="py-3 px-3">크리에이터</th>
+              <th class="py-3 px-3 text-center">월 미션 ①</th>
+              <th class="py-3 px-3 text-center">월 미션 ②</th>
+              <th class="py-3 px-3">상위노출 달성</th>
+              <th class="py-3 px-3 text-center">추가미션 성공</th>
+              <th class="py-3 px-3 text-right">지급액</th>
+              <th class="py-3 px-3 text-center">지급 완료</th>
+              <th class="py-3 px-3">메모</th>
+            </tr>
+          </thead>
+          <tbody id="missionTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+
+      <!-- 추가미션 성공자 -->
+      <div class="bg-amber-50/50 p-4 rounded-2xl border border-amber-200 space-y-2.5">
+        <h3 class="text-xs font-black text-amber-900 flex items-center gap-1.5">
+          <i class="fa-solid fa-star"></i> 이번 달 추가미션 성공자
+          <span id="bonusCount" class="text-[11px] font-bold px-2 py-0.5 bg-amber-200 text-amber-900 rounded-full">0명</span>
+        </h3>
+        <div id="bonusWinners" class="space-y-2"></div>
+      </div>
+
+      <!-- 월별 이력 -->
+      <div>
+        <h3 class="text-xs font-black text-slate-700 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-clock-rotate-left"></i> 최근 6개월 추가미션 성공 이력</h3>
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-y border-slate-200">
+              <tr>
+                <th class="py-2.5 px-3 w-28">월</th>
+                <th class="py-2.5 px-3 text-center w-24">성공 인원</th>
+                <th class="py-2.5 px-3">성공자</th>
+                <th class="py-2.5 px-3 text-right w-32">추가 활동비 합계</th>
+              </tr>
+            </thead>
+            <tbody id="missionHistoryBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 상위노출 현황판 -->
+    <section class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-amber-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-ranking-star text-amber-500"></i> 상위노출 현황판
+            <span id="rankHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">키워드별 노출 순위와 <b>캡쳐 이미지</b>를 기록합니다. 목록의 <b>상위노출 기록</b> 버튼으로 추가하세요.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex p-1 bg-amber-50 rounded-xl border border-amber-100 text-xs font-bold">
+            <button onclick="setRankScope('sup')" id="rscope-sup" class="px-3 py-1.5 rounded-lg bg-white text-amber-700 shadow-xs">크리에이터만</button>
+            <button onclick="setRankScope('all')" id="rscope-all" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">전체 건</button>
+          </div>
+          <button onclick="exportRankExcel()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-arrow-down"></i> 다운로드
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-amber-50/60 text-slate-600 font-semibold border-y border-amber-100">
+            <tr>
+              <th class="py-3 px-3 whitespace-nowrap">확인일</th>
+              <th class="py-3 px-3">인플루언서</th>
+              <th class="py-3 px-3">플랫폼</th>
+              <th class="py-3 px-3">키워드</th>
+              <th class="py-3 px-3 text-center">노출 순위</th>
+              <th class="py-3 px-3">캡쳐</th>
+              <th class="py-3 px-3">링크 / 메모</th>
+              <th class="py-3 px-3 text-right">관리</th>
+            </tr>
+          </thead>
+          <tbody id="rankTableBody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
     </section>
 
     <!-- 업로드 일자 & 링크 표 -->
-    <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
-      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-violet-100 pb-3">
+    <section class="bg-white p-5 rounded-2xl border border-cyan-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-cyan-100 pb-3">
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-arrow-up-right-from-square text-violet-600"></i> 크리에이터 업로드 일자 &amp; 링크
-            <span id="creatorUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">0건</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-cyan-600"></i> 크리에이터 업로드 일자 &amp; 링크
+            <span id="supUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full">0건</span>
           </h2>
           <p class="text-xs text-slate-500">크리에이터 업로드 일자와 링크를 모아서 봅니다.</p>
         </div>
-        <button onclick="exportUploadExcel('creator')" class="px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+        <button onclick="exportUploadExcel('sup')" class="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
           <i class="fa-solid fa-file-arrow-down"></i> 업로드 내역 다운로드
         </button>
       </div>
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left text-xs">
-          <thead class="bg-violet-50/60 text-slate-600 font-semibold border-y border-violet-100">
+          <thead class="bg-cyan-50/60 text-slate-600 font-semibold border-y border-cyan-100">
             <tr>
               <th class="py-3 px-3 whitespace-nowrap">업로드 일자</th>
               <th class="py-3 px-3">인플루언서</th>
@@ -1111,44 +1269,10 @@
               <th class="py-3 px-3">성과 / 상위노출</th>
             </tr>
           </thead>
-          <tbody id="creatorUploadBody" class="divide-y divide-slate-100"></tbody>
+          <tbody id="supUploadBody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
     </section>
-    <!-- SECTION 5: 인플루언서 카드 뷰 -->
-    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
-      <div class="flex justify-between items-center">
-        <div>
-          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-users-viewfinder text-pink-500"></i> 인플루언서 리스트
-          </h2>
-        </div>
-      </div>
-
-      <div id="influencerCardGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <!-- JS 로딩 -->
-      </div>
-    </section>
-
-    <!-- SECTION 6: 인플루언서 소개서 & 소속사(MCN) 관리 -->
-    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
-      <div class="flex flex-wrap justify-between items-center gap-3 border-b border-pink-50 pb-3">
-        <div>
-          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-folder-open text-pink-500"></i> 인플루언서 & MCN 소개서
-          </h2>
-          <p class="text-xs text-slate-500">공개된 구글 스프레드시트 링크를 넣으면 인플루언서 명단·단가를 표로 자동 정리합니다.</p>
-        </div>
-        <button onclick="openProposalModal()" class="px-3.5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 shadow-xs">
-          <i class="fa-solid fa-file-circle-plus"></i> 새 소개서 등록
-        </button>
-      </div>
-
-      <div id="proposalListGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- JS 로딩 -->
-      </div>
-    </section>
-
 
   </main>
 
@@ -1597,9 +1721,15 @@
             </label>
             <input type="number" id="editCost_shorts" placeholder="단가" class="w-full px-2 py-1 border border-slate-200 rounded">
           </div>
+          <div class="bg-cyan-50 p-2 rounded-lg border border-cyan-200 space-y-1">
+            <label class="flex items-center gap-1.5 font-bold text-cyan-800 cursor-pointer">
+              <input type="checkbox" id="editType_supporters" class="accent-cyan-600 w-4 h-4"> 크리에이터
+            </label>
+            <input type="number" id="editCost_supporters" placeholder="단가" class="w-full px-2 py-1 border border-cyan-200 rounded">
+          </div>
           <div class="bg-violet-50 p-2 rounded-lg border border-violet-200 space-y-1">
             <label class="flex items-center gap-1.5 font-bold text-violet-800 cursor-pointer">
-              <input type="checkbox" id="editType_creator" class="accent-violet-600 w-4 h-4"> 크리에이터
+              <input type="checkbox" id="editType_creator" class="accent-violet-600 w-4 h-4"> 인플루언서
             </label>
             <input type="number" id="editCost_creator" placeholder="단가" class="w-full px-2 py-1 border border-violet-200 rounded">
           </div>
@@ -2036,6 +2166,129 @@
     </div>
   </div>
 
+  <!-- ==================== PAGE: 인플루언서 관리 ==================== -->
+  <main id="page-creator" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <div class="bg-violet-50/60 border border-violet-100 rounded-2xl px-5 py-3.5 text-xs text-violet-900">
+      <b>인플루언서 전용 페이지</b> · PPL 등록 시 <b>인플루언서</b>를 체크하면 이 페이지로 분리됩니다. 아래에서 인플루언서 풀(리스트)과 MCN 소개서도 함께 관리해요.
+    </div>
+
+    <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-violet-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-video text-violet-600"></i> 인플루언서 협업 관리
+            <span id="creatorHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">0명</span>
+          </h2>
+          <p class="text-xs text-slate-500">인플루언서 형태로 진행하는 협업 건입니다.</p>
+        </div>
+        <button onclick="exportShippingExcel('creator')" class="px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 배송정보 다운로드
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-violet-50/60 p-4 rounded-xl border border-violet-100">
+          <span class="text-[11px] text-slate-500 font-semibold">전체</span>
+          <div id="creatorTotal" class="text-2xl font-black text-violet-700 mt-0.5">0명</div>
+        </div>
+        <div class="bg-pink-50/60 p-4 rounded-xl border border-pink-100">
+          <span class="text-[11px] text-slate-500 font-semibold">온살</span>
+          <div id="creatorOnsal" class="text-2xl font-black text-pink-600 mt-0.5">0명</div>
+        </div>
+        <div class="bg-skyblue-50/60 p-4 rounded-xl border border-skyblue-100">
+          <span class="text-[11px] text-slate-500 font-semibold">루메아카이브</span>
+          <div id="creatorLume" class="text-2xl font-black text-skyblue-600 mt-0.5">0명</div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-violet-50/60 text-slate-600 font-semibold border-y border-violet-100">
+            <tr>
+              <th class="py-3 px-3 w-8"><input type="checkbox" onchange="toggleSelectAllBy('creator-select', this.checked)" class="accent-violet-600 w-4 h-4 cursor-pointer"></th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">인플루언서</th>
+              <th class="py-3 px-3">협업 형태 / 단가</th>
+              <th class="py-3 px-3">진행 상태</th>
+              <th class="py-3 px-3">단계별 일자</th>
+              <th class="py-3 px-3">업로드 / 결과</th>
+              <th class="py-3 px-3">배송 정보</th>
+              <th class="py-3 px-3 text-right">수정 / 삭제</th>
+            </tr>
+          </thead>
+          <tbody id="creatorTableBody" class="divide-y divide-slate-100" data-empty="등록된 인플루언서 협업이 없습니다. PPL 등록 시 '인플루언서'를 체크하면 여기로 들어옵니다."></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 업로드 일자 & 링크 표 -->
+    <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-violet-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-arrow-up-right-from-square text-violet-600"></i> 인플루언서 업로드 일자 &amp; 링크
+            <span id="creatorUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">인플루언서 업로드 일자와 링크를 모아서 봅니다.</p>
+        </div>
+        <button onclick="exportUploadExcel('creator')" class="px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 업로드 내역 다운로드
+        </button>
+      </div>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-violet-50/60 text-slate-600 font-semibold border-y border-violet-100">
+            <tr>
+              <th class="py-3 px-3 whitespace-nowrap">업로드 일자</th>
+              <th class="py-3 px-3">인플루언서</th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">채널 / 유형</th>
+              <th class="py-3 px-3">업로드 링크</th>
+              <th class="py-3 px-3">성과 / 상위노출</th>
+            </tr>
+          </thead>
+          <tbody id="creatorUploadBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+    <!-- SECTION 5: 인플루언서 카드 뷰 -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-users-viewfinder text-pink-500"></i> 인플루언서 리스트
+          </h2>
+        </div>
+      </div>
+
+      <div id="influencerCardGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- JS 로딩 -->
+      </div>
+    </section>
+
+    <!-- SECTION 6: 인플루언서 소개서 & 소속사(MCN) 관리 -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap justify-between items-center gap-3 border-b border-pink-50 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-folder-open text-pink-500"></i> 인플루언서 & MCN 소개서
+          </h2>
+          <p class="text-xs text-slate-500">공개된 구글 스프레드시트 링크를 넣으면 인플루언서 명단·단가를 표로 자동 정리합니다.</p>
+        </div>
+        <button onclick="openProposalModal()" class="px-3.5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 shadow-xs">
+          <i class="fa-solid fa-file-circle-plus"></i> 새 소개서 등록
+        </button>
+      </div>
+
+      <div id="proposalListGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- JS 로딩 -->
+      </div>
+    </section>
+
+
+  </main>
+
   <!-- ==================== 업로드 / 결과 입력 모달 ==================== -->
   <div id="uploadModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
     <div class="bg-white rounded-3xl w-full max-w-5xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
@@ -2058,6 +2311,64 @@
         </div>
 
         <div id="uploadRowsContainer" class="space-y-2"></div>
+
+        <!-- UTM / 유입 · 전환 성과 -->
+        <div class="bg-emerald-50/40 p-3.5 rounded-2xl border border-emerald-200 space-y-2.5">
+          <div class="flex flex-wrap justify-between items-center gap-2">
+            <div>
+              <h4 class="text-xs font-black text-emerald-800 flex items-center gap-1.5"><i class="fa-solid fa-chart-line"></i> UTM 결과 · 노출 / 유입 / 구매전환</h4>
+              <p class="text-[11px] text-emerald-700/80">UTM 링크별 성과를 넣으면 전환율과 합계가 자동으로 계산됩니다.</p>
+            </div>
+            <button onclick="addUtmResultRow()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-plus"></i> 성과 행 추가
+            </button>
+          </div>
+
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left text-[11px] min-w-[880px]">
+              <thead class="text-emerald-800 font-bold border-b border-emerald-200">
+                <tr>
+                  <th class="py-1.5 pr-2 w-[118px]">기준일</th>
+                  <th class="py-1.5 pr-2 w-[150px]">채널 / UTM 소스</th>
+                  <th class="py-1.5 pr-2 w-[92px]">노출수</th>
+                  <th class="py-1.5 pr-2 w-[92px]">유입(클릭)</th>
+                  <th class="py-1.5 pr-2 w-[92px]">구매전환(건)</th>
+                  <th class="py-1.5 pr-2 w-[110px]">구매 금액(원)</th>
+                  <th class="py-1.5 pr-2 w-[76px]">전환율</th>
+                  <th class="py-1.5 pr-2">메모</th>
+                  <th class="py-1.5 w-8"></th>
+                </tr>
+              </thead>
+              <tbody id="utmResultContainer" class="divide-y divide-emerald-100"></tbody>
+              <tfoot>
+                <tr class="border-t-2 border-emerald-200 font-black text-emerald-900">
+                  <td class="py-2 pr-2" colspan="2">합계</td>
+                  <td class="py-2 pr-2" id="utmSumImp">0</td>
+                  <td class="py-2 pr-2" id="utmSumClick">0</td>
+                  <td class="py-2 pr-2" id="utmSumOrder">0</td>
+                  <td class="py-2 pr-2" id="utmSumRevenue">0</td>
+                  <td class="py-2 pr-2" id="utmSumCvr">-</td>
+                  <td colspan="2"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- 캡쳐 이미지 -->
+        <div id="uploadImageZone" class="bg-amber-50/40 p-3.5 rounded-2xl border-2 border-dashed border-amber-300 space-y-2.5">
+          <div class="flex flex-wrap justify-between items-center gap-2">
+            <div>
+              <h4 class="text-xs font-black text-amber-800 flex items-center gap-1.5"><i class="fa-solid fa-image"></i> 결과 캡쳐 이미지</h4>
+              <p class="text-[11px] text-amber-700/80">상위노출·인사이트 캡쳐를 <b>Ctrl+V(⌘+V)로 바로 붙여넣기</b> 하거나, 이미지를 이 영역에 끌어다 놓으세요.</p>
+            </div>
+            <label class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+              <i class="fa-solid fa-upload"></i> 파일 선택
+              <input type="file" accept="image/*" multiple class="hidden" onchange="pickUploadImages(this)">
+            </label>
+          </div>
+          <div id="uploadImageGrid" class="grid grid-cols-2 md:grid-cols-4 gap-2"></div>
+        </div>
 
         <div>
           <label class="block text-[11px] font-bold text-slate-700 mb-1">기획전 / PPL 결과 정리</label>
@@ -2124,6 +2435,42 @@
     </div>
   </div>
 
+  <!-- ==================== 상위노출 기록 모달 ==================== -->
+  <div id="rankModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-3xl w-full max-w-3xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between z-10">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-ranking-star text-amber-500"></i> 상위노출 키워드 · 순위 기록
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5"><span id="rankModalWho"></span></p>
+        </div>
+        <button onclick="closeRankModal()" class="text-slate-400 hover:text-slate-700 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div class="flex justify-between items-center">
+          <p class="text-xs text-slate-500">키워드마다 한 줄씩 넣어 주세요. 캡쳐는 <b>Ctrl+V(⌘+V)</b>로 바로 붙여넣기 됩니다.</p>
+          <button onclick="addRankRow()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i> 키워드 행 추가
+          </button>
+        </div>
+
+        <div id="rankRowsContainer" class="space-y-2.5"></div>
+      </div>
+
+      <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+        <button onclick="closeRankModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+        <button onclick="saveRankChecks()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 이미지 크게 보기 -->
+  <div id="imgViewer" onclick="closeImgViewer()" class="fixed inset-0 bg-slate-900/80 z-[60] hidden items-center justify-center p-6 cursor-zoom-out">
+    <img id="imgViewerImg" src="" alt="" class="max-w-full max-h-full rounded-2xl shadow-2xl">
+  </div>
+
   <!-- ==================== SCRIPT ==================== -->
   <script>
     // ===== 구글 시트 동기화 설정 =====
@@ -2162,17 +2509,24 @@
         onsal_trialTypes: trialTypes,
         onsal_trialStages: trialStages,
         onsal_monthlyNotes: monthlyNotes,
-        onsal_contactList: contactList
+        onsal_contactList: contactList,
+        onsal_creatorMissions: creatorMissions
       };
     }
 
+    let sizeWarned = false;
     async function pushToSheet() {
       setSyncStatus('saving', '저장 중...');
       try {
+        const payload = JSON.stringify({ key: SYNC_KEY, data: collectSyncData() });
+        if (payload.length > 900000 && !sizeWarned) {
+          sizeWarned = true;
+          alert('저장 데이터가 커지고 있습니다 (약 ' + Math.round(payload.length / 1024) + 'KB).\n캡쳐 이미지가 많이 쌓이면 동기화가 느려질 수 있어요. 지난 캠페인의 캡쳐는 정리해 주세요.');
+        }
         const res = await fetch(SYNC_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ key: SYNC_KEY, data: collectSyncData() })
+          body: payload
         });
         const json = await res.json();
         if (!json.ok) throw new Error(json.error || 'save failed');
@@ -2220,6 +2574,7 @@
           if (Array.isArray(d.onsal_trialStages)) trialStages = d.onsal_trialStages;
           if (Array.isArray(d.onsal_monthlyNotes)) monthlyNotes = d.onsal_monthlyNotes;
           if (Array.isArray(d.onsal_contactList)) contactList = d.onsal_contactList;
+          if (Array.isArray(d.onsal_creatorMissions)) creatorMissions = d.onsal_creatorMissions;
 
           localStorage.setItem('onsal_products', JSON.stringify(products));
           localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
@@ -2234,6 +2589,7 @@
           localStorage.setItem('onsal_trialStages', JSON.stringify(trialStages));
           localStorage.setItem('onsal_monthlyNotes', JSON.stringify(monthlyNotes));
           localStorage.setItem('onsal_contactList', JSON.stringify(contactList));
+          localStorage.setItem('onsal_creatorMissions', JSON.stringify(creatorMissions));
         }
 
         syncReady = true;
@@ -2264,7 +2620,8 @@
     function schedulerCategoryOf(p) {
       if (p.types && p.types.freeAmb) return '무엠버서더';
       if (p.types && (p.types.ambassador || p.types.sample)) return '엠버서더';
-      if (p.types && p.types.creator) return '크리에이터';
+      if (p.types && p.types.supporters) return '크리에이터';
+      if (p.types && p.types.creator) return '인플루언서';
       return 'PPL';
     }
 
@@ -2525,6 +2882,9 @@
 
     // 컨택 리스트 (나중에 연락할 인플루언서 풀)
     let contactList = JSON.parse(localStorage.getItem('onsal_contactList')) || [];
+
+    // 크리에이터 월간 미션 설정 [{ month:'2026-08', m1, m2, baseFee, bonusFee, keywordGoal, rankLimit }]
+    let creatorMissions = JSON.parse(localStorage.getItem('onsal_creatorMissions')) || [];
 
     /* ==================== 체험단 관리 ==================== */
     const TRIAL_RECRUIT_DAYS = 4;   // 총 모집 일수
@@ -3002,6 +3362,18 @@
       document.getElementById('logDate').valueAsDate = new Date();
       renderAll();
 
+      document.addEventListener('paste', handleGlobalPaste);
+      const iz = document.getElementById('uploadImageZone');
+      if (iz) {
+        iz.addEventListener('dragover', e => { e.preventDefault(); iz.classList.add('border-amber-500'); });
+        iz.addEventListener('dragleave', () => iz.classList.remove('border-amber-500'));
+        iz.addEventListener('drop', e => {
+          e.preventDefault();
+          iz.classList.remove('border-amber-500');
+          Array.from(e.dataTransfer.files || []).forEach(f => compressImageFile(f, d => addUploadImage(d)));
+        });
+      }
+
       pullFromSheet().then(() => {
         renderAll();
         syncToScheduler(true);
@@ -3023,6 +3395,7 @@
       localStorage.setItem('onsal_trialStages', JSON.stringify(trialStages));
       localStorage.setItem('onsal_monthlyNotes', JSON.stringify(monthlyNotes));
       localStorage.setItem('onsal_contactList', JSON.stringify(contactList));
+      localStorage.setItem('onsal_creatorMissions', JSON.stringify(creatorMissions));
       queueSync();
       queueSchedulerSync();
     }
@@ -3064,6 +3437,9 @@
       renderFreeAmbTable();
       renderAmbTable();
       renderCreatorTable();
+      renderSupTable();
+      renderRankTable();
+      renderCreatorMissions();
       renderUploadTables();
       renderMonthly();
       updateContactProductList();
@@ -3079,7 +3455,7 @@
 
     // 페이지 전환 (PPL / 시딩재고 / UTM)
     function switchMainPage(pageId) {
-      const pages = ['monthly', 'contact', 'ppl', 'micro', 'amb', 'creator', 'trial', 'seeding', 'utm'];
+      const pages = ['monthly', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'seeding', 'utm'];
       const activeClass = "px-3 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
       const idleClass = "px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
 
@@ -3099,6 +3475,7 @@
       if (pageId === 'monthly') renderMonthly();
       if (pageId === 'contact') { updateContactProductList(); renderContactList(); }
       if (pageId === 'micro') { renderMicroTable(); renderUploadTables(); }
+      if (pageId === 'sup') { renderSupTable(); renderRankTable(); renderCreatorMissions(); renderUploadTables(); }
       if (pageId === 'amb') { renderAmbTable(); renderFreeAmbTable(); renderUploadTables(); }
       if (pageId === 'creator') { renderCreatorTable(); renderInfluencerCards(); renderProposals(); renderUploadTables(); }
       if (pageId === 'trial') renderTrialDashboard();
@@ -3444,6 +3821,7 @@
         microPpl: document.getElementById('type_microPpl').checked,
         reels: document.getElementById('type_reels').checked,
         shorts: document.getElementById('type_shorts').checked,
+        supporters: document.getElementById('type_supporters').checked,
         creator: document.getElementById('type_creator').checked,
         ambassador: document.getElementById('type_ambassador').checked,
         freeAmb: document.getElementById('type_freeAmb').checked
@@ -3457,6 +3835,7 @@
         microPpl: Number(document.getElementById('cost_microPpl').value) || 0,
         reels: Number(document.getElementById('cost_reels').value) || 0,
         shorts: Number(document.getElementById('cost_shorts').value) || 0,
+        supporters: Number(document.getElementById('cost_supporters').value) || 0,
         creator: Number(document.getElementById('cost_creator').value) || 0,
         ambassador: Number(document.getElementById('cost_ambassador').value) || 0,
         freeAmb: 0
@@ -3555,7 +3934,8 @@
 
     function isMicro(p) {
       return !!(p.types && (p.types.microReels || p.types.microPpl)) && !isFreeAmb(p)
-        && !(p.types && (p.types.ambassador || p.types.sample)) && !(p.types && p.types.creator);
+        && !(p.types && (p.types.ambassador || p.types.sample)) && !(p.types && p.types.creator)
+        && !(p.types && p.types.supporters);
     }
 
 
@@ -3564,15 +3944,16 @@
       return !!(p.types && (p.types.ambassador || p.types.sample)) && !isFreeAmb(p);
     }
     function isCreatorType(p) {
-      return !!(p.types && p.types.creator) && !isFreeAmb(p) && !isAmbPaid(p);
+      return !!(p.types && p.types.creator) && !isFreeAmb(p) && !isAmbPaid(p) && !isSupporters(p);
     }
     function isPurePpl(p) {
-      return !isFreeAmb(p) && !isAmbPaid(p) && !isCreatorType(p) && !isMicro(p);
+      return !isFreeAmb(p) && !isAmbPaid(p) && !isCreatorType(p) && !isMicro(p) && !isSupporters(p);
     }
     function catOfPpl(p) {
       if (isFreeAmb(p)) return '무상앰버서더';
       if (isAmbPaid(p)) return '앰버서더';
-      if (isCreatorType(p)) return '크리에이터';
+      if (isSupporters(p)) return '크리에이터';
+      if (isCreatorType(p)) return '인플루언서';
       if (isMicro(p)) return '마이크로';
       return 'PPL';
     }
@@ -3580,7 +3961,8 @@
       'PPL': 'bg-pink-100 text-pink-700',
       '앰버서더': 'bg-indigo-100 text-indigo-700',
       '무상앰버서더': 'bg-teal-100 text-teal-700',
-      '크리에이터': 'bg-violet-100 text-violet-700',
+      '인플루언서': 'bg-violet-100 text-violet-700',
+      '크리에이터': 'bg-cyan-100 text-cyan-700',
       '마이크로': 'bg-sky-100 text-sky-700',
       '체험단': 'bg-amber-100 text-amber-800'
     };
@@ -3596,11 +3978,11 @@
     }
     function totalCostOf(p) {
       const c = p.costs || {};
-      return (c.branded||0)+(c.ppl||0)+(c.reuse||0)+(c.microReels||0)+(c.microPpl||0)+(c.reels||0)+(c.shorts||0)+(c.ambassador||0)+(c.sample||0)+(c.creator||0);
+      return (c.branded||0)+(c.ppl||0)+(c.reuse||0)+(c.microReels||0)+(c.microPpl||0)+(c.reels||0)+(c.shorts||0)+(c.ambassador||0)+(c.sample||0)+(c.creator||0)+(c.supporters||0);
     }
     function uploadsOf(p) { return (p.uploads || []).filter(u => u && (u.date || u.url)); }
 
-    /* ==================== 앰버서더 / 크리에이터 테이블 ==================== */
+    /* ==================== 앰버서더 / 인플루언서 테이블 ==================== */
     function catRowHtml(p, prefix, accent) {
       const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
       const prods = prodNamesOf(p);
@@ -3611,7 +3993,8 @@
         { on: p.types && p.types.reuse, label: '2차활용', cost: p.costs && p.costs.reuse },
         { on: p.types && p.types.reels, label: '릴스', cost: p.costs && p.costs.reels },
         { on: p.types && p.types.shorts, label: '숏츠', cost: p.costs && p.costs.shorts },
-        { on: p.types && p.types.creator, label: '크리에이터', cost: p.costs && p.costs.creator },
+        { on: p.types && p.types.supporters, label: '크리에이터', cost: p.costs && p.costs.supporters },
+        { on: p.types && p.types.creator, label: '인플루언서', cost: p.costs && p.costs.creator },
         { on: p.types && (p.types.ambassador || p.types.sample), label: '앰버서더', cost: (p.costs && (p.costs.ambassador || p.costs.sample)) },
         { on: p.types && p.types.freeAmb, label: '무상앰버서더', cost: 0 }
       ].filter(t => t.on);
@@ -3658,7 +4041,9 @@
         + STAGES.map(st => '<option value="' + st + '"' + (p.status === st ? ' selected' : '') + '>' + st + '</option>').join('') + '</select></td>'
         + '<td class="py-3 px-3 align-top max-w-[180px]"><div class="max-h-[90px] overflow-y-auto custom-scrollbar pr-1">' + (stepHtml || '<span class="text-slate-400 text-[11px]">일정 없음</span>') + '</div></td>'
         + '<td class="py-3 px-3 align-top max-w-[190px]">' + upHtml
-        + '<button onclick="openUploadModal(' + p.id + ')" class="mt-1 text-[11px] text-' + accent + '-700 font-semibold hover:underline"><i class="fa-solid fa-chart-simple"></i> 업로드/결과 입력</button></td>'
+        + '<button onclick="openUploadModal(' + p.id + ')" class="mt-1 block text-[11px] text-' + accent + '-700 font-semibold hover:underline"><i class="fa-solid fa-chart-simple"></i> 업로드/결과 입력</button>'
+        + '<button onclick="openRankModal(' + p.id + ')" class="mt-0.5 block text-[11px] text-amber-700 font-semibold hover:underline"><i class="fa-solid fa-ranking-star"></i> 상위노출 기록'
+        + ((p.rankChecks || []).length ? ' (' + p.rankChecks.length + ')' : '') + '</button></td>'
         + '<td class="py-3 px-3 align-top min-w-[170px]">' + addrLine + '</td>'
         + '<td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">'
         + '<button onclick="openStepDateModal(' + p.id + ')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>'
@@ -3721,6 +4106,13 @@
       setTxt('uploadModalWho', p.brand + ' · ' + whoOf(p));
       setTxt('uploadModalProduct', prodNamesOf(p).join(', ') || '제품 미지정');
       document.getElementById('uploadResultNote').value = p.resultNote || '';
+      const uc = document.getElementById('utmResultContainer');
+      uc.innerHTML = '';
+      (p.utmResults || []).forEach(u => uc.insertAdjacentHTML('beforeend', utmResultRowHtml(u)));
+      if (!(p.utmResults || []).length) uc.insertAdjacentHTML('beforeend', utmResultRowHtml({}));
+      recalcUtmResults();
+      uploadImages = (p.resultImages || []).map(im => ({ data: im.data, memo: im.memo || '' }));
+      renderUploadImages();
       const c = document.getElementById('uploadRowsContainer');
       c.innerHTML = '';
       const ups = (p.uploads || []);
@@ -3751,6 +4143,8 @@
         reuseId: r.dataset.reuseId || ''
       })).filter(u => u.date || u.url || u.views || u.keyword || u.memo);
       p.resultNote = document.getElementById('uploadResultNote').value;
+      p.utmResults = readUtmResults();
+      p.resultImages = uploadImages.slice();
       p.collabLinks = p.uploads.map(u => ({ date: u.date, product: prodNamesOf(p).join(', '), url: u.url }));
       saveAll();
       closeUploadModal();
@@ -3774,6 +4168,14 @@
       return parts.join(' · ');
     }
 
+    function uploadMetricCell(p, u) {
+      const base = metricText(u);
+      const utm = utmSummaryText(p);
+      const imgs = (p.resultImages || []).length;
+      return [base, utm].filter(Boolean).join(' · ')
+        + (imgs ? ' <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 whitespace-nowrap"><i class="fa-solid fa-image"></i> 캡쳐 ' + imgs + '</span>' : '');
+    }
+
     function renderUploadLinkTable(bodyId, filterFn) {
       const tb = document.getElementById(bodyId);
       if (!tb) return;
@@ -3793,7 +4195,7 @@
           + '<td class="py-2.5 px-3 max-w-[260px]">' + (u.url
               ? '<a href="' + tEsc(u.url) + '" target="_blank" rel="noopener" class="text-pink-600 hover:underline break-all">' + tEsc(u.url) + '</a>'
               : '<span class="text-slate-400">링크 없음</span>') + '</td>'
-          + '<td class="py-2.5 px-3 text-slate-600">' + (metricText(u) || '-')
+          + '<td class="py-2.5 px-3 text-slate-600">' + (uploadMetricCell(p, u) || '-')
           + (u.src === 'reuse' ? ' <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 whitespace-nowrap"><i class="fa-solid fa-rotate"></i> 2차활용 연동</span>' : '') + '</td>'
           + '</tr>';
       }).join('');
@@ -3804,10 +4206,11 @@
       renderUploadLinkTable('ambUploadBody', p => isFreeAmb(p) || isAmbPaid(p));
       renderUploadLinkTable('creatorUploadBody', isCreatorType);
       renderUploadLinkTable('microUploadBody', isMicro);
+      renderUploadLinkTable('supUploadBody', isSupporters);
     }
 
     function exportUploadExcel(prefix) {
-      const map = { ppl: isPurePpl, amb: p => isFreeAmb(p) || isAmbPaid(p), creator: isCreatorType, micro: isMicro };
+      const map = { ppl: isPurePpl, amb: p => isFreeAmb(p) || isAmbPaid(p), creator: isCreatorType, micro: isMicro, sup: isSupporters };
       const rows = uploadRowsFor(map[prefix] || isPurePpl);
       if (!rows.length) { alert('내보낼 업로드 기록이 없습니다.'); return; }
       const data = rows.map(({ p, u }) => ({
@@ -3889,7 +4292,7 @@
         uploadsOf(p).forEach(u => {
           if ((u.date || '').slice(0, 7) !== ym) return;
           matched = true;
-          rows.push({ cat, brand: p.brand, product: prod, who: whoOf(p), date: u.date, channel: u.channel || '', type: u.type || '', url: u.url || '', count: 1, done: true, metric: metricText(u), pid: p.id });
+          rows.push({ cat, brand: p.brand, product: prod, who: whoOf(p), date: u.date, channel: u.channel || '', type: u.type || '', url: u.url || '', count: 1, done: true, metric: [metricText(u), utmSummaryText(p)].filter(Boolean).join(' · '), pid: p.id });
         });
         if (!matched) {
           const sd = p.stepDates && p.stepDates['업로드'];
@@ -3921,14 +4324,15 @@
       setTxt('monthlyTitle', monthlyDate.getFullYear() + '년 ' + (monthlyDate.getMonth() + 1) + '월');
       const rows = collectMonthlyRows(ym);
 
-      const CATS = ['PPL', '마이크로', '앰버서더', '무상앰버서더', '크리에이터', '체험단'];
+      const CATS = ['PPL', '마이크로', '앰버서더', '무상앰버서더', '크리에이터', '인플루언서', '체험단'];
       const sum = (fn) => rows.filter(fn).reduce((a, r) => a + r.count, 0);
 
       const cardDefs = [
         { label: 'PPL', color: 'pink', fn: r => r.cat === 'PPL' },
         { label: '마이크로', color: 'sky', fn: r => r.cat === '마이크로' },
         { label: '앰버서더', color: 'indigo', fn: r => r.cat === '앰버서더' || r.cat === '무상앰버서더' },
-        { label: '크리에이터', color: 'violet', fn: r => r.cat === '크리에이터' },
+        { label: '크리에이터', color: 'cyan', fn: r => r.cat === '크리에이터' },
+        { label: '인플루언서', color: 'violet', fn: r => r.cat === '인플루언서' },
         { label: '체험단', color: 'amber', fn: r => r.cat === '체험단' },
         { label: '총 업로드', color: 'emerald', fn: () => true }
       ];
@@ -3986,6 +4390,33 @@
             + '<td class="py-2.5 px-3 text-slate-600">' + (r.metric || '-') + '</td>'
             + '</tr>';
         }).join('');
+      }
+
+      const bar = document.getElementById('monthlyUtmBar');
+      if (bar) {
+        const seen = new Set();
+        let imp = 0, click = 0, order = 0, rev = 0;
+        rows.forEach(r => {
+          if (r.isTrial || !r.pid || seen.has(r.pid)) return;
+          seen.add(r.pid);
+          const p = pplList.find(x => x.id === r.pid);
+          if (!p) return;
+          (p.utmResults || []).forEach(u => {
+            const d = (u.date || '').slice(0, 7);
+            if (d && d !== ym) return;
+            imp += Number(u.impressions) || 0;
+            click += Number(u.clicks) || 0;
+            order += Number(u.orders) || 0;
+            rev += Number(u.revenue) || 0;
+          });
+        });
+        bar.innerHTML = (imp || click || order || rev)
+          ? [['노출수', imp.toLocaleString(), 'slate'], ['유입(클릭)', click.toLocaleString(), 'sky'],
+             ['구매전환', order.toLocaleString() + '건', 'emerald'], ['구매 금액', rev.toLocaleString() + '원', 'pink']]
+            .map(c => '<div class="bg-white p-3.5 rounded-2xl border border-' + c[2] + '-200">'
+              + '<span class="text-[11px] text-slate-500 font-semibold">' + c[0] + '</span>'
+              + '<div class="text-lg font-black text-' + c[2] + '-600 mt-0.5">' + c[1] + '</div></div>').join('')
+          : '';
       }
 
       renderMonthlyNotes(ym, rows);
@@ -4078,7 +4509,8 @@
       { key: 'reuse', label: '2차활용' },
       { key: 'microReels', label: '마이크로 릴스' },
       { key: 'microPpl', label: '마이크로 PPL' },
-      { key: 'creator', label: '크리에이터' },
+      { key: 'supporters', label: '크리에이터' },
+      { key: 'creator', label: '인플루언서' },
       { key: 'ambassador', label: '앰버서더' },
       { key: 'freeAmb', label: '무상앰버서더' }
     ];
@@ -4554,9 +4986,517 @@
       }).join('');
     }
 
+
+    /* ==================== 이미지 붙여넣기 · 압축 공통 ==================== */
+    const IMG_MAX_W = 760;
+
+    function compressImageFile(file, cb) {
+      if (!file || !/^image\//.test(file.type)) return;
+      const fr = new FileReader();
+      fr.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, hh = img.height;
+          if (w > IMG_MAX_W) { hh = Math.round(hh * IMG_MAX_W / w); w = IMG_MAX_W; }
+          const cv = document.createElement('canvas');
+          cv.width = w; cv.height = hh;
+          const ctx = cv.getContext('2d');
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, w, hh);
+          ctx.drawImage(img, 0, 0, w, hh);
+          let out = cv.toDataURL('image/jpeg', 0.62);
+          if (out.length > 220000) out = cv.toDataURL('image/jpeg', 0.42);
+          if (out.length > 320000) { alert('이미지가 너무 큽니다. 캡쳐 범위를 줄여서 다시 넣어 주세요.'); return; }
+          cb(out);
+        };
+        img.onerror = () => alert('이미지를 읽지 못했습니다.');
+        img.src = ev.target.result;
+      };
+      fr.readAsDataURL(file);
+    }
+
+    function openImgViewer(src) {
+      const v = document.getElementById('imgViewer');
+      document.getElementById('imgViewerImg').src = src;
+      v.classList.remove('hidden');
+      v.classList.add('flex');
+    }
+    function closeImgViewer() {
+      const v = document.getElementById('imgViewer');
+      v.classList.add('hidden');
+      v.classList.remove('flex');
+      document.getElementById('imgViewerImg').src = '';
+    }
+
+    // 모달이 열려 있으면 어디서 Ctrl+V 해도 캡쳐가 들어가도록
+    function handleGlobalPaste(e) {
+      const items = (e.clipboardData && e.clipboardData.items) || [];
+      const files = [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file' && /^image\//.test(items[i].type)) {
+          const f = items[i].getAsFile();
+          if (f) files.push(f);
+        }
+      }
+      if (!files.length) return;
+
+      const rankOpen = !document.getElementById('rankModal').classList.contains('hidden');
+      const uploadOpen = !document.getElementById('uploadModal').classList.contains('hidden');
+      if (!rankOpen && !uploadOpen) return;
+      e.preventDefault();
+
+      if (rankOpen) {
+        const target = rankPasteTarget || document.querySelector('#rankRowsContainer .rank-row');
+        if (!target) { alert('먼저 키워드 행을 추가해 주세요.'); return; }
+        compressImageFile(files[0], data => setRankRowImage(target, data));
+      } else {
+        files.forEach(f => compressImageFile(f, data => addUploadImage(data)));
+      }
+    }
+
+    /* ==================== UTM 결과 (노출 / 유입 / 구매전환) ==================== */
+    function utmResultRowHtml(u) {
+      u = u || {};
+      const n = v => (v === 0 || v) ? String(v) : '';
+      return '<tr class="utm-result-row">'
+        + '<td class="py-1.5 pr-2"><input type="date" class="ur-date w-full px-1.5 py-1 text-[11px] border border-emerald-200 rounded-lg" value="' + tEsc(u.date || '') + '"></td>'
+        + '<td class="py-1.5 pr-2"><input class="ur-source w-full px-1.5 py-1 text-[11px] border border-emerald-200 rounded-lg" placeholder="instagram / naver" value="' + tEsc(u.source || '') + '"></td>'
+        + '<td class="py-1.5 pr-2"><input type="number" class="ur-imp w-full px-1.5 py-1 text-[11px] border border-emerald-200 rounded-lg text-right" oninput="recalcUtmResults()" placeholder="0" value="' + tEsc(n(u.impressions)) + '"></td>'
+        + '<td class="py-1.5 pr-2"><input type="number" class="ur-click w-full px-1.5 py-1 text-[11px] border border-emerald-200 rounded-lg text-right" oninput="recalcUtmResults()" placeholder="0" value="' + tEsc(n(u.clicks)) + '"></td>'
+        + '<td class="py-1.5 pr-2"><input type="number" class="ur-order w-full px-1.5 py-1 text-[11px] border border-emerald-200 rounded-lg text-right" oninput="recalcUtmResults()" placeholder="0" value="' + tEsc(n(u.orders)) + '"></td>'
+        + '<td class="py-1.5 pr-2"><input type="number" class="ur-revenue w-full px-1.5 py-1 text-[11px] border border-emerald-200 rounded-lg text-right" oninput="recalcUtmResults()" placeholder="0" value="' + tEsc(n(u.revenue)) + '"></td>'
+        + '<td class="py-1.5 pr-2 ur-cvr font-bold text-emerald-700">-</td>'
+        + '<td class="py-1.5 pr-2"><input class="ur-memo w-full px-1.5 py-1 text-[11px] border border-emerald-200 rounded-lg" placeholder="기획전명 / 쿠폰 등" value="' + tEsc(u.memo || '') + '"></td>'
+        + '<td class="py-1.5 text-right"><button type="button" onclick="this.closest(\'tr\').remove(); recalcUtmResults();" class="text-slate-400 hover:text-rose-600 px-1"><i class="fa-solid fa-trash"></i></button></td>'
+        + '</tr>';
+    }
+
+    function addUtmResultRow() {
+      const c = document.getElementById('utmResultContainer');
+      if (c) { c.insertAdjacentHTML('beforeend', utmResultRowHtml({})); recalcUtmResults(); }
+    }
+
+    function recalcUtmResults() {
+      let imp = 0, click = 0, order = 0, rev = 0;
+      document.querySelectorAll('#utmResultContainer .utm-result-row').forEach(r => {
+        const i = Number(r.querySelector('.ur-imp').value) || 0;
+        const c = Number(r.querySelector('.ur-click').value) || 0;
+        const o = Number(r.querySelector('.ur-order').value) || 0;
+        const v = Number(r.querySelector('.ur-revenue').value) || 0;
+        imp += i; click += c; order += o; rev += v;
+        r.querySelector('.ur-cvr').innerText = c ? ((o / c) * 100).toFixed(1) + '%' : '-';
+      });
+      setTxt('utmSumImp', imp.toLocaleString());
+      setTxt('utmSumClick', click.toLocaleString());
+      setTxt('utmSumOrder', order.toLocaleString());
+      setTxt('utmSumRevenue', rev.toLocaleString() + '원');
+      setTxt('utmSumCvr', click ? ((order / click) * 100).toFixed(1) + '%' : '-');
+    }
+
+    function readUtmResults() {
+      return Array.from(document.querySelectorAll('#utmResultContainer .utm-result-row')).map(r => ({
+        date: r.querySelector('.ur-date').value,
+        source: r.querySelector('.ur-source').value.trim(),
+        impressions: Number(r.querySelector('.ur-imp').value) || 0,
+        clicks: Number(r.querySelector('.ur-click').value) || 0,
+        orders: Number(r.querySelector('.ur-order').value) || 0,
+        revenue: Number(r.querySelector('.ur-revenue').value) || 0,
+        memo: r.querySelector('.ur-memo').value.trim()
+      })).filter(u => u.date || u.source || u.impressions || u.clicks || u.orders || u.revenue || u.memo);
+    }
+
+    function utmTotalsOf(p) {
+      return (p.utmResults || []).reduce((a, u) => ({
+        impressions: a.impressions + (Number(u.impressions) || 0),
+        clicks: a.clicks + (Number(u.clicks) || 0),
+        orders: a.orders + (Number(u.orders) || 0),
+        revenue: a.revenue + (Number(u.revenue) || 0)
+      }), { impressions: 0, clicks: 0, orders: 0, revenue: 0 });
+    }
+    function utmSummaryText(p) {
+      const t = utmTotalsOf(p);
+      if (!t.impressions && !t.clicks && !t.orders && !t.revenue) return '';
+      const parts = [];
+      if (t.impressions) parts.push('노출 ' + t.impressions.toLocaleString());
+      if (t.clicks) parts.push('유입 ' + t.clicks.toLocaleString());
+      if (t.orders) parts.push('전환 ' + t.orders.toLocaleString() + '건');
+      if (t.revenue) parts.push('매출 ' + t.revenue.toLocaleString() + '원');
+      return parts.join(' · ');
+    }
+
+    /* ---- 결과 캡쳐 이미지 ---- */
+    let uploadImages = [];
+
+    function renderUploadImages() {
+      const g = document.getElementById('uploadImageGrid');
+      if (!g) return;
+      g.innerHTML = uploadImages.length
+        ? uploadImages.map((im, i) =>
+            '<div class="relative group rounded-xl overflow-hidden border border-amber-200 bg-white">'
+            + '<img src="' + im.data + '" onclick="openImgViewer(this.src)" class="w-full h-24 object-cover cursor-zoom-in">'
+            + '<button type="button" onclick="removeUploadImage(' + i + ')" class="absolute top-1 right-1 bg-white/90 hover:bg-rose-500 hover:text-white text-slate-500 rounded-lg w-6 h-6 text-[11px]"><i class="fa-solid fa-xmark"></i></button>'
+            + '<input value="' + tEsc(im.memo || '') + '" onchange="uploadImages[' + i + '].memo = this.value" placeholder="설명" class="w-full px-2 py-1 text-[10px] border-t border-amber-100 outline-none">'
+            + '</div>').join('')
+        : '<div class="col-span-2 md:col-span-4 text-[11px] text-amber-700/70 text-center py-4">여기에 캡쳐를 붙여넣으면 미리보기가 나타납니다.</div>';
+    }
+    function addUploadImage(data) {
+      if (uploadImages.length >= 6) { alert('캡쳐는 건당 최대 6장까지 넣을 수 있어요.'); return; }
+      uploadImages.push({ data, memo: '' });
+      renderUploadImages();
+    }
+    function removeUploadImage(i) { uploadImages.splice(i, 1); renderUploadImages(); }
+    function pickUploadImages(input) {
+      Array.from(input.files || []).forEach(f => compressImageFile(f, d => addUploadImage(d)));
+      input.value = '';
+    }
+
+    /* ==================== 크리에이터 (월간 미션형) ==================== */
+    function isSupporters(p) {
+      return !!(p.types && p.types.supporters) && !isFreeAmb(p) && !isAmbPaid(p);
+    }
+    function renderSupTable() { renderCatTable('sup', 'cyan', isSupporters); }
+
+    /* ==================== 상위노출 기록 ==================== */
+    const RANK_PLATFORMS = ['네이버', '유튜브', '인스타', '구글', '쿠팡', '무신사', '올리브영', '기타'];
+    let rankEditId = null;
+    let rankPasteTarget = null;
+    let rankScope = 'sup';
+
+    function rankRowHtml(r) {
+      r = r || {};
+      return '<div class="rank-row bg-amber-50/40 p-3 rounded-2xl border border-amber-200 space-y-2" onclick="rankPasteTarget = this" data-image="' + tEsc(r.image || '') + '">'
+        + '<div class="grid grid-cols-2 md:grid-cols-12 gap-2 items-center">'
+        + '<input type="date" class="rk-date md:col-span-2 px-2 py-1.5 text-xs border border-amber-200 rounded-lg" value="' + tEsc(r.date || '') + '">'
+        + '<select class="rk-platform md:col-span-2 px-2 py-1.5 text-xs border border-amber-200 rounded-lg bg-white">'
+        + RANK_PLATFORMS.map(pl => '<option value="' + pl + '"' + ((r.platform || '네이버') === pl ? ' selected' : '') + '>' + pl + '</option>').join('')
+        + '</select>'
+        + '<input class="rk-keyword md:col-span-4 px-2 py-1.5 text-xs border border-amber-200 rounded-lg" placeholder="상위노출 키워드" value="' + tEsc(r.keyword || '') + '">'
+        + '<input class="rk-rank md:col-span-2 px-2 py-1.5 text-xs border border-amber-200 rounded-lg text-center" placeholder="노출 순위 (예: 3)" value="' + tEsc(r.rank || '') + '">'
+        + '<input class="rk-url md:col-span-2 px-2 py-1.5 text-xs border border-amber-200 rounded-lg" placeholder="확인 링크" value="' + tEsc(r.url || '') + '">'
+        + '</div>'
+        + '<div class="flex flex-wrap gap-2 items-center">'
+        + '<input class="rk-memo flex-1 min-w-[180px] px-2 py-1.5 text-xs border border-amber-200 rounded-lg" placeholder="메모 (검색 위치, 기기 등)" value="' + tEsc(r.memo || '') + '">'
+        + '<label class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold rounded-lg cursor-pointer whitespace-nowrap"><i class="fa-solid fa-image"></i> 캡쳐 선택'
+        + '<input type="file" accept="image/*" class="hidden" onchange="pickRankImage(this)"></label>'
+        + '<button type="button" onclick="this.closest(\'.rank-row\').remove()" class="text-slate-400 hover:text-rose-600 px-2"><i class="fa-solid fa-trash"></i></button>'
+        + '</div>'
+        + '<div class="rk-preview">' + rankPreviewHtml(r.image) + '</div>'
+        + '</div>';
+    }
+    function rankPreviewHtml(img) {
+      return img
+        ? '<div class="relative inline-block"><img src="' + img + '" onclick="openImgViewer(this.src)" class="max-h-32 rounded-xl border border-amber-200 cursor-zoom-in">'
+          + '<button type="button" onclick="clearRankRowImage(this)" class="absolute top-1 right-1 bg-white/90 hover:bg-rose-500 hover:text-white text-slate-500 rounded-lg w-6 h-6 text-[11px]"><i class="fa-solid fa-xmark"></i></button></div>'
+        : '<div class="text-[11px] text-amber-700/70">이 행을 클릭한 뒤 <b>Ctrl+V</b>로 캡쳐를 붙여넣으세요.</div>';
+    }
+    function setRankRowImage(row, data) {
+      row.dataset.image = data;
+      row.querySelector('.rk-preview').innerHTML = rankPreviewHtml(data);
+    }
+    function clearRankRowImage(btn) {
+      const row = btn.closest('.rank-row');
+      row.dataset.image = '';
+      row.querySelector('.rk-preview').innerHTML = rankPreviewHtml('');
+    }
+    function pickRankImage(input) {
+      const row = input.closest('.rank-row');
+      const f = (input.files || [])[0];
+      if (f) compressImageFile(f, d => setRankRowImage(row, d));
+      input.value = '';
+    }
+    function addRankRow() {
+      const c = document.getElementById('rankRowsContainer');
+      c.insertAdjacentHTML('beforeend', rankRowHtml({ date: new Date().toISOString().slice(0, 10) }));
+      rankPasteTarget = c.lastElementChild;
+    }
+
+    function openRankModal(id) {
+      const p = pplList.find(x => x.id === id);
+      if (!p) return;
+      rankEditId = id;
+      rankPasteTarget = null;
+      setTxt('rankModalWho', p.brand + ' · ' + whoOf(p) + ' · ' + (prodNamesOf(p).join(', ') || '제품 미지정'));
+      const c = document.getElementById('rankRowsContainer');
+      c.innerHTML = '';
+      const list = p.rankChecks || [];
+      if (list.length) list.forEach(r => c.insertAdjacentHTML('beforeend', rankRowHtml(r)));
+      else addRankRow();
+      rankPasteTarget = c.lastElementChild;
+      document.getElementById('rankModal').classList.remove('hidden');
+    }
+    function closeRankModal() {
+      document.getElementById('rankModal').classList.add('hidden');
+      rankEditId = null;
+      rankPasteTarget = null;
+    }
+    function saveRankChecks() {
+      const p = pplList.find(x => x.id === rankEditId);
+      if (!p) return;
+      p.rankChecks = Array.from(document.querySelectorAll('#rankRowsContainer .rank-row')).map(r => ({
+        date: r.querySelector('.rk-date').value,
+        platform: r.querySelector('.rk-platform').value,
+        keyword: r.querySelector('.rk-keyword').value.trim(),
+        rank: r.querySelector('.rk-rank').value.trim(),
+        url: r.querySelector('.rk-url').value.trim(),
+        memo: r.querySelector('.rk-memo').value.trim(),
+        image: r.dataset.image || ''
+      })).filter(r => r.keyword || r.rank || r.image || r.memo);
+      saveAll();
+      closeRankModal();
+      renderAll();
+    }
+
+    function setRankScope(s) {
+      rankScope = s;
+      ['sup', 'all'].forEach(x => {
+        const el = document.getElementById('rscope-' + x);
+        if (el) el.className = (x === s)
+          ? 'px-3 py-1.5 rounded-lg bg-white text-amber-700 shadow-xs'
+          : 'px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800';
+      });
+      renderRankTable();
+    }
+
+    function allRankRows() {
+      const out = [];
+      pplList.forEach(p => {
+        if (rankScope === 'sup' && !isSupporters(p)) return;
+        (p.rankChecks || []).forEach(r => out.push({ p, r }));
+      });
+      out.sort((a, b) => (b.r.date || '').localeCompare(a.r.date || ''));
+      return out;
+    }
+
+    function renderRankTable() {
+      const tb = document.getElementById('rankTableBody');
+      if (!tb) return;
+      const rows = allRankRows();
+      setTxt('rankHeaderCount', rows.length + '건');
+      if (!rows.length) {
+        tb.innerHTML = '<tr><td colspan="8" class="py-10 text-center text-slate-400">기록된 상위노출이 없습니다.<br>위 목록의 <b>상위노출 기록</b> 버튼에서 키워드와 캡쳐를 넣어 주세요.</td></tr>';
+        return;
+      }
+      tb.innerHTML = rows.map(({ p, r }) => {
+        const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+        const rn = Number(r.rank);
+        const rankCls = (rn && rn <= 3) ? 'bg-emerald-100 text-emerald-700'
+          : ((rn && rn <= 10) ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600');
+        return '<tr class="hover:bg-amber-50/30 transition">'
+          + '<td class="py-2.5 px-3 font-bold text-slate-800 whitespace-nowrap">' + tEsc(r.date || '-') + '</td>'
+          + '<td class="py-2.5 px-3"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + tEsc(p.brand) + '</span> <span class="font-bold text-slate-900">' + tEsc(p.realName || '무명') + '</span></td>'
+          + '<td class="py-2.5 px-3 text-slate-600">' + tEsc(r.platform || '-') + '</td>'
+          + '<td class="py-2.5 px-3 font-semibold text-slate-800">' + tEsc(r.keyword || '-') + '</td>'
+          + '<td class="py-2.5 px-3 text-center"><span class="text-[11px] font-black px-2 py-1 rounded-lg ' + rankCls + '">' + (r.rank ? tEsc(r.rank) + '위' : '-') + '</span></td>'
+          + '<td class="py-2.5 px-3">' + (r.image
+              ? '<img src="' + r.image + '" onclick="openImgViewer(this.src)" class="h-12 rounded-lg border border-slate-200 cursor-zoom-in">'
+              : '<span class="text-slate-400">-</span>') + '</td>'
+          + '<td class="py-2.5 px-3 max-w-[200px]">' + (r.url
+              ? '<a href="' + tEsc(r.url) + '" target="_blank" rel="noopener" class="text-amber-700 hover:underline break-all">확인 링크</a>' : '')
+          + (r.memo ? '<div class="text-slate-500">' + tEsc(r.memo) + '</div>' : '') + '</td>'
+          + '<td class="py-2.5 px-3 text-right"><button onclick="openRankModal(' + p.id + ')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]">수정</button></td>'
+          + '</tr>';
+      }).join('');
+    }
+
+    function exportRankExcel() {
+      const rows = allRankRows();
+      if (!rows.length) { alert('내보낼 상위노출 기록이 없습니다.'); return; }
+      downloadSheet(rows.map(({ p, r }) => ({
+        '확인일': r.date || '', '브랜드': p.brand, '인플루언서': whoOf(p),
+        '구분': catOfPpl(p), '플랫폼': r.platform || '', '키워드': r.keyword || '',
+        '노출순위': r.rank || '', '확인링크': r.url || '', '메모': r.memo || '',
+        '캡쳐': r.image ? '있음' : ''
+      })), '상위노출기록_' + new Date().toISOString().slice(0, 10));
+    }
+
+
+    /* ==================== 크리에이터 월간 미션 · 활동비 ==================== */
+    const MISSION_DEFAULT = { m1: '', m2: '', baseFee: 30000, bonusFee: 20000, keywordGoal: 5, rankLimit: 10 };
+    let creatorMonthDate = new Date();
+
+    function creatorYm() {
+      return creatorMonthDate.getFullYear() + '-' + String(creatorMonthDate.getMonth() + 1).padStart(2, '0');
+    }
+    function moveCreatorMonth(dir) {
+      if (dir === 0) creatorMonthDate = new Date();
+      else creatorMonthDate = new Date(creatorMonthDate.getFullYear(), creatorMonthDate.getMonth() + dir, 1);
+      renderCreatorMissions();
+    }
+    function getMissionCfg(ym, create) {
+      let c = creatorMissions.find(x => x && x.month === ym);
+      if (!c && create) { c = Object.assign({ month: ym }, MISSION_DEFAULT); creatorMissions.push(c); }
+      return c || Object.assign({ month: ym }, MISSION_DEFAULT);
+    }
+    function updateMissionSetting(field, value) {
+      const c = getMissionCfg(creatorYm(), true);
+      c[field] = value;
+      saveAll();
+      renderCreatorMissions();
+    }
+    function missionOf(p, ym) {
+      p.missions = p.missions || {};
+      return p.missions[ym] || { m1: false, m2: false, bonus: false, paid: false, memo: '' };
+    }
+    function setMissionField(id, field, value) {
+      const p = pplList.find(x => x.id === id);
+      if (!p) return;
+      const ym = creatorYm();
+      p.missions = p.missions || {};
+      p.missions[ym] = Object.assign({ m1: false, m2: false, bonus: false, paid: false, memo: '' }, p.missions[ym]);
+      p.missions[ym][field] = value;
+      saveAll();
+      renderCreatorMissions();
+    }
+
+    // 해당 월에 기준 순위 안으로 들어온 서로 다른 키워드
+    function achievedKeywords(p, ym, rankLimit) {
+      const out = [];
+      (p.rankChecks || []).forEach(r => {
+        if ((r.date || '').slice(0, 7) !== ym) return;
+        const n = Number(r.rank);
+        if (!n || (rankLimit && n > rankLimit)) return;
+        const k = (r.keyword || '').trim();
+        if (k && !out.includes(k)) out.push(k);
+      });
+      return out;
+    }
+
+    function missionPayOf(p, ym, cfg) {
+      const m = missionOf(p, ym);
+      const base = (m.m1 && m.m2) ? (Number(cfg.baseFee) || 0) : 0;
+      const bonus = m.bonus ? (Number(cfg.bonusFee) || 0) : 0;
+      return { base, bonus, total: base + bonus };
+    }
+
+    function renderCreatorMissions() {
+      const tbody = document.getElementById('missionTableBody');
+      if (!tbody) return;
+      const ym = creatorYm();
+      const cfg = getMissionCfg(ym, false);
+
+      setTxt('missionTitle', creatorMonthDate.getFullYear() + '년 ' + (creatorMonthDate.getMonth() + 1) + '월');
+      const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+      setVal('missionM1', cfg.m1 || '');
+      setVal('missionM2', cfg.m2 || '');
+      setVal('missionBaseFee', cfg.baseFee);
+      setVal('missionBonusFee', cfg.bonusFee);
+      setVal('missionGoal', cfg.keywordGoal);
+      setVal('missionRankLimit', cfg.rankLimit);
+      setTxt('missionGoalText', cfg.keywordGoal);
+
+      const list = pplList.filter(isSupporters);
+      const winners = [];
+      let payTotal = 0, paidTotal = 0, doneBoth = 0;
+
+      const rows = list.map(p => {
+        const m = missionOf(p, ym);
+        const keys = achievedKeywords(p, ym, cfg.rankLimit);
+        const met = cfg.keywordGoal > 0 && keys.length >= cfg.keywordGoal;
+        const pay = missionPayOf(p, ym, cfg);
+        payTotal += pay.total;
+        if (m.paid) paidTotal += pay.total;
+        if (m.m1 && m.m2) doneBoth++;
+        if (m.bonus) winners.push({ p, keys, pay });
+
+        const chk = (field, on) => '<input type="checkbox" ' + (on ? 'checked' : '')
+          + ' onchange="setMissionField(' + p.id + ', \'' + field + '\', this.checked)" class="accent-cyan-600 w-5 h-5 cursor-pointer">';
+
+        const progressPct = cfg.keywordGoal ? Math.min(100, Math.round(keys.length / cfg.keywordGoal * 100)) : 0;
+
+        return '<tr class="hover:bg-cyan-50/30 transition' + (m.bonus ? ' bg-amber-50/30' : '') + '">'
+          + '<td class="py-3 px-3"><div class="font-bold text-slate-900">' + tEsc(p.realName || '무명') + '</div>'
+          + '<div class="text-[11px] text-slate-500">' + tEsc(p.influencer || '') + '</div></td>'
+          + '<td class="py-3 px-3 text-center">' + chk('m1', m.m1) + '</td>'
+          + '<td class="py-3 px-3 text-center">' + chk('m2', m.m2) + '</td>'
+          + '<td class="py-3 px-3 min-w-[190px]">'
+          + '<div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full ' + (met ? 'bg-emerald-500' : 'bg-amber-400') + '" style="width:' + progressPct + '%"></div></div>'
+          + '<span class="text-[11px] font-black ' + (met ? 'text-emerald-700' : 'text-slate-600') + '">' + keys.length + '/' + cfg.keywordGoal + '</span></div>'
+          + (keys.length ? '<div class="text-[10px] text-slate-500 mt-1 truncate">' + tEsc(keys.join(', ')) + '</div>' : '<div class="text-[10px] text-slate-400 mt-1">상위노출 기록 없음</div>')
+          + (met && !m.bonus ? '<button onclick="setMissionField(' + p.id + ', \'bonus\', true)" class="mt-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2 py-0.5 hover:bg-emerald-100">조건 충족 · 성공 처리</button>' : '')
+          + '</td>'
+          + '<td class="py-3 px-3 text-center"><input type="checkbox" ' + (m.bonus ? 'checked' : '')
+          + ' onchange="setMissionField(' + p.id + ', \'bonus\', this.checked)" class="accent-amber-500 w-5 h-5 cursor-pointer"></td>'
+          + '<td class="py-3 px-3 text-right"><div class="font-black text-slate-900">' + pay.total.toLocaleString() + '원</div>'
+          + '<div class="text-[10px] text-slate-500">' + (pay.base ? '기본 ' + pay.base.toLocaleString() : '기본 미지급')
+          + (pay.bonus ? ' + 추가 ' + pay.bonus.toLocaleString() : '') + '</div></td>'
+          + '<td class="py-3 px-3 text-center"><input type="checkbox" ' + (m.paid ? 'checked' : '')
+          + ' onchange="setMissionField(' + p.id + ', \'paid\', this.checked)" class="accent-emerald-600 w-5 h-5 cursor-pointer"></td>'
+          + '<td class="py-3 px-3 max-w-[160px]"><input value="' + tEsc(m.memo || '') + '" onchange="setMissionField(' + p.id + ', \'memo\', this.value)" placeholder="메모" class="w-full px-2 py-1 text-[11px] border border-slate-200 rounded-lg"></td>'
+          + '</tr>';
+      });
+
+      tbody.innerHTML = rows.length ? rows.join('')
+        : '<tr><td colspan="8" class="py-10 text-center text-slate-400">등록된 크리에이터가 없습니다.<br>PPL 등록 시 <b>크리에이터</b>를 체크하면 여기에 나타납니다.</td></tr>';
+
+      const sum = document.getElementById('missionSummary');
+      if (sum) {
+        const card = (label, val, sub, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
+          + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
+          + '<div class="text-2xl font-black text-' + color + '-600 mt-0.5">' + val + '</div>'
+          + (sub ? '<div class="text-[11px] text-slate-500 font-semibold">' + sub + '</div>' : '') + '</div>';
+        sum.innerHTML = card('대상 크리에이터', list.length + '명', '', 'cyan')
+          + card('월 미션 완료', doneBoth + '명', '2가지 모두 완료', 'emerald')
+          + card('추가미션 성공', winners.length + '명', '키워드 ' + cfg.keywordGoal + '개 상위노출', 'amber')
+          + card('이번 달 지급액', payTotal.toLocaleString() + '원', '지급 완료 ' + paidTotal.toLocaleString() + '원', 'pink');
+      }
+
+      setTxt('bonusCount', winners.length + '명');
+      const bw = document.getElementById('bonusWinners');
+      if (bw) {
+        bw.innerHTML = winners.length
+          ? winners.map(({ p, keys, pay }) => '<div class="bg-white p-3 rounded-xl border border-amber-200 flex flex-wrap gap-2 justify-between items-center">'
+              + '<div class="min-w-0"><span class="font-black text-slate-900">' + tEsc(p.realName || '무명') + '</span> '
+              + '<span class="text-[11px] text-slate-500">' + tEsc(p.influencer || '') + '</span>'
+              + '<div class="text-[11px] text-slate-600 mt-0.5">' + (keys.length ? tEsc(keys.join(' · ')) : '키워드 기록 없음 (수동 체크)') + '</div></div>'
+              + '<div class="text-right"><div class="text-sm font-black text-amber-700">+' + pay.bonus.toLocaleString() + '원</div>'
+              + '<div class="text-[10px] font-bold ' + (missionOf(p, ym).paid ? 'text-emerald-700' : 'text-slate-400') + '">'
+              + (missionOf(p, ym).paid ? '지급 완료' : '지급 대기') + '</div></div></div>').join('')
+          : '<p class="text-[11px] text-amber-800/70 py-2">아직 추가미션 성공자가 없습니다. 키워드 ' + cfg.keywordGoal + '개가 ' + cfg.rankLimit + '위 이내로 올라가면 자동으로 조건 충족 표시가 떠요.</p>';
+      }
+
+      const hb = document.getElementById('missionHistoryBody');
+      if (hb) {
+        const out = [];
+        for (let i = 0; i < 6; i++) {
+          const d = new Date(creatorMonthDate.getFullYear(), creatorMonthDate.getMonth() - i, 1);
+          const hym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+          const hcfg = getMissionCfg(hym, false);
+          const won = pplList.filter(p => isSupporters(p) && missionOf(p, hym).bonus);
+          out.push('<tr class="hover:bg-slate-50/60' + (hym === ym ? ' bg-cyan-50/40 font-bold' : '') + '">'
+            + '<td class="py-2.5 px-3 font-bold text-slate-800">' + d.getFullYear() + '.' + (d.getMonth() + 1) + '월</td>'
+            + '<td class="py-2.5 px-3 text-center font-black ' + (won.length ? 'text-amber-700' : 'text-slate-400') + '">' + won.length + '명</td>'
+            + '<td class="py-2.5 px-3 text-slate-700">' + (won.length ? tEsc(won.map(p => p.realName || p.influencer || '무명').join(', ')) : '-') + '</td>'
+            + '<td class="py-2.5 px-3 text-right font-bold text-slate-800">' + (won.length * (Number(hcfg.bonusFee) || 0)).toLocaleString() + '원</td>'
+            + '</tr>');
+        }
+        hb.innerHTML = out.join('');
+      }
+    }
+
+    function exportMissionExcel() {
+      const ym = creatorYm();
+      const cfg = getMissionCfg(ym, false);
+      const list = pplList.filter(isSupporters);
+      if (!list.length) { alert('등록된 크리에이터가 없습니다.'); return; }
+      downloadSheet(list.map(p => {
+        const m = missionOf(p, ym);
+        const keys = achievedKeywords(p, ym, cfg.rankLimit);
+        const pay = missionPayOf(p, ym, cfg);
+        return {
+          '월': ym, '브랜드': p.brand, '크리에이터': p.realName || '', '계정': p.influencer || '',
+          '월미션1': cfg.m1 || '', '월미션1완료': m.m1 ? 'O' : '',
+          '월미션2': cfg.m2 || '', '월미션2완료': m.m2 ? 'O' : '',
+          '상위노출달성수': keys.length, '목표': cfg.keywordGoal, '달성키워드': keys.join(', '),
+          '추가미션성공': m.bonus ? 'O' : '',
+          '월활동비': pay.base, '추가활동비': pay.bonus, '지급액합계': pay.total,
+          '지급완료': m.paid ? 'O' : '', '메모': m.memo || ''
+        };
+      }), '크리에이터_활동비_' + ym);
+    }
+
     function renderPplTable() {
       const tbody = document.getElementById('pplTableBody');
-      let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p));
+      let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p) && !isSupporters(p));
       if (currentTableBrandFilter !== '전체') filtered = filtered.filter(p => p.brand === currentTableBrandFilter);
 
       if (filtered.length === 0) {
@@ -4574,7 +5514,8 @@
           { on: p.types.microPpl, label: '마이크로 PPL', cost: p.costs.microPpl, cls: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
           { on: p.types.reels, label: '릴스', cost: p.costs.reels, cls: 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200' },
           { on: p.types.shorts, label: '숏츠', cost: p.costs.shorts, cls: 'bg-red-100 text-red-700 border-red-200' },
-          { on: p.types.creator, label: '크리에이터', cost: p.costs.creator, cls: 'bg-violet-100 text-violet-700 border-violet-200' },
+          { on: p.types.supporters, label: '크리에이터', cost: p.costs.supporters, cls: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
+          { on: p.types.creator, label: '인플루언서', cost: p.costs.creator, cls: 'bg-violet-100 text-violet-700 border-violet-200' },
           { on: p.types.ambassador || p.types.sample, label: '앰버서더', cost: p.costs.ambassador || p.costs.sample, cls: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
           { on: p.types.freeAmb, label: '무상앰버서더', cost: 0, cls: 'bg-teal-100 text-teal-700 border-teal-200' }
         ].filter(t => t.on);
@@ -4664,6 +5605,7 @@
             </td>
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
               <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
+              <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
               <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -4754,6 +5696,7 @@
             </td>
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
               <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
+              <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
               <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -4832,6 +5775,7 @@
             <td class="py-3 px-3 align-top font-bold text-teal-700">${p.seedingCount || 0}개</td>
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
               <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
+              <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
               <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -5016,6 +5960,7 @@
       document.getElementById('editType_microPpl').checked = !!(ppl.types && ppl.types.microPpl);
       document.getElementById('editType_reels').checked = !!(ppl.types && ppl.types.reels);
       document.getElementById('editType_shorts').checked = !!(ppl.types && ppl.types.shorts);
+      document.getElementById('editType_supporters').checked = !!(ppl.types && ppl.types.supporters);
       document.getElementById('editType_creator').checked = !!(ppl.types && ppl.types.creator);
       document.getElementById('editType_ambassador').checked = !!(ppl.types && (ppl.types.ambassador || ppl.types.sample));
       document.getElementById('editType_freeAmb').checked = !!(ppl.types && ppl.types.freeAmb);
@@ -5026,6 +5971,7 @@
       document.getElementById('editCost_microPpl').value = (ppl.costs && ppl.costs.microPpl) || '';
       document.getElementById('editCost_reels').value = (ppl.costs && ppl.costs.reels) || '';
       document.getElementById('editCost_shorts').value = (ppl.costs && ppl.costs.shorts) || '';
+      document.getElementById('editCost_supporters').value = (ppl.costs && ppl.costs.supporters) || '';
       document.getElementById('editCost_creator').value = (ppl.costs && ppl.costs.creator) || '';
       document.getElementById('editCost_ambassador').value = (ppl.costs && (ppl.costs.ambassador || ppl.costs.sample)) || '';
 
@@ -5117,6 +6063,7 @@
         microPpl: document.getElementById('editType_microPpl').checked,
         reels: document.getElementById('editType_reels').checked,
         shorts: document.getElementById('editType_shorts').checked,
+        supporters: document.getElementById('editType_supporters').checked,
         creator: document.getElementById('editType_creator').checked,
         ambassador: document.getElementById('editType_ambassador').checked,
         freeAmb: document.getElementById('editType_freeAmb').checked
@@ -5129,6 +6076,7 @@
         microPpl: Number(document.getElementById('editCost_microPpl').value) || 0,
         reels: Number(document.getElementById('editCost_reels').value) || 0,
         shorts: Number(document.getElementById('editCost_shorts').value) || 0,
+        supporters: Number(document.getElementById('editCost_supporters').value) || 0,
         creator: Number(document.getElementById('editCost_creator').value) || 0,
         ambassador: Number(document.getElementById('editCost_ambassador').value) || 0,
         freeAmb: 0
@@ -5199,7 +6147,8 @@
         if (p.types && p.types.microPpl) typeList.push({ t: '마이크로 PPL', c: 'bg-cyan-100 text-cyan-700' });
         if (p.types && p.types.reels) typeList.push({ t: '릴스', c: 'bg-fuchsia-100 text-fuchsia-700' });
         if (p.types && p.types.shorts) typeList.push({ t: '숏츠', c: 'bg-red-100 text-red-700' });
-        if (p.types && p.types.creator) typeList.push({ t: '크리에이터', c: 'bg-violet-100 text-violet-700' });
+        if (p.types && p.types.supporters) typeList.push({ t: '크리에이터', c: 'bg-cyan-100 text-cyan-700' });
+        if (p.types && p.types.creator) typeList.push({ t: '인플루언서', c: 'bg-violet-100 text-violet-700' });
         if (p.types && (p.types.ambassador || p.types.sample)) typeList.push({ t: '앰버서더', c: 'bg-indigo-100 text-indigo-700' });
         if (p.types && p.types.freeAmb) typeList.push({ t: '무상앰버서더', c: 'bg-teal-100 text-teal-700' });
         const typeChips = typeList.map(x => `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${x.c}">${x.t}</span>`).join(' ');
@@ -6000,12 +6949,14 @@
       const isMicroMode = mode === 'micro';
       const isAmbMode = mode === 'amb';
       const isCreatorMode = mode === 'creator';
-      const isPplMode = !isFree && !isMicroMode && !isAmbMode && !isCreatorMode;
+      const isSupMode = mode === 'sup';
+      const isPplMode = !isFree && !isMicroMode && !isAmbMode && !isCreatorMode && !isSupMode;
 
       const selector = isFree ? '.freeamb-select:checked'
         : (isMicroMode ? '.micro-select:checked'
         : (isAmbMode ? '.amb-select:checked'
-        : (isCreatorMode ? '.creator-select:checked' : '.ppl-select:checked')));
+        : (isCreatorMode ? '.creator-select:checked'
+        : (isSupMode ? '.sup-select:checked' : '.ppl-select:checked'))));
       const checked = Array.from(document.querySelectorAll(selector)).map(cb => Number(cb.value));
 
       let rows;
@@ -6013,7 +6964,8 @@
       else if (isMicroMode) rows = pplList.filter(isMicro);
       else if (isAmbMode) rows = pplList.filter(isAmbPaid);
       else if (isCreatorMode) rows = pplList.filter(isCreatorType);
-      else rows = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p));
+      else if (isSupMode) rows = pplList.filter(isSupporters);
+      else rows = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p) && !isSupporters(p));
 
       if (isPplMode && currentTableBrandFilter !== '전체') rows = rows.filter(p => p.brand === currentTableBrandFilter);
       if (checked.length > 0) rows = rows.filter(p => checked.includes(p.id));
@@ -6036,7 +6988,8 @@
       const fileBase = isFree ? `무상앰버서더_배송정보_${today}`
         : (isMicroMode ? `마이크로_배송정보_${today}`
         : (isAmbMode ? `앰버서더_배송정보_${today}`
-        : (isCreatorMode ? `크리에이터_배송정보_${today}` : `배송정보_${today}`)));
+        : (isCreatorMode ? `인플루언서_배송정보_${today}`
+        : (isSupMode ? `크리에이터_배송정보_${today}` : `배송정보_${today}`))));
 
       if (typeof XLSX !== 'undefined') {
         const ws = XLSX.utils.json_to_sheet(data);
