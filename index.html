@@ -101,6 +101,22 @@
   <!-- ==================== PAGE: 월간 통합 현황 ==================== -->
   <main id="page-monthly" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
+    <!-- 브랜드 선택 -->
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-2 rounded-2xl border border-pink-100 shadow-xs">
+      <div class="flex flex-wrap gap-1 p-1 bg-pink-50 rounded-xl border border-pink-100 text-sm font-bold">
+        <button onclick="setMonthlyBrand('전체')" id="mtab-전체" class="px-5 py-2 rounded-lg bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-layer-group text-xs"></i> 전체 보기
+        </button>
+        <button onclick="setMonthlyBrand('온살')" id="mtab-온살" class="px-5 py-2 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-heart text-xs"></i> 온살만
+        </button>
+        <button onclick="setMonthlyBrand('루메아카이브')" id="mtab-루메아카이브" class="px-5 py-2 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-droplet text-xs"></i> 루메아카이브만
+        </button>
+      </div>
+      <span id="monthlyBrandNote" class="text-xs font-bold text-slate-500 pr-2"></span>
+    </div>
+
     <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
       <div class="flex flex-wrap justify-between items-center gap-3">
         <div class="flex items-center gap-3">
@@ -110,11 +126,6 @@
           <span id="monthlyTitle" class="text-base font-black text-pink-600"></span>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-          <div class="flex p-1 bg-pink-50 rounded-xl border border-pink-100 text-xs font-bold">
-            <button onclick="setMonthlyBrand('전체')" id="mbrand-전체" class="px-3 py-1.5 rounded-lg bg-white text-pink-600 shadow-xs">전체</button>
-            <button onclick="setMonthlyBrand('온살')" id="mbrand-온살" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">온살</button>
-            <button onclick="setMonthlyBrand('루메아카이브')" id="mbrand-루메아카이브" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">루메아카이브</button>
-          </div>
           <div class="flex items-center gap-1">
             <button onclick="moveMonthly(-1)" class="p-2 hover:bg-pink-50 rounded-xl text-slate-600 text-xs"><i class="fa-solid fa-chevron-left"></i></button>
             <button onclick="moveMonthly(0)" class="px-3 py-1.5 text-xs font-semibold border border-pink-200 rounded-xl hover:bg-pink-50 text-pink-700">이번 달</button>
@@ -4016,7 +4027,7 @@
         if (el) el.className = (pageId === 'budget' && budgetBrand === bn) ? activeClass : idleClass;
       });
 
-      if (pageId === 'monthly') renderMonthly();
+      if (pageId === 'monthly') setMonthlyBrand(monthlyBrandFilter);
       if (pageId === 'contact') { updateContactProductList(); renderContactList(); }
       if (pageId === 'micro') { renderMicroTable(); renderPackages(); renderUploadTables(); }
       if (pageId === 'sup') { renderSupTable(); renderRankTable(); renderCreatorMissions(); renderUploadTables(); }
@@ -4576,8 +4587,8 @@
 
       return '<tr class="hover:bg-' + accent + '-50/30 transition">'
         + '<td class="py-3 px-3 align-top"><input type="checkbox" class="' + prefix + '-select accent-' + accent + '-600 w-4 h-4 cursor-pointer" value="' + p.id + '"></td>'
-        + '<td class="py-3 px-3 align-top"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + p.brand + '</span>'
-        + '<div class="mt-1 space-y-0.5">' + prods.map(pn => '<div class="font-bold text-slate-800 text-[11px]">· ' + pn + '</div>').join('') + '</div></td>'
+        + '<td class="py-3 px-3 align-top w-[190px] min-w-[190px] max-w-[190px]"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + p.brand + '</span>'
+        + productCellHtml(p) + '</td>'
         + '<td class="py-3 px-3 align-top"><div class="font-bold text-slate-900">' + (p.realName || '무명') + '</div>'
         + '<div class="text-[11px] text-slate-500">' + (p.influencer || '') + '</div>'
         + '<div class="text-[11px] text-slate-400">' + (p.followers ? '팔로워 ' + p.followers : '') + '</div></td>'
@@ -4801,7 +4812,7 @@
 
     /* ==================== 월간 통합 현황 ==================== */
     let monthlyDate = new Date();
-    let monthlyBrandFilter = '전체';
+    let monthlyBrandFilter = localStorage.getItem('onsal_monthlyBrand') || '전체';
 
     function currentYm() {
       return monthlyDate.getFullYear() + '-' + String(monthlyDate.getMonth() + 1).padStart(2, '0');
@@ -4811,14 +4822,20 @@
       else monthlyDate = new Date(monthlyDate.getFullYear(), monthlyDate.getMonth() + dir, 1);
       renderMonthly();
     }
+    const MTAB_ICON = { '전체': 'fa-layer-group', '온살': 'fa-heart', '루메아카이브': 'fa-droplet' };
+    const MTAB_LABEL = { '전체': '전체 보기', '온살': '온살만', '루메아카이브': '루메아카이브만' };
     function setMonthlyBrand(b) {
       monthlyBrandFilter = b;
+      localStorage.setItem('onsal_monthlyBrand', b);
       ['전체', '온살', '루메아카이브'].forEach(x => {
-        const el = document.getElementById('mbrand-' + x);
-        if (el) el.className = (x === b)
-          ? 'px-3 py-1.5 rounded-lg bg-white text-pink-600 shadow-xs'
-          : 'px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800';
+        const el = document.getElementById('mtab-' + x);
+        if (!el) return;
+        el.className = (x === b)
+          ? 'px-5 py-2 rounded-lg bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5'
+          : 'px-5 py-2 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
+        el.innerHTML = '<i class="fa-solid ' + MTAB_ICON[x] + ' text-xs"></i> ' + MTAB_LABEL[x];
       });
+      setTxt('monthlyBrandNote', b === '전체' ? '두 브랜드를 합쳐서 보고 있어요' : b + ' 건만 보고 있어요');
       renderMonthly();
     }
     function trialUploadDate(t) {
@@ -4871,7 +4888,9 @@
     function renderMonthly() {
       if (!document.getElementById('monthlyDetailBody')) return;
       const ym = currentYm();
-      setTxt('monthlyTitle', monthlyDate.getFullYear() + '년 ' + (monthlyDate.getMonth() + 1) + '월');
+      setTxt('monthlyTitle', monthlyDate.getFullYear() + '년 ' + (monthlyDate.getMonth() + 1) + '월'
+        + (monthlyBrandFilter === '전체' ? '' : ' · ' + monthlyBrandFilter));
+      setTxt('monthlyBrandNote', monthlyBrandFilter === '전체' ? '두 브랜드를 합쳐서 보고 있어요' : monthlyBrandFilter + ' 건만 보고 있어요');
       const rows = collectMonthlyRows(ym);
 
       const CATS = ['PPL', '마이크로', '앰버서더', '무상앰버서더', '크리에이터', '인플루언서', '체험단'];
@@ -7682,6 +7701,29 @@
         + '<td colspan="2"></td></tr></tfoot></table></div></div>';
     }
 
+
+    /* ---- 제품 셀: 여러 개일 때 접어서 표시 ---- */
+    const expandedProducts = new Set();
+    function toggleProductCell(id) {
+      if (expandedProducts.has(id)) expandedProducts.delete(id);
+      else expandedProducts.add(id);
+      renderAll();
+    }
+    function productCellHtml(p) {
+      const prods = prodNamesOf(p);
+      if (!prods.length) return '<span class="text-[11px] text-slate-400">제품 미지정</span>';
+      const open = expandedProducts.has(p.id);
+      const show = (open || prods.length <= 2) ? prods : prods.slice(0, 2);
+      let html = '<div class="mt-1 space-y-0.5">'
+        + show.map(n => '<div class="text-[11px] font-bold text-slate-800 truncate" title="' + tEsc(n) + '">· ' + tEsc(n) + '</div>').join('')
+        + '</div>';
+      if (prods.length > 2) {
+        html += '<button onclick="toggleProductCell(' + p.id + ')" class="mt-1 text-[10px] font-bold text-pink-600 hover:underline whitespace-nowrap">'
+          + (open ? '접기' : '+' + (prods.length - 2) + '종 더보기') + '</button>';
+      }
+      return html;
+    }
+
     function renderPplTable() {
       const tbody = document.getElementById('pplTableBody');
       let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p) && !isSupporters(p));
@@ -7747,11 +7789,9 @@
             <td class="py-3 px-3 align-top">
               <input type="checkbox" class="ppl-select accent-pink-500 w-4 h-4 cursor-pointer" value="${p.id}">
             </td>
-            <td class="py-3 px-3 align-top">
+            <td class="py-3 px-3 align-top w-[190px] min-w-[190px] max-w-[190px]">
               <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${brandBadgeClass}">${p.brand}</span>
-              <div class="mt-1 space-y-0.5">
-                ${(p.productList && p.productList.length ? p.productList : [p.product]).map(pn => `<div class="font-bold text-slate-800 text-[11px]">· ${pn}</div>`).join('')}
-              </div>
+              ${productCellHtml(p)}
             </td>
             <td class="py-3 px-3 align-top">
               <div class="font-bold text-slate-900">${p.realName || '무명'} <span class="text-xs font-normal text-slate-500">(${p.influencer})</span></div>
@@ -7857,11 +7897,9 @@
             <td class="py-3 px-3 align-top">
               <input type="checkbox" class="micro-select accent-sky-600 w-4 h-4 cursor-pointer" value="${p.id}">
             </td>
-            <td class="py-3 px-3 align-top">
+            <td class="py-3 px-3 align-top w-[190px] min-w-[190px] max-w-[190px]">
               <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${brandBadgeClass}">${p.brand}</span>
-              <div class="mt-1 space-y-0.5">
-                ${prodNames.map(pn => `<div class="font-bold text-slate-800 text-[11px]">· ${pn}</div>`).join('')}
-              </div>
+              ${productCellHtml(p)}
             </td>
             <td class="py-3 px-3 align-top">
               <div class="font-bold text-slate-900">${p.realName || '무명'}</div>
@@ -7945,11 +7983,9 @@
             <td class="py-3 px-3 align-top">
               <input type="checkbox" class="freeamb-select accent-teal-600 w-4 h-4 cursor-pointer" value="${p.id}">
             </td>
-            <td class="py-3 px-3 align-top">
+            <td class="py-3 px-3 align-top w-[190px] min-w-[190px] max-w-[190px]">
               <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${brandBadgeClass}">${p.brand}</span>
-              <div class="mt-1 space-y-0.5">
-                ${prodNames.map(pn => `<div class="font-bold text-slate-800 text-[11px]">· ${pn}</div>`).join('')}
-              </div>
+              ${productCellHtml(p)}
             </td>
             <td class="py-3 px-3 align-top">
               <div class="font-bold text-slate-900">${p.realName || '무명'}</div>
