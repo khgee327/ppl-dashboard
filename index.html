@@ -78,6 +78,12 @@
           <button onclick="switchMainPage('creator')" id="nav-creator" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-video"></i> 인플루언서 관리
           </button>
+          <button onclick="openBudget('온살')" id="nav-budget-온살" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-calculator"></i> 온살 예산관리
+          </button>
+          <button onclick="openBudget('루메아카이브')" id="nav-budget-루메아카이브" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-calculator"></i> 루메 예산관리
+          </button>
         </div>
         <button onclick="exportToCSV()" class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-xl transition flex items-center gap-1 shadow-xs">
           <i class="fa-solid fa-file-excel"></i> CSV 내보내기
@@ -1593,6 +1599,10 @@
             <label class="block text-xs font-semibold text-slate-500 mb-1">모집 시작일 (오픈일)</label>
             <input id="trialOpenDate" type="date" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-200">
           </div>
+          <div>
+            <label class="block text-xs font-semibold text-emerald-700 mb-1"><i class="fa-solid fa-won-sign"></i> 진행 금액 (원)</label>
+            <input id="trialCost" type="number" min="0" placeholder="1500000" class="w-full px-3 py-2 border border-emerald-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-200 bg-emerald-50/30 font-bold">
+          </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -2503,6 +2513,114 @@
 
   </main>
 
+  <!-- ==================== PAGE: 예산 관리 ==================== -->
+  <main id="page-budget" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <!-- ===== 월 예산 ===== -->
+    <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-violet-100 pb-3">
+        <div class="flex items-center gap-3">
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-calculator text-violet-600"></i> <span id="budgetBrandLabel">월 예산</span>
+          </h2>
+          <span id="budgetTitle" class="text-base font-black text-violet-700"></span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex items-center gap-1">
+            <button onclick="moveBudgetMonth(-1)" class="p-2 hover:bg-violet-50 rounded-xl text-slate-600 text-xs"><i class="fa-solid fa-chevron-left"></i></button>
+            <button onclick="moveBudgetMonth(0)" class="px-3 py-1.5 text-xs font-semibold border border-violet-200 rounded-xl hover:bg-violet-50 text-violet-700">이번 달</button>
+            <button onclick="moveBudgetMonth(1)" class="p-2 hover:bg-violet-50 rounded-xl text-slate-600 text-xs"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+          <button onclick="autofillBudgetPlan()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> 계획칸 자동 채우기
+          </button>
+          <button onclick="copyLastMonthBudget()" class="px-3 py-2 bg-violet-100 hover:bg-violet-200 text-violet-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-regular fa-copy"></i> 지난달 예산 복사
+          </button>
+          <button onclick="exportBudgetExcel()" class="px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-arrow-down"></i> 예산표 다운로드
+          </button>
+        </div>
+      </div>
+
+      <!-- 요약 행 (맨 위) -->
+      <div id="budgetSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+
+      <!-- 구분별 탭 -->
+      <div id="budgetTabs" class="flex flex-wrap gap-1 p-1 bg-violet-50 rounded-2xl border border-violet-100 text-xs font-bold"></div>
+
+      <!-- 구분별 내역 (탭 선택 시) -->
+      <div id="budgetDetailPane" class="hidden space-y-3"></div>
+
+      <div id="budgetSummaryPane" class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-violet-50/60 text-slate-600 font-semibold border-y border-violet-100">
+            <tr>
+              <th class="py-2.5 px-3 min-w-[150px]">구분</th>
+              <th class="py-2.5 px-3 text-right w-[130px]">계획 금액</th>
+              <th class="py-2.5 px-3 text-right w-[130px]">실제 집행</th>
+              <th class="py-2.5 px-3 text-right w-[120px]">잔액</th>
+              <th class="py-2.5 px-3 w-[160px]">집행률</th>
+              <th class="py-2.5 px-3">메모</th>
+              <th class="py-2.5 px-3 w-8"></th>
+            </tr>
+          </thead>
+          <tbody id="budgetTableBody" class="divide-y divide-slate-100"></tbody>
+          <tfoot id="budgetTableFoot" class="border-t-2 border-violet-200"></tfoot>
+        </table>
+      </div>
+
+      <div id="budgetAddRow" class="flex flex-wrap gap-2 items-center">
+        <input id="budgetNewCat" placeholder="항목 추가 (예: 촬영비, 광고 집행, 배송비)" class="flex-1 min-w-[200px] px-3 py-2 text-xs border border-violet-200 rounded-xl">
+        <button onclick="addBudgetLine()" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl whitespace-nowrap">
+          <i class="fa-solid fa-plus"></i> 항목 추가
+        </button>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-bold text-violet-800 mb-1">이번 달 예산 메모</label>
+        <textarea id="budgetMemo" onchange="saveBudgetMemo()" rows="2" placeholder="예) 8월은 신제품 런칭으로 마이크로 예산 증액 / 앰버서더 재계약 2건 반영" class="w-full px-3 py-2 text-xs border border-violet-200 rounded-xl bg-violet-50/30"></textarea>
+      </div>
+    </section>
+
+    <!-- ===== 제품 출시 예산 ===== -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-pink-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-rocket text-pink-500"></i> <span id="launchBrandLabel">제품 출시 예산</span>
+            <span id="launchHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">제품 하나 출시할 때 얼마가 드는지 미리 짜 보는 표예요. 수량 × 단가를 넣으면 소계와 총합이 자동으로 계산됩니다.</p>
+        </div>
+        <button onclick="exportLaunchExcel()" class="px-3.5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 출시 예산 다운로드
+        </button>
+      </div>
+
+      <div id="launchSummary" class="grid grid-cols-2 md:grid-cols-2 gap-3"></div>
+
+      <div class="bg-pink-50/50 p-4 rounded-2xl border border-pink-200 space-y-3">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+          <div class="md:col-span-2">
+            <label class="block text-[11px] font-bold text-pink-800 mb-1">출시 제품 / 캠페인명</label>
+            <input id="launchName" placeholder="예) 온살 하이퍼 비피다 세럼 런칭" class="w-full px-2.5 py-2 text-xs border border-pink-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-pink-800 mb-1">출시 예정일</label>
+            <input type="date" id="launchDate" class="w-full px-2.5 py-2 text-xs border border-pink-200 rounded-xl">
+          </div>
+        </div>
+        <button onclick="addLaunchBudget()" class="w-full py-2.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl">
+          <i class="fa-solid fa-plus"></i> 출시 예산 표 만들기 (기본 항목이 자동으로 채워집니다)
+        </button>
+      </div>
+
+      <div id="launchList" class="space-y-4"></div>
+    </section>
+
+  </main>
+
   <!-- ==================== 업로드 / 결과 입력 모달 ==================== -->
   <div id="uploadModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
     <div class="bg-white rounded-3xl w-full max-w-5xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
@@ -2889,7 +3007,9 @@
         onsal_monthlyNotes: monthlyNotes,
         onsal_contactList: contactList,
         onsal_creatorMissions: creatorMissions,
-        onsal_microPackages: microPackages
+        onsal_microPackages: microPackages,
+        onsal_budgets: budgets,
+        onsal_launchBudgets: launchBudgets
       };
     }
 
@@ -2955,6 +3075,8 @@
           if (Array.isArray(d.onsal_contactList)) contactList = d.onsal_contactList;
           if (Array.isArray(d.onsal_creatorMissions)) creatorMissions = d.onsal_creatorMissions;
           if (Array.isArray(d.onsal_microPackages)) microPackages = d.onsal_microPackages;
+          if (Array.isArray(d.onsal_budgets)) budgets = d.onsal_budgets;
+          if (Array.isArray(d.onsal_launchBudgets)) launchBudgets = d.onsal_launchBudgets;
 
           localStorage.setItem('onsal_products', JSON.stringify(products));
           localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
@@ -2971,6 +3093,8 @@
           localStorage.setItem('onsal_contactList', JSON.stringify(contactList));
           localStorage.setItem('onsal_creatorMissions', JSON.stringify(creatorMissions));
           localStorage.setItem('onsal_microPackages', JSON.stringify(microPackages));
+          localStorage.setItem('onsal_budgets', JSON.stringify(budgets));
+          localStorage.setItem('onsal_launchBudgets', JSON.stringify(launchBudgets));
         }
 
         syncReady = true;
@@ -3270,6 +3394,11 @@
     // 마이크로 패키지 [{ id, brand, name, month, headcount, amount, memo, memberIds:[] }]
     let microPackages = JSON.parse(localStorage.getItem('onsal_microPackages')) || [];
 
+    // 월 예산 [{ month:'2026-08', memo, lines:[{cat, onsal, lume, memo}] }]
+    let budgets = JSON.parse(localStorage.getItem('onsal_budgets')) || [];
+    // 제품 출시 예산 [{ id, brand, name, date, memo, items:[{label, qty, unit, memo}] }]
+    let launchBudgets = JSON.parse(localStorage.getItem('onsal_launchBudgets')) || [];
+
     /* ==================== 체험단 관리 ==================== */
     const TRIAL_RECRUIT_DAYS = 4;   // 총 모집 일수
     const TRIAL_REVIEW_DAYS = 7;    // 후기 작성 기간(발송일 포함)
@@ -3422,6 +3551,7 @@
       const title = document.getElementById('trialTitle').value.trim();
       const open = document.getElementById('trialOpenDate').value;
       const notes = document.getElementById('trialNotes').value.trim();
+      const cost = Number(document.getElementById('trialCost').value) || 0;
 
       if (!product) { alert('진행 제품을 입력해 주세요.'); return; }
       const { stages, order } = readTrialStepRows();
@@ -3430,6 +3560,7 @@
         id: Date.now(),
         brand, platform, sns, type, product,
         headcount: Number(headcount) || 0,
+        cost: cost,
         title: title || `${product} ${sns} ${type} 체험단`,
         openDate: open,
         notes,
@@ -3438,7 +3569,7 @@
         stages
       });
 
-      ['trialProduct', 'trialHeadcount', 'trialTitle', 'trialOpenDate', 'trialNotes'].forEach(id => document.getElementById(id).value = '');
+      ['trialProduct', 'trialHeadcount', 'trialTitle', 'trialOpenDate', 'trialNotes', 'trialCost'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('trialStepContainer').innerHTML = '';
       saveAll();
       renderTrialDashboard();
@@ -3694,6 +3825,11 @@
                   <span class="px-2 py-0.5 bg-sky-100 text-sky-600 text-[10px] font-bold rounded-md">${tEsc(t.sns || '-')}</span>
                   <span class="px-2 py-0.5 bg-violet-100 text-violet-600 text-[10px] font-bold rounded-md">${tEsc(t.type || '-')}</span>
                   <span class="px-2 py-0.5 bg-amber-100 text-amber-600 text-[10px] font-bold rounded-md">${Number(t.headcount) || 0}명</span>
+                  <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-md flex items-center gap-1">
+                    <i class="fa-solid fa-won-sign"></i>
+                    <input type="number" value="${trialCostOf(t) || ''}" placeholder="0" onclick="event.stopPropagation()" onchange="updateTrialCost(${t.id}, this.value)"
+                      class="w-[86px] bg-transparent border-b border-emerald-300 text-emerald-800 text-[10px] font-bold outline-none text-right">원
+                  </span>
                 </div>
                 <p class="text-sm font-extrabold text-slate-900">${tEsc(t.title)}</p>
                 <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-box text-slate-300 mr-1"></i>${tEsc(t.product)}${t.notes ? ' · ' + tEsc(t.notes) : ''}</p>
@@ -3793,6 +3929,8 @@
       localStorage.setItem('onsal_contactList', JSON.stringify(contactList));
       localStorage.setItem('onsal_creatorMissions', JSON.stringify(creatorMissions));
       localStorage.setItem('onsal_microPackages', JSON.stringify(microPackages));
+      localStorage.setItem('onsal_budgets', JSON.stringify(budgets));
+      localStorage.setItem('onsal_launchBudgets', JSON.stringify(launchBudgets));
       queueSync();
       queueSchedulerSync();
     }
@@ -3851,25 +3989,31 @@
       renderPayPage();
       renderFormImport();
       renderPackages();
+      renderBudget();
+      renderLaunchBudgets();
     }
 
     // 페이지 전환 (PPL / 시딩재고 / UTM)
     function switchMainPage(pageId) {
-      const pages = ['monthly', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'pay', 'seeding', 'utm'];
+      const pages = ['monthly', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'pay', 'seeding', 'utm', 'budget'];
       const activeClass = "px-3 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
       const idleClass = "px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
 
       pages.forEach(id => {
         const page = document.getElementById('page-' + id);
         const nav = document.getElementById('nav-' + id);
-        if (!page || !nav) return;
+        if (!page) return;
         if (id === pageId) {
           page.classList.remove('hidden');
-          nav.className = activeClass;
+          if (nav) nav.className = activeClass;
         } else {
           page.classList.add('hidden');
-          nav.className = idleClass;
+          if (nav) nav.className = idleClass;
         }
+      });
+      ['온살', '루메아카이브'].forEach(bn => {
+        const el = document.getElementById('nav-budget-' + bn);
+        if (el) el.className = (pageId === 'budget' && budgetBrand === bn) ? activeClass : idleClass;
       });
 
       if (pageId === 'monthly') renderMonthly();
@@ -3879,6 +4023,7 @@
       if (pageId === 'amb') { renderAmbTable(); renderFreeAmbTable(); renderUploadTables(); }
       if (pageId === 'creator') { renderCreatorTable(); renderInfluencerCards(); renderProposals(); renderUploadTables(); }
       if (pageId === 'pay') renderPayPage();
+      if (pageId === 'budget') { renderBudget(); renderLaunchBudgets(); }
       if (pageId === 'trial') renderTrialDashboard();
       if (pageId === 'seeding') renderSeedingDashboard();
       if (pageId === 'utm') renderUtmDashboard();
@@ -6173,7 +6318,7 @@
     }
     function ensurePayment(rec, isTrial) {
       if (!rec.payment) {
-        const total = isTrial ? 0 : (typeof costOfPpl === 'function' ? costOfPpl(rec) : totalCostOf(rec));
+        const total = isTrial ? (Number(rec.cost) || 0) : (typeof costOfPpl === 'function' ? costOfPpl(rec) : totalCostOf(rec));
         rec.payment = {
           mode: total ? '후불(전액)' : '무상 / 지급 없음',
           total: total,
@@ -6820,8 +6965,7 @@
         if (r.isTrial) {
           const t = trialList.find(x => x.id === r.pid);
           if (!t) return;
-          const amt = (t.payment && Number(t.payment.total)) || 0;
-          add('체험단', t.brand, amt);
+          add('체험단', t.brand, trialCostOf(t));
         } else {
           const p = pplList.find(x => x.id === r.pid);
           if (!p) return;
@@ -6905,6 +7049,637 @@
       if (!out.length) { alert('이번 달 비용 내역이 없습니다.'); return; }
       out.push({ '월': ym, '구분': '합계', '건수': c.count, '금액': c.total });
       downloadSheet(out, '월간집행비용_' + ym);
+    }
+
+
+    /* ==================== 월 예산 ==================== */
+    const BUDGET_DEFAULT_CATS = ['PPL', '마이크로', '마이크로 패키지', '앰버서더', '무상앰버서더', '크리에이터', '인플루언서', '체험단', '크리에이터 활동비', '광고 / 기타'];
+    let budgetMonthDate = new Date();
+
+    function budgetYm() {
+      return budgetMonthDate.getFullYear() + '-' + String(budgetMonthDate.getMonth() + 1).padStart(2, '0');
+    }
+    function moveBudgetMonth(dir) {
+      if (dir === 0) budgetMonthDate = new Date();
+      else budgetMonthDate = new Date(budgetMonthDate.getFullYear(), budgetMonthDate.getMonth() + dir, 1);
+      renderBudget();
+    }
+    function getBudget(ym, create) {
+      let b = budgets.find(x => x && x.month === ym);
+      if (!b && create) {
+        b = { month: ym, memo: '', lines: BUDGET_DEFAULT_CATS.map(c => ({ cat: c, onsal: 0, lume: 0, memo: '' })) };
+        budgets.push(b);
+      }
+      return b || { month: ym, memo: '', lines: [] };
+    }
+
+    // 실제 집행액을 구분 × 브랜드로 집계 (브랜드 필터 무시)
+    function budgetActuals(ym) {
+      const saved = monthlyBrandFilter;
+      monthlyBrandFilter = '전체';
+      const rows = collectMonthlyRows(ym);
+      monthlyBrandFilter = saved;
+
+      const out = {};
+      const seen = new Set();
+      const add = (cat, brand, amt) => {
+        if (!amt) return;
+        out[cat] = out[cat] || { '온살': 0, '루메아카이브': 0 };
+        out[cat][brand] = (out[cat][brand] || 0) + amt;
+      };
+      rows.forEach(r => {
+        const key = (r.isTrial ? 't' : 'p') + r.pid;
+        if (seen.has(key)) return;
+        seen.add(key);
+        if (r.isTrial) {
+          const t = trialList.find(x => x.id === r.pid);
+          if (t) add('체험단', t.brand, trialCostOf(t));
+        } else {
+          const p = pplList.find(x => x.id === r.pid);
+          if (!p || packageOfPpl(p.id)) return;
+          add(r.cat, p.brand, costOfPpl(p));
+        }
+      });
+      microPackages.forEach(k => {
+        if ((k.month || '') !== ym) return;
+        add('마이크로 패키지', k.brand, Number(k.amount) || 0);
+      });
+      const cfg = getMissionCfg(ym, false);
+      pplList.filter(isSupporters).forEach(p => {
+        const pay = missionPayOf(p, ym, cfg);
+        if (pay.total) add('크리에이터 활동비', p.brand, pay.total);
+      });
+      return out;
+    }
+
+    function updateBudgetLine(i, field, value) {
+      const b = getBudget(budgetYm(), true);
+      const l = b.lines[i];
+      if (!l) return;
+      if (field === 'memo') {
+        l.memos = l.memos || {};
+        l.memos[budgetBrand] = value;
+      } else if (field === 'plan') {
+        const v = Number(String(value).replace(/[^\d-]/g, '')) || 0;
+        if (budgetBrand === '온살') l.onsal = v; else l.lume = v;
+      } else {
+        l[field] = value;
+      }
+      saveAll();
+      renderBudget();
+    }
+    function deleteBudgetLine(i) {
+      const b = getBudget(budgetYm(), true);
+      b.lines.splice(i, 1);
+      saveAll();
+      renderBudget();
+    }
+    function addBudgetLine() {
+      const el = document.getElementById('budgetNewCat');
+      const name = (el.value || '').trim();
+      if (!name) { alert('추가할 항목 이름을 입력해 주세요.'); return; }
+      const b = getBudget(budgetYm(), true);
+      if (b.lines.some(l => l.cat === name)) { alert('이미 있는 항목입니다.'); return; }
+      b.lines.push({ cat: name, onsal: 0, lume: 0, memo: '' });
+      el.value = '';
+      saveAll();
+      renderBudget();
+    }
+    function saveBudgetMemo() {
+      const b = getBudget(budgetYm(), true);
+      b.memos = b.memos || {};
+      b.memos[budgetBrand] = document.getElementById('budgetMemo').value;
+      saveAll();
+    }
+    function copyLastMonthBudget() {
+      const cur = budgetMonthDate;
+      const prev = new Date(cur.getFullYear(), cur.getMonth() - 1, 1);
+      const pym = prev.getFullYear() + '-' + String(prev.getMonth() + 1).padStart(2, '0');
+      const src = budgets.find(x => x && x.month === pym);
+      if (!src || !src.lines.length) { alert(pym + ' 예산이 없습니다.'); return; }
+      if (!confirm(pym + ' 의 ' + budgetBrand + ' 예산을 이번 달로 복사할까요? 지금 입력된 값은 덮어써집니다.')) return;
+      const b = getBudget(budgetYm(), true);
+      src.lines.forEach(sl => {
+        let l = b.lines.find(x => x.cat === sl.cat);
+        if (!l) { l = { cat: sl.cat, onsal: 0, lume: 0, memo: '', items: [] }; b.lines.push(l); }
+        l.items = (l.items || []).filter(it => (it.brand || '온살') !== budgetBrand);
+        (sl.items || []).filter(it => (it.brand || '온살') === budgetBrand).forEach(it => l.items.push(Object.assign({}, it)));
+        if (budgetBrand === '온살') l.onsal = sl.onsal || 0; else l.lume = sl.lume || 0;
+        l.memos = l.memos || {};
+        l.memos[budgetBrand] = budgetLineMemo(sl, budgetBrand);
+      });
+      saveAll();
+      renderBudget();
+    }
+
+    function renderBudget() {
+      const tbody = document.getElementById('budgetTableBody');
+      if (!tbody) return;
+      const ym = budgetYm();
+      const brand = budgetBrand;
+      const b = getBudget(ym, false);
+      const actual = budgetActuals(ym);
+
+      setTxt('budgetBrandLabel', brand + ' 월 예산');
+      setTxt('launchBrandLabel', brand + ' 제품 출시 예산');
+      setTxt('budgetTitle', budgetMonthDate.getFullYear() + '년 ' + (budgetMonthDate.getMonth() + 1) + '월');
+      const memoEl = document.getElementById('budgetMemo');
+      if (memoEl) memoEl.value = budgetMemoOf(b, brand);
+
+      const lines = b.lines || [];
+      const usedCats = lines.map(l => l.cat);
+      const extraCats = Object.keys(actual).filter(c => !usedCats.includes(c));
+
+      let planTotal = 0, actTotal = 0;
+      const num = v => (Number(v) || 0);
+      const money = v => v.toLocaleString() + '원';
+
+      let html = lines.map((l, i) => {
+        const a = actual[l.cat] || { '온살': 0, '루메아카이브': 0 };
+        const hasItems = !!((l.items || []).filter(it => (it.brand || '온살') === brand).length);
+        const plan = budgetLinePlan(l, brand);
+        const act = num(a[brand]);
+        const diff = plan - act;
+        const pct = plan ? Math.round(act / plan * 100) : (act ? 100 : 0);
+        planTotal += plan; actTotal += act;
+        const barCls = pct > 100 ? 'bg-rose-500' : (pct >= 80 ? 'bg-amber-400' : 'bg-violet-400');
+        const itemCount = (l.items || []).filter(it => (it.brand || '온살') === brand).length;
+
+        const planCell = hasItems
+          ? '<div class="px-2 py-1.5 text-xs text-right font-bold text-violet-700 bg-violet-50 border border-violet-100 rounded-lg" title="내역 합계로 자동 계산됩니다">' + plan.toLocaleString() + '</div>'
+          : '<input type="number" value="' + (plan || '') + '" placeholder="0" onchange="updateBudgetLine(' + i + ', \'plan\', this.value)" class="w-full px-2 py-1.5 text-xs border border-violet-200 rounded-lg text-right">';
+
+        return '<tr class="hover:bg-violet-50/30">'
+          + '<td class="py-2 px-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + (CAT_STYLE[l.cat] || 'bg-violet-100 text-violet-700') + '">' + tEsc(l.cat) + '</span>'
+          + '<button onclick="setBudgetTab(\'' + tArg(l.cat) + '\')" class="block mt-0.5 text-[10px] font-bold text-violet-600 hover:underline">'
+          + (itemCount ? '내역 ' + itemCount + '건 보기' : '내역 넣기') + '</button></td>'
+          + '<td class="py-2 px-3">' + planCell + '</td>'
+          + '<td class="py-2 px-3 text-right font-bold text-slate-700">' + money(act) + '</td>'
+          + '<td class="py-2 px-3 text-right font-bold ' + (diff < 0 ? 'text-rose-600' : 'text-emerald-600') + '">' + money(diff) + '</td>'
+          + '<td class="py-2 px-3"><div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full ' + barCls + '" style="width:' + Math.min(100, pct) + '%"></div></div>'
+          + '<span class="text-[11px] font-bold ' + (pct > 100 ? 'text-rose-600' : 'text-slate-600') + ' w-10 text-right">' + pct + '%</span></div></td>'
+          + '<td class="py-2 px-3"><input value="' + tEsc(budgetLineMemo(l, brand)) + '" placeholder="메모" onchange="updateBudgetLine(' + i + ', \'memo\', this.value)" class="w-full px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg"></td>'
+          + '<td class="py-2 px-3 text-right"><button onclick="deleteBudgetLine(' + i + ')" class="text-slate-300 hover:text-rose-600"><i class="fa-solid fa-trash text-[11px]"></i></button></td>'
+          + '</tr>';
+      }).join('');
+
+      html += extraCats.map(c => {
+        const act = num((actual[c] || {})[brand]);
+        if (!act) return '';
+        actTotal += act;
+        return '<tr class="bg-rose-50/40">'
+          + '<td class="py-2 px-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">' + tEsc(c) + '</span>'
+          + '<div class="text-[10px] text-rose-600 font-bold mt-0.5">예산 미책정</div></td>'
+          + '<td class="py-2 px-3 text-right text-slate-400">0원</td>'
+          + '<td class="py-2 px-3 text-right font-bold text-slate-700">' + money(act) + '</td>'
+          + '<td class="py-2 px-3 text-right font-bold text-rose-600">' + money(-act) + '</td>'
+          + '<td class="py-2 px-3 text-[11px] text-rose-600 font-bold">예산 초과</td>'
+          + '<td class="py-2 px-3"><button onclick="addBudgetCatFromActual(\'' + tArg(c) + '\')" class="text-[11px] font-bold text-violet-700 hover:underline">예산 항목으로 추가</button></td>'
+          + '<td></td></tr>';
+      }).join('');
+
+      tbody.innerHTML = html || '<tr><td colspan="7" class="py-10 text-center text-slate-400">예산 항목이 없습니다. 아래에서 항목을 추가하거나 <b>지난달 예산 복사</b>를 눌러 보세요.</td></tr>';
+
+      const foot = document.getElementById('budgetTableFoot');
+      if (foot) {
+        const pct = planTotal ? Math.round(actTotal / planTotal * 100) : 0;
+        foot.innerHTML = '<tr class="bg-violet-50 font-black text-slate-900">'
+          + '<td class="py-3 px-3">합계</td>'
+          + '<td class="py-3 px-3 text-right">' + money(planTotal) + '</td>'
+          + '<td class="py-3 px-3 text-right">' + money(actTotal) + '</td>'
+          + '<td class="py-3 px-3 text-right ' + (planTotal - actTotal < 0 ? 'text-rose-600' : 'text-emerald-600') + '">' + money(planTotal - actTotal) + '</td>'
+          + '<td class="py-3 px-3 text-' + (pct > 100 ? 'rose' : 'violet') + '-600">' + pct + '%</td>'
+          + '<td colspan="2"></td></tr>';
+      }
+
+      renderBudgetTabs();
+      renderBudgetDetail();
+
+      const sum = document.getElementById('budgetSummary');
+      if (sum) {
+        const pct = planTotal ? Math.round(actTotal / planTotal * 100) : 0;
+        const remain = planTotal - actTotal;
+        const card = (label, val, sub, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
+          + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
+          + '<div class="text-xl font-black text-' + color + '-600 mt-0.5">' + val + '</div>'
+          + '<div class="text-[11px] text-slate-500 font-semibold">' + sub + '</div></div>';
+        sum.innerHTML = card('이번 달 총 예산', money(planTotal), brand + ' · ' + ym, 'violet')
+          + card('실제 집행', money(actTotal), lines.length + '개 항목 기준', 'pink')
+          + card(remain < 0 ? '초과 금액' : '남은 예산', money(Math.abs(remain)), remain < 0 ? '예산을 넘었어요' : '아직 쓸 수 있어요', remain < 0 ? 'rose' : 'emerald')
+          + card('집행률', pct + '%', ym, pct > 100 ? 'rose' : 'slate');
+      }
+    }
+
+    function addBudgetCatFromActual(cat) {
+      const b = getBudget(budgetYm(), true);
+      if (!b.lines.some(l => l.cat === cat)) b.lines.push({ cat: cat, onsal: 0, lume: 0, memo: '' });
+      saveAll();
+      renderBudget();
+    }
+
+    function exportBudgetExcel() {
+      const ym = budgetYm();
+      const brand = budgetBrand;
+      const b = getBudget(ym, false);
+      const actual = budgetActuals(ym);
+      if (!(b.lines || []).length) { alert('예산 항목이 없습니다.'); return; }
+      const out = [];
+      b.lines.forEach(l => {
+        const a = actual[l.cat] || { '온살': 0, '루메아카이브': 0 };
+        const plan = budgetLinePlan(l, brand);
+        const act = a[brand] || 0;
+        out.push({
+          '월': ym, '브랜드': brand, '구분': l.cat, '내역': '(합계)',
+          '계획': plan, '집행': act, '잔액': plan - act,
+          '집행률(%)': plan ? Math.round(act / plan * 100) : 0, '메모': budgetLineMemo(l, brand)
+        });
+        (l.items || []).filter(it => (it.brand || '온살') === brand).forEach(it => out.push({
+          '월': ym, '브랜드': brand, '구분': l.cat, '내역': it.label || '',
+          '계획': Number(it.amount) || 0, '집행': '', '잔액': '', '집행률(%)': '', '메모': it.memo || ''
+        }));
+      });
+      downloadSheet(out, brand + '_월예산_' + ym);
+    }
+
+    /* ==================== 제품 출시 예산 ==================== */
+    const LAUNCH_DEFAULT_ITEMS = [
+      { label: '체험단 (플랫폼)', qty: 1, unit: 0, memo: '레뷰 / 글로우픽 / 파우더룸' },
+      { label: '체험단 제품 원가', qty: 50, unit: 0, memo: '모집 인원 × 제품 원가' },
+      { label: '마이크로 패키지', qty: 1, unit: 0, memo: '10인 묶음 등' },
+      { label: 'PPL', qty: 3, unit: 0, memo: '' },
+      { label: '앰버서더', qty: 1, unit: 0, memo: '' },
+      { label: '크리에이터 활동비', qty: 10, unit: 30000, memo: '월 활동비 × 인원' },
+      { label: '콘텐츠 촬영 / 제작', qty: 1, unit: 0, memo: '상세페이지, 누끼컷 등' },
+      { label: '광고 집행', qty: 1, unit: 0, memo: '메타 / 네이버' },
+      { label: '배송비 · 부자재', qty: 1, unit: 0, memo: '' }
+    ];
+
+    function launchTotalOf(L) {
+      return (L.items || []).reduce((a, it) => a + (Number(it.qty) || 0) * (Number(it.unit) || 0), 0);
+    }
+    function addLaunchBudget() {
+      const name = document.getElementById('launchName').value.trim();
+      if (!name) { alert('출시 제품 / 캠페인명을 입력해 주세요.'); return; }
+      launchBudgets.unshift({
+        id: Date.now(),
+        brand: budgetBrand,
+        name: name,
+        date: document.getElementById('launchDate').value,
+        memo: '',
+        items: LAUNCH_DEFAULT_ITEMS.map(it => ({ label: it.label, qty: it.qty, unit: it.unit, memo: it.memo }))
+      });
+      document.getElementById('launchName').value = '';
+      saveAll();
+      renderLaunchBudgets();
+    }
+    function deleteLaunchBudget(id) {
+      if (!confirm('이 출시 예산표를 삭제할까요?')) return;
+      launchBudgets = launchBudgets.filter(x => x.id !== id);
+      saveAll();
+      renderLaunchBudgets();
+    }
+    function updateLaunchField(id, field, value) {
+      const L = launchBudgets.find(x => x.id === id);
+      if (!L) return;
+      L[field] = value;
+      saveAll();
+      renderLaunchBudgets();
+    }
+    function updateLaunchItem(id, i, field, value) {
+      const L = launchBudgets.find(x => x.id === id);
+      if (!L || !L.items[i]) return;
+      L.items[i][field] = (field === 'qty' || field === 'unit') ? (Number(value) || 0) : value;
+      saveAll();
+      renderLaunchBudgets();
+    }
+    function addLaunchItem(id) {
+      const L = launchBudgets.find(x => x.id === id);
+      if (!L) return;
+      L.items.push({ label: '', qty: 1, unit: 0, memo: '' });
+      saveAll();
+      renderLaunchBudgets();
+    }
+    function deleteLaunchItem(id, i) {
+      const L = launchBudgets.find(x => x.id === id);
+      if (!L) return;
+      L.items.splice(i, 1);
+      saveAll();
+      renderLaunchBudgets();
+    }
+    function duplicateLaunchBudget(id) {
+      const L = launchBudgets.find(x => x.id === id);
+      if (!L) return;
+      launchBudgets.unshift(Object.assign({}, L, {
+        id: Date.now(), name: L.name + ' (복사본)',
+        items: (L.items || []).map(it => Object.assign({}, it))
+      }));
+      saveAll();
+      renderLaunchBudgets();
+    }
+
+    function renderLaunchBudgets() {
+      const box = document.getElementById('launchList');
+      if (!box) return;
+
+      const mine = launchBudgets.filter(L => L.brand === budgetBrand);
+      setTxt('launchHeaderCount', mine.length + '건');
+
+      const sum = document.getElementById('launchSummary');
+      if (sum) {
+        const total = mine.reduce((a, L) => a + launchTotalOf(L), 0);
+        const avg = mine.length ? Math.round(total / mine.length) : 0;
+        const card = (label, val, sub, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
+          + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
+          + '<div class="text-xl font-black text-' + color + '-600 mt-0.5">' + val.toLocaleString() + '원</div>'
+          + '<div class="text-[11px] text-slate-500 font-semibold">' + sub + '</div></div>';
+        sum.innerHTML = card(budgetBrand + ' 출시 예상 비용 합계', total, mine.length + '건', 'pink')
+          + card('출시 1건당 평균', avg, '', 'slate');
+      }
+
+      if (!mine.length) {
+        box.innerHTML = '<p class="text-xs text-slate-400 text-center py-8">' + budgetBrand + ' 출시 예산표가 아직 없습니다. 위에서 제품명을 넣고 만들어 보세요.</p>';
+        return;
+      }
+
+      box.innerHTML = mine.map(L => {
+        const total = launchTotalOf(L);
+        const brandBadgeClass = L.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+        const rows = (L.items || []).map((it, i) => {
+          const sub = (Number(it.qty) || 0) * (Number(it.unit) || 0);
+          const pct = total ? Math.round(sub / total * 100) : 0;
+          return '<tr class="hover:bg-pink-50/30">'
+            + '<td class="py-1.5 px-2"><input value="' + tEsc(it.label || '') + '" placeholder="항목명" onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'label\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold"></td>'
+            + '<td class="py-1.5 px-2"><input type="number" value="' + (Number(it.qty) || '') + '" placeholder="1" onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'qty\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg text-right"></td>'
+            + '<td class="py-1.5 px-2"><input type="number" value="' + (Number(it.unit) || '') + '" placeholder="0" onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'unit\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg text-right"></td>'
+            + '<td class="py-1.5 px-2 text-right font-black text-slate-900 whitespace-nowrap">' + sub.toLocaleString() + '원'
+            + '<div class="text-[10px] font-bold text-slate-400">' + pct + '%</div></td>'
+            + '<td class="py-1.5 px-2"><input value="' + tEsc(it.memo || '') + '" placeholder="메모" onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'memo\', this.value)" class="w-full px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg"></td>'
+            + '<td class="py-1.5 px-2 text-right"><button onclick="deleteLaunchItem(' + L.id + ', ' + i + ')" class="text-slate-300 hover:text-rose-600"><i class="fa-solid fa-trash text-[11px]"></i></button></td>'
+            + '</tr>';
+        }).join('');
+
+        return '<div class="bg-white rounded-2xl border border-pink-200 overflow-hidden">'
+          + '<div class="px-4 py-3 bg-gradient-to-r from-pink-50/70 to-white border-b border-pink-100 flex flex-wrap items-center justify-between gap-3">'
+          + '<div class="min-w-0">'
+          + '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + tEsc(L.brand) + '</span>'
+          + (L.date ? ' <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-white">' + tEsc(L.date) + ' 출시</span>' : '')
+          + '<input value="' + tEsc(L.name) + '" onchange="updateLaunchField(' + L.id + ', \'name\', this.value)" class="block mt-1 px-2 py-1 text-sm font-black text-slate-900 bg-transparent border border-transparent hover:border-slate-200 focus:border-pink-300 rounded-lg outline-none w-full max-w-[380px]">'
+          + '</div>'
+          + '<div class="flex items-center gap-2">'
+          + '<div class="text-right"><div class="text-[10px] text-slate-500 font-semibold">총 예상 비용</div>'
+          + '<div class="text-lg font-black text-pink-600">' + total.toLocaleString() + '원</div></div>'
+          + '<button onclick="duplicateLaunchBudget(' + L.id + ')" title="복제" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs"><i class="fa-regular fa-copy"></i></button>'
+          + '<button onclick="deleteLaunchBudget(' + L.id + ')" title="삭제" class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>'
+          + '</div></div>'
+          + '<div class="px-4 py-3 overflow-x-auto custom-scrollbar">'
+          + '<table class="w-full text-left text-xs min-w-[720px]">'
+          + '<thead class="text-slate-500 font-bold border-b border-slate-100"><tr>'
+          + '<th class="py-2 px-2 min-w-[160px]">항목</th><th class="py-2 px-2 w-[90px] text-right">수량</th>'
+          + '<th class="py-2 px-2 w-[120px] text-right">단가 (원)</th><th class="py-2 px-2 w-[120px] text-right">소계</th>'
+          + '<th class="py-2 px-2">메모</th><th class="py-2 px-2 w-8"></th></tr></thead>'
+          + '<tbody class="divide-y divide-slate-50">' + rows + '</tbody>'
+          + '<tfoot><tr class="border-t-2 border-pink-200 bg-pink-50/50 font-black">'
+          + '<td class="py-2.5 px-2 text-slate-800" colspan="3">합계</td>'
+          + '<td class="py-2.5 px-2 text-right text-pink-600">' + total.toLocaleString() + '원</td>'
+          + '<td colspan="2"></td></tr></tfoot></table>'
+          + '<button onclick="addLaunchItem(' + L.id + ')" class="mt-3 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg"><i class="fa-solid fa-plus"></i> 항목 추가</button>'
+          + '</div></div>';
+      }).join('');
+    }
+
+    function exportLaunchExcel() {
+      const list = launchBudgets.filter(L => L.brand === budgetBrand);
+      if (!list.length) { alert(budgetBrand + ' 출시 예산표가 없습니다.'); return; }
+      const out = [];
+      list.forEach(L => {
+        const total = launchTotalOf(L);
+        (L.items || []).forEach(it => out.push({
+          '브랜드': L.brand, '출시명': L.name, '출시일': L.date || '',
+          '항목': it.label || '', '수량': Number(it.qty) || 0, '단가': Number(it.unit) || 0,
+          '소계': (Number(it.qty) || 0) * (Number(it.unit) || 0), '메모': it.memo || '', '출시총액': total
+        }));
+      });
+      downloadSheet(out, budgetBrand + '_제품출시예산_' + todayStr());
+    }
+
+
+    /* ==================== 체험단 금액 ==================== */
+    function trialCostOf(t) {
+      if (t && t.payment && Number(t.payment.total) > 0) return Number(t.payment.total);
+      return Number(t && t.cost) || 0;
+    }
+    function updateTrialCost(id, v) {
+      const t = trialList.find(x => x.id === id);
+      if (!t) return;
+      t.cost = Number(v) || 0;
+      if (t.payment && !(Number(t.payment.total) > 0)) t.payment.total = t.cost;
+      saveAll();
+      renderTrialDashboard();
+      renderMonthly();
+      renderBudget();
+      renderPayPage();
+    }
+
+    /* ==================== 예산: 구분별 내역 ==================== */
+    let budgetTab = '요약';
+    let budgetBrand = localStorage.getItem('onsal_budgetBrand') || '온살';
+
+    function openBudget(brand) {
+      budgetBrand = brand;
+      localStorage.setItem('onsal_budgetBrand', brand);
+      budgetTab = '요약';
+      switchMainPage('budget');
+      renderBudget();
+      renderLaunchBudgets();
+    }
+    function budgetLineMemo(l, brand) {
+      if (l.memos && l.memos[brand] != null) return l.memos[brand];
+      return brand === '온살' ? (l.memo || '') : '';
+    }
+    function budgetMemoOf(b, brand) {
+      if (b.memos && b.memos[brand] != null) return b.memos[brand];
+      return brand === '온살' ? (b.memo || '') : '';
+    }
+
+    function budgetLinePlan(l, brand) {
+      if (l.items && l.items.length) {
+        return l.items.filter(it => (it.brand || '온살') === brand).reduce((a, it) => a + (Number(it.amount) || 0), 0);
+      }
+      return Number(brand === '온살' ? l.onsal : l.lume) || 0;
+    }
+    function setBudgetTab(cat) {
+      budgetTab = cat;
+      renderBudget();
+    }
+    function addBudgetItem(cat) {
+      const b = getBudget(budgetYm(), true);
+      const l = b.lines.find(x => x.cat === cat);
+      if (!l) return;
+      l.items = l.items || [];
+      l.items.push({ label: '', brand: budgetBrand, amount: 0, memo: '' });
+      saveAll();
+      renderBudget();
+    }
+    function updateBudgetItem(cat, i, field, value) {
+      const b = getBudget(budgetYm(), true);
+      const l = b.lines.find(x => x.cat === cat);
+      if (!l || !l.items || !l.items[i]) return;
+      l.items[i][field] = (field === 'amount') ? (Number(value) || 0) : value;
+      saveAll();
+      renderBudget();
+    }
+    function deleteBudgetItem(cat, i) {
+      const b = getBudget(budgetYm(), true);
+      const l = b.lines.find(x => x.cat === cat);
+      if (!l || !l.items) return;
+      l.items.splice(i, 1);
+      saveAll();
+      renderBudget();
+    }
+    // 이번 달 실제 잡혀 있는 건들을 내역으로 불러오기
+    function importActualsToBudgetItems(cat) {
+      const ym = budgetYm();
+      const brand = budgetBrand;
+      const b = getBudget(ym, true);
+      const l = b.lines.find(x => x.cat === cat);
+      if (!l) return;
+      l.items = l.items || [];
+
+      const rows = [];
+      if (cat === '마이크로 패키지') {
+        microPackages.filter(k => (k.month || '') === ym && k.brand === brand).forEach(k => rows.push({
+          label: k.name, brand: brand, amount: Number(k.amount) || 0,
+          memo: (k.memberIds || []).length + '/' + (k.headcount || 0) + '명'
+        }));
+      } else if (cat === '크리에이터 활동비') {
+        const cfg = getMissionCfg(ym, false);
+        pplList.filter(p => isSupporters(p) && p.brand === brand).forEach(p => {
+          const pay = missionPayOf(p, ym, cfg);
+          if (!pay.total) return;
+          rows.push({ label: p.realName || '무명', brand: brand, amount: pay.total, memo: pay.bonus ? '월 활동비 + 추가미션' : '월 활동비' });
+        });
+      } else {
+        const saved = monthlyBrandFilter;
+        monthlyBrandFilter = brand;
+        const mrows = collectMonthlyRows(ym);
+        monthlyBrandFilter = saved;
+        const seen = new Set();
+        mrows.forEach(r => {
+          if (r.cat !== cat) return;
+          const key = (r.isTrial ? 't' : 'p') + r.pid;
+          if (seen.has(key)) return;
+          seen.add(key);
+          if (r.isTrial) {
+            const t = trialList.find(x => x.id === r.pid);
+            if (!t) return;
+            rows.push({ label: t.title || '체험단', brand: brand, amount: trialCostOf(t), memo: (t.platform || '') + ' · ' + (t.headcount || 0) + '명' });
+          } else {
+            const p = pplList.find(x => x.id === r.pid);
+            if (!p || packageOfPpl(p.id)) return;
+            rows.push({ label: whoOf(p), brand: brand, amount: costOfPpl(p), memo: prodNamesOf(p).join(', ') });
+          }
+        });
+      }
+
+      if (!rows.length) { alert(ym + ' 에 잡힌 ' + brand + ' ' + cat + ' 건이 없습니다.'); return; }
+      let added = 0;
+      rows.forEach(r => {
+        if (l.items.some(it => it.label === r.label && (it.brand || '온살') === r.brand)) return;
+        l.items.push(r);
+        added++;
+      });
+      saveAll();
+      renderBudget();
+      alert(added ? (added + '건을 내역으로 불러왔습니다.') : '이미 모두 들어와 있습니다.');
+    }
+
+    function autofillBudgetPlan() {
+      const ym = budgetYm();
+      const brand = budgetBrand;
+      const b = getBudget(ym, true);
+      const actual = budgetActuals(ym);
+      const cats = Object.keys(actual).filter(c => (actual[c][brand] || 0) > 0);
+      if (!cats.length) { alert(ym + ' 에 잡힌 ' + brand + ' 집행 건이 없습니다.'); return; }
+      if (!confirm(ym + ' 에 잡혀 있는 ' + brand + ' 건들의 금액을 계획칸에 채울까요?\n(직접 넣은 값은 덮어써집니다. 내역이 등록된 항목은 그대로 둡니다)')) return;
+      cats.forEach(c => {
+        let l = b.lines.find(x => x.cat === c);
+        if (!l) { l = { cat: c, onsal: 0, lume: 0, memo: '' }; b.lines.push(l); }
+        if ((l.items || []).some(it => (it.brand || '온살') === brand)) return;
+        if (brand === '온살') l.onsal = actual[c]['온살'] || 0;
+        else l.lume = actual[c]['루메아카이브'] || 0;
+      });
+      saveAll();
+      renderBudget();
+      alert('채웠습니다. 예상 증감분은 직접 수정해 주세요.');
+    }
+
+    function renderBudgetTabs() {
+      const bar = document.getElementById('budgetTabs');
+      if (!bar) return;
+      const b = getBudget(budgetYm(), false);
+      const cats = ['요약'].concat((b.lines || []).map(l => l.cat));
+      bar.innerHTML = cats.map(c => {
+        const on = budgetTab === c;
+        const l = (b.lines || []).find(x => x.cat === c);
+        const n = l && l.items ? l.items.length : 0;
+        return '<button onclick="setBudgetTab(\'' + tArg(c) + '\')" class="px-3 py-1.5 rounded-xl transition '
+          + (on ? 'bg-white text-violet-700 shadow-xs' : 'text-slate-500 hover:text-slate-800') + '">'
+          + tEsc(c) + (n ? ' <span class="text-[10px] font-black text-violet-500">' + n + '</span>' : '') + '</button>';
+      }).join('');
+    }
+
+    function renderBudgetDetail() {
+      const pane = document.getElementById('budgetDetailPane');
+      const summaryPane = document.getElementById('budgetSummaryPane');
+      const addRow = document.getElementById('budgetAddRow');
+      if (!pane) return;
+
+      if (budgetTab === '요약') {
+        pane.classList.add('hidden');
+        if (summaryPane) summaryPane.classList.remove('hidden');
+        if (addRow) addRow.classList.remove('hidden');
+        return;
+      }
+      pane.classList.remove('hidden');
+      if (summaryPane) summaryPane.classList.add('hidden');
+      if (addRow) addRow.classList.add('hidden');
+
+      const brand = budgetBrand;
+      const b = getBudget(budgetYm(), true);
+      const l = b.lines.find(x => x.cat === budgetTab);
+      if (!l) { pane.innerHTML = ''; return; }
+      l.items = l.items || [];
+
+      const idxs = l.items.map((it, i) => i).filter(i => (l.items[i].brand || '온살') === brand);
+      const total = idxs.reduce((a, i) => a + (Number(l.items[i].amount) || 0), 0);
+
+      const rows = idxs.map(i => {
+        const it = l.items[i];
+        return '<tr class="hover:bg-violet-50/30">'
+          + '<td class="py-1.5 px-2"><input value="' + tEsc(it.label || '') + '" placeholder="내역 (인플루언서명 / 플랫폼 / 캠페인)" onchange="updateBudgetItem(\'' + tArg(budgetTab) + '\', ' + i + ', \'label\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold"></td>'
+          + '<td class="py-1.5 px-2"><input type="number" value="' + (Number(it.amount) || '') + '" placeholder="0" onchange="updateBudgetItem(\'' + tArg(budgetTab) + '\', ' + i + ', \'amount\', this.value)" class="w-full px-2 py-1.5 text-xs border border-violet-200 rounded-lg text-right font-bold"></td>'
+          + '<td class="py-1.5 px-2"><input value="' + tEsc(it.memo || '') + '" placeholder="메모" onchange="updateBudgetItem(\'' + tArg(budgetTab) + '\', ' + i + ', \'memo\', this.value)" class="w-full px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg"></td>'
+          + '<td class="py-1.5 px-2 text-right"><button onclick="deleteBudgetItem(\'' + tArg(budgetTab) + '\', ' + i + ')" class="text-slate-300 hover:text-rose-600"><i class="fa-solid fa-trash text-[11px]"></i></button></td>'
+          + '</tr>';
+      }).join('');
+
+      pane.innerHTML = '<div class="bg-violet-50/40 rounded-2xl border border-violet-200 p-4 space-y-3">'
+        + '<div class="flex flex-wrap justify-between items-center gap-2">'
+        + '<div><h3 class="text-sm font-black text-slate-900"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + (CAT_STYLE[budgetTab] || 'bg-violet-100 text-violet-700') + '">' + tEsc(budgetTab) + '</span> ' + tEsc(brand) + ' 이번 달 내역</h3>'
+        + '<p class="text-[11px] text-slate-500">여기에 내역을 넣으면 요약표의 계획 금액이 <b>내역 합계로 자동 계산</b>됩니다.</p></div>'
+        + '<div class="flex flex-wrap gap-2">'
+        + '<button onclick="importActualsToBudgetItems(\'' + tArg(budgetTab) + '\')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-xl"><i class="fa-solid fa-file-import"></i> 이번 달 진행 건 불러오기</button>'
+        + '<button onclick="addBudgetItem(\'' + tArg(budgetTab) + '\')" class="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold rounded-xl"><i class="fa-solid fa-plus"></i> 내역 추가</button>'
+        + '</div></div>'
+        + '<div class="overflow-x-auto custom-scrollbar"><table class="w-full text-left text-xs min-w-[600px]">'
+        + '<thead class="text-slate-500 font-bold border-b border-violet-200"><tr>'
+        + '<th class="py-2 px-2 min-w-[240px]">내역</th>'
+        + '<th class="py-2 px-2 w-[140px] text-right">금액 (원)</th><th class="py-2 px-2">메모</th><th class="py-2 px-2 w-8"></th></tr></thead>'
+        + '<tbody class="divide-y divide-violet-100">' + (rows || '<tr><td colspan="4" class="py-8 text-center text-slate-400">내역이 없습니다. <b>이번 달 진행 건 불러오기</b>를 누르면 ' + tEsc(brand) + ' 건들이 자동으로 들어와요.</td></tr>') + '</tbody>'
+        + '<tfoot><tr class="border-t-2 border-violet-300 bg-white font-black">'
+        + '<td class="py-2.5 px-2 text-slate-800">합계 <span class="text-[10px] font-bold text-slate-400">' + idxs.length + '건</span></td>'
+        + '<td class="py-2.5 px-2 text-right text-violet-700">' + total.toLocaleString() + '원</td>'
+        + '<td colspan="2"></td></tr></tfoot></table></div></div>';
     }
 
     function renderPplTable() {
