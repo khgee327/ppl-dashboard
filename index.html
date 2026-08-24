@@ -66,6 +66,9 @@
           <button onclick="switchMainPage('trial')" id="nav-trial" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-users-rectangle"></i> 체험단 관리
           </button>
+          <button onclick="switchMainPage('pay')" id="nav-pay" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-won-sign"></i> 입금 관리
+          </button>
           <button onclick="switchMainPage('seeding')" id="nav-seeding" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-boxes-stacked"></i> 시딩 샘플 &amp; 재고
           </button>
@@ -116,6 +119,20 @@
 
       <div id="monthlyCards" class="grid grid-cols-2 md:grid-cols-7 gap-3"></div>
       <div id="monthlyUtmBar" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      <div class="bg-rose-50/50 border border-rose-100 rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-3">
+        <div class="text-xs text-rose-900">
+          <b><i class="fa-brands fa-youtube"></i> 유튜브 지표 자동 수집</b> ·
+          업로드 링크 중 <b>유튜브</b> 건은 조회수 · 좋아요 · 댓글수를 자동으로 가져올 수 있어요.
+          <span class="text-rose-700/80">(인스타 · 틱톡 · 블로그는 정책상 자동 수집 불가 — 인증 폼으로 받으세요)</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="setYoutubeKey()" class="px-3 py-2 bg-white hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl">API 키 설정</button>
+          <button onclick="refreshAllYoutubeStats()" class="px-3.5 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-rotate"></i> 전체 유튜브 지표 갱신
+          </button>
+        </div>
+      </div>
+
 
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left text-xs">
@@ -1203,6 +1220,40 @@
       </div>
     </section>
 
+
+    <!-- 업로드 인증 폼 자동 취합 -->
+    <section class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-emerald-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-file-import text-emerald-600"></i> 업로드 인증 폼 자동 취합
+          </h2>
+          <p class="text-xs text-slate-500">구글폼 응답 시트를 그대로 넣으면 이름·계정으로 자동 매칭해서 업로드 기록에 넣어 줍니다. (크리에이터 · 앰버서더 전체 대상)</p>
+        </div>
+        <label class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5">
+          <i class="fa-solid fa-upload"></i> 응답 파일 선택 (xlsx / csv)
+          <input type="file" accept=".xlsx,.xls,.csv" class="hidden" onchange="pickFormFile(this)">
+        </label>
+      </div>
+
+      <details class="bg-emerald-50/40 rounded-xl border border-emerald-100 p-3">
+        <summary class="text-xs font-bold text-emerald-900 cursor-pointer">구글폼은 이렇게 만들면 100% 자동으로 붙어요 (클릭)</summary>
+        <div class="text-[11px] text-emerald-900/85 mt-2 space-y-1">
+          <p>질문을 아래 이름 그대로 만들면 열을 자동 인식합니다.</p>
+          <p>① <b>이름</b> ② <b>계정</b>(@아이디) ③ <b>채널</b>(인스타/유튜브/블로그) ④ <b>업로드일</b>(날짜) ⑤ <b>업로드 링크</b>(URL) ⑥ 조회수 ⑦ 좋아요 ⑧ 댓글수 ⑨ 비고</p>
+          <p>응답 시트에서 <b>파일 → 다운로드 → .xlsx</b> 로 받아 위 버튼에 넣거나, 시트 범위를 복사해서 아래에 붙여넣으면 됩니다.</p>
+        </div>
+      </details>
+
+      <div>
+        <label class="block text-[11px] font-bold text-slate-700 mb-1">또는 시트에서 복사해 붙여넣기 (첫 줄은 제목 행)</label>
+        <textarea id="formPasteArea" rows="3" placeholder="이름	계정	채널	업로드일	업로드 링크&#10;김민지	@beauty_su	인스타	2026-08-19	https://..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-mono"></textarea>
+        <button onclick="parseFormPaste()" class="mt-2 px-3.5 py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl">붙여넣은 내용 불러오기</button>
+      </div>
+
+      <div id="formImportResult" class="space-y-3"></div>
+    </section>
+
     <!-- 상위노출 현황판 -->
     <section class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-amber-100 pb-3">
@@ -1270,6 +1321,83 @@
             </tr>
           </thead>
           <tbody id="supUploadBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== PAGE: 입금 관리 ==================== -->
+  <main id="page-pay" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl px-5 py-3.5 text-xs text-emerald-900">
+      <b>계약 · 입금 통합 관리</b> · PPL · 마이크로 · 앰버서더 · 크리에이터 · 인플루언서 · 체험단의 계약서 진행 상황과 선금/잔금 입금 일정을 한 곳에서 봅니다.
+      입금 기한은 <b>세금계산서 발행일 + 영업일</b> 규칙으로 자동 계산돼요.
+    </div>
+
+    <div id="paySummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+
+    <!-- 입금 요청 타임라인 -->
+    <section class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-emerald-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-bell text-emerald-600"></i> 입금 요청 타임라인
+            <span id="payTimelineCount" class="text-xs font-bold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">기한이 가까운 순서예요. 빨간색은 기한이 지난 건, 주황색은 3일 이내입니다.</p>
+        </div>
+      </div>
+      <div id="payTimeline" class="space-y-2"></div>
+    </section>
+
+    <!-- 전체 입금 표 -->
+    <section class="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-emerald-50 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-table-list text-emerald-600"></i> 계약 · 입금 현황
+            <span id="payTableCount" class="text-xs font-bold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">계약서 작성 → 수정 → 날인 → 세금계산서 발행 → 입금까지 한 줄로 확인합니다.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="payCatFilter" onchange="renderPayPage()" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-semibold">
+            <option value="전체">전체 구분</option>
+            <option value="PPL">PPL</option>
+            <option value="마이크로">마이크로</option>
+            <option value="앰버서더">앰버서더</option>
+            <option value="무상앰버서더">무상앰버서더</option>
+            <option value="크리에이터">크리에이터</option>
+            <option value="인플루언서">인플루언서</option>
+            <option value="체험단">체험단</option>
+          </select>
+          <select id="payStatusFilter" onchange="renderPayPage()" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-semibold">
+            <option value="미완료">미지급 건만</option>
+            <option value="지연">기한 지남</option>
+            <option value="완료">지급 완료</option>
+            <option value="전체">전체</option>
+          </select>
+          <button onclick="exportPaymentExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-arrow-down"></i> 정산표 다운로드
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-emerald-50/60 text-slate-600 font-semibold border-y border-emerald-100">
+            <tr>
+              <th class="py-3 px-3">구분 / 대상</th>
+              <th class="py-3 px-3">계약서 진행</th>
+              <th class="py-3 px-3">지급 방식</th>
+              <th class="py-3 px-3 text-right">총 금액</th>
+              <th class="py-3 px-3">입금 항목 (금액 · 세금계산서 · 기한 · 입금)</th>
+              <th class="py-3 px-3 text-right">미지급</th>
+              <th class="py-3 px-3 text-right">관리</th>
+            </tr>
+          </thead>
+          <tbody id="payTableBody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
     </section>
@@ -2305,9 +2433,14 @@
       <div class="p-6 space-y-4">
         <div class="flex justify-between items-center">
           <p class="text-xs text-slate-500">업로드 건마다 한 줄씩 넣어 주세요. 여기 넣은 일자·링크가 <b>업로드 표</b>와 <b>월간 통합 현황</b>에 자동 반영됩니다.</p>
-          <button onclick="addUploadRow()" class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-            <i class="fa-solid fa-plus"></i> 업로드 행 추가
-          </button>
+          <div class="flex gap-2">
+            <button onclick="fillYoutubeStatsInModal()" class="px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-brands fa-youtube"></i> 유튜브 지표 가져오기
+            </button>
+            <button onclick="addUploadRow()" class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-plus"></i> 업로드 행 추가
+            </button>
+          </div>
         </div>
 
         <div id="uploadRowsContainer" class="space-y-2"></div>
@@ -2469,6 +2602,141 @@
   <!-- 이미지 크게 보기 -->
   <div id="imgViewer" onclick="closeImgViewer()" class="fixed inset-0 bg-slate-900/80 z-[60] hidden items-center justify-center p-6 cursor-zoom-out">
     <img id="imgViewerImg" src="" alt="" class="max-w-full max-h-full rounded-2xl shadow-2xl">
+  </div>
+
+  <!-- ==================== 가이드라인 모달 (협업 건) ==================== -->
+  <div id="guideModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-file-lines text-blue-500"></i> 가이드라인 링크</h3>
+          <p class="text-xs text-slate-500 mt-0.5"><span id="guideModalWho"></span></p>
+        </div>
+        <button onclick="closeGuideModal()" class="text-slate-400 hover:text-slate-700 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="p-6 space-y-3.5">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1">가이드라인 URL (노션 / 구글드라이브 등)</label>
+          <input id="guideModalUrl" type="url" placeholder="https://www.notion.so/..." class="w-full px-3 py-2 text-xs border border-blue-200 rounded-xl bg-blue-50/30">
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1">가이드 이름 (표시용)</label>
+          <input id="guideModalName" placeholder="예) 온살 8월 릴스 가이드 v2" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1">전달 메모</label>
+          <textarea id="guideModalMemo" rows="3" placeholder="예) 8/12 카톡으로 전달 완료 / 필수 해시태그 3개 안내" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></textarea>
+        </div>
+        <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 cursor-pointer">
+          <input type="checkbox" id="guideModalSent" class="accent-blue-600 w-4 h-4"> 가이드 전달 완료
+        </label>
+      </div>
+      <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+        <button onclick="closeGuideModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+        <button onclick="saveGuide()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 체험단 가이드라인 모달 (파일 업로드) ==================== -->
+  <div id="trialGuideModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between z-10">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-paperclip text-pink-500"></i> 체험단 가이드라인</h3>
+          <p class="text-xs text-slate-500 mt-0.5"><span id="trialGuideWho"></span></p>
+        </div>
+        <button onclick="closeTrialGuideModal()" class="text-slate-400 hover:text-slate-700 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1">가이드라인 링크 (파우더룸 등 자체 사이트 업로드용)</label>
+          <input id="trialGuideUrl" type="url" placeholder="https://..." class="w-full px-3 py-2 text-xs border border-pink-200 rounded-xl bg-pink-50/30">
+        </div>
+
+        <div id="trialGuideDrop" class="bg-slate-50 p-4 rounded-2xl border-2 border-dashed border-slate-300 space-y-3">
+          <div class="flex flex-wrap justify-between items-center gap-2">
+            <div>
+              <h4 class="text-xs font-black text-slate-700"><i class="fa-solid fa-file-word text-sky-600"></i> 가이드 파일 (레뷰 · 글로우픽 워드 파일 등)</h4>
+              <p class="text-[11px] text-slate-500">파일을 끌어다 놓거나 선택하세요. 파일 1개당 최대 700KB까지 올릴 수 있어요.</p>
+            </div>
+            <label class="px-3 py-1.5 bg-slate-700 hover:bg-slate-800 text-white text-[11px] font-bold rounded-xl cursor-pointer whitespace-nowrap">
+              <i class="fa-solid fa-upload"></i> 파일 선택
+              <input type="file" multiple class="hidden" onchange="pickTrialGuideFiles(this)">
+            </label>
+          </div>
+          <div id="trialGuideFileList" class="space-y-1.5"></div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1">가이드 메모</label>
+          <textarea id="trialGuideMemo" rows="2" placeholder="예) 레뷰 담당자에게 8/12 메일 전달 / 파우더룸은 사이트에 직접 업로드 완료" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></textarea>
+        </div>
+      </div>
+      <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+        <button onclick="closeTrialGuideModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+        <button onclick="saveTrialGuide()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 입금 상세 모달 ==================== -->
+  <div id="payModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between z-10">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-won-sign text-emerald-600"></i> 계약 · 입금 관리</h3>
+          <p class="text-xs text-slate-500 mt-0.5"><span id="payModalWho"></span></p>
+        </div>
+        <button onclick="closePayModal()" class="text-slate-400 hover:text-slate-700 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <!-- 계약 진행 -->
+        <div class="bg-violet-50/50 p-4 rounded-2xl border border-violet-200 space-y-2.5">
+          <h4 class="text-xs font-black text-violet-900"><i class="fa-solid fa-file-signature"></i> 계약 진행</h4>
+          <div id="payContractRows" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+        </div>
+
+        <!-- 지급 조건 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">지급 방식</label>
+            <select id="payMode" onchange="onPayModeChange()" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-bold"></select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">총 계약 금액 (원)</label>
+            <input type="number" id="payTotal" oninput="syncPayAmounts()" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">업로드 기준일 (기한 계산용)</label>
+            <input type="date" id="payUploadDate" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+        </div>
+
+        <!-- 입금 항목 -->
+        <div class="space-y-2.5">
+          <div class="flex justify-between items-center">
+            <h4 class="text-xs font-black text-emerald-900"><i class="fa-solid fa-list-ol"></i> 입금 항목 (선금 · 잔금)</h4>
+            <button onclick="addPayItemRow()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-xl"><i class="fa-solid fa-plus"></i> 항목 추가</button>
+          </div>
+          <div id="payItemContainer" class="space-y-2.5"></div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1">계약 · 정산 메모</label>
+          <textarea id="payMemo" rows="2" placeholder="예) 세금계산서는 매월 말일 일괄 발행 / 원천징수 3.3% 차감" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></textarea>
+        </div>
+      </div>
+
+      <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-between items-center gap-2">
+        <div class="text-xs font-bold text-slate-600">미지급 잔액 <span id="payRemain" class="text-rose-600">0원</span></div>
+        <div class="flex gap-2">
+          <button onclick="closePayModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+          <button onclick="savePayment()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl">저장하기</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ==================== SCRIPT ==================== -->
@@ -3313,6 +3581,10 @@
                 </div>
                 <p class="text-sm font-extrabold text-slate-900">${tEsc(t.title)}</p>
                 <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-box text-slate-300 mr-1"></i>${tEsc(t.product)}${t.notes ? ' · ' + tEsc(t.notes) : ''}</p>
+                ${(t.guideUrl || (t.guideFiles || []).length) ? `<div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                  ${t.guideUrl ? `<a href="${tEsc(t.guideUrl)}" target="_blank" rel="noopener" class="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-md hover:underline"><i class="fa-solid fa-link"></i> 가이드 링크</a>` : ''}
+                  ${(t.guideFiles || []).map((f, fi) => `<button onclick="downloadTrialFileDirect(${t.id}, ${fi})" class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-md hover:bg-slate-200"><i class="fa-solid ${fileIconOf(f.name)}"></i> ${tEsc(f.name)}</button>`).join('')}
+                </div>` : ''}
               </div>
               <div class="flex items-center gap-2">
                 <div class="text-right">
@@ -3322,6 +3594,8 @@
                 <select onchange="updateTrialField(${t.id},'status',this.value)" class="px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 outline-none">
                   ${TRIAL_STATUSES.map(s => `<option ${t.status === s ? 'selected' : ''}>${s}</option>`).join('')}
                 </select>
+                <button onclick="openTrialGuideModal(${t.id})" title="가이드라인 (링크 · 파일)" class="px-2.5 h-8 rounded-lg ${(t.guideUrl || (t.guideFiles || []).length) ? 'bg-blue-100 hover:bg-blue-200 text-blue-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-500'} text-xs font-bold"><i class="fa-solid fa-paperclip"></i> 가이드${(t.guideFiles || []).length ? ' ' + t.guideFiles.length : ''}</button>
+                <button onclick="openPayModal('trial', ${t.id})" title="입금 관리" class="w-8 h-8 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs"><i class="fa-solid fa-won-sign"></i></button>
                 <button onclick="recalcTrial(${t.id})" title="일정 다시 계산" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs"><i class="fa-solid fa-rotate"></i></button>
                 <button onclick="duplicateTrial(${t.id})" title="복제" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs"><i class="fa-regular fa-copy"></i></button>
                 <button onclick="deleteTrial(${t.id})" title="삭제" class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
@@ -3363,6 +3637,12 @@
       renderAll();
 
       document.addEventListener('paste', handleGlobalPaste);
+      const gz = document.getElementById('trialGuideDrop');
+      if (gz) {
+        gz.addEventListener('dragover', e => { e.preventDefault(); gz.classList.add('border-pink-400'); });
+        gz.addEventListener('dragleave', () => gz.classList.remove('border-pink-400'));
+        gz.addEventListener('drop', e => { e.preventDefault(); gz.classList.remove('border-pink-400'); addTrialGuideFiles(e.dataTransfer.files); });
+      }
       const iz = document.getElementById('uploadImageZone');
       if (iz) {
         iz.addEventListener('dragover', e => { e.preventDefault(); iz.classList.add('border-amber-500'); });
@@ -3451,11 +3731,13 @@
       renderSeedingDashboard();
       renderUtmDashboard();
       renderTrialDashboard();
+      renderPayPage();
+      renderFormImport();
     }
 
     // 페이지 전환 (PPL / 시딩재고 / UTM)
     function switchMainPage(pageId) {
-      const pages = ['monthly', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'seeding', 'utm'];
+      const pages = ['monthly', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'pay', 'seeding', 'utm'];
       const activeClass = "px-3 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
       const idleClass = "px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
 
@@ -3478,6 +3760,7 @@
       if (pageId === 'sup') { renderSupTable(); renderRankTable(); renderCreatorMissions(); renderUploadTables(); }
       if (pageId === 'amb') { renderAmbTable(); renderFreeAmbTable(); renderUploadTables(); }
       if (pageId === 'creator') { renderCreatorTable(); renderInfluencerCards(); renderProposals(); renderUploadTables(); }
+      if (pageId === 'pay') renderPayPage();
       if (pageId === 'trial') renderTrialDashboard();
       if (pageId === 'seeding') renderSeedingDashboard();
       if (pageId === 'utm') renderUtmDashboard();
@@ -4046,6 +4329,7 @@
         + ((p.rankChecks || []).length ? ' (' + p.rankChecks.length + ')' : '') + '</button></td>'
         + '<td class="py-3 px-3 align-top min-w-[170px]">' + addrLine + '</td>'
         + '<td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">'
+        + guideBtnHtml(p)
         + '<button onclick="openStepDateModal(' + p.id + ')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>'
         + '<button onclick="deletePpl(' + p.id + ')" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button></td>'
         + '</tr>';
@@ -4086,6 +4370,7 @@
         + '<input class="ul-url md:col-span-3 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="업로드 링크 (URL)" value="' + tEsc(u.url || '') + '">'
         + '<input type="number" class="ul-views md:col-span-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="조회수" value="' + tEsc(u.views || '') + '">'
         + '<input type="number" class="ul-likes md:col-span-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="좋아요" value="' + tEsc(u.likes || '') + '">'
+        + '<input type="number" class="ul-comments md:col-span-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="댓글수" value="' + tEsc(u.comments || '') + '">'
         + '<input class="ul-keyword md:col-span-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="상위노출 키워드" value="' + tEsc(u.keyword || '') + '">'
         + '<input class="ul-rank md:col-span-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="순위" value="' + tEsc(u.rank || '') + '">'
         + '<div class="md:col-span-12 flex gap-2 items-center">'
@@ -4136,6 +4421,7 @@
         url: r.querySelector('.ul-url').value.trim(),
         views: r.querySelector('.ul-views').value,
         likes: r.querySelector('.ul-likes').value,
+        comments: r.querySelector('.ul-comments') ? r.querySelector('.ul-comments').value : '',
         keyword: r.querySelector('.ul-keyword').value,
         rank: r.querySelector('.ul-rank').value,
         memo: r.querySelector('.ul-memo').value,
@@ -4163,6 +4449,7 @@
       const parts = [];
       if (u.views) parts.push('조회 ' + Number(u.views).toLocaleString());
       if (u.likes) parts.push('좋아요 ' + Number(u.likes).toLocaleString());
+      if (u.comments) parts.push('댓글 ' + Number(u.comments).toLocaleString());
       if (u.keyword) parts.push(u.keyword + (u.rank ? ' ' + u.rank + '위' : ''));
       if (u.memo) parts.push(u.memo);
       return parts.join(' · ');
@@ -5494,6 +5781,740 @@
       }), '크리에이터_활동비_' + ym);
     }
 
+
+    /* ==================== 가이드라인 링크 (협업 건) ==================== */
+    let guideEditId = null;
+    function guideBtnHtml(p) {
+      const on = !!(p.guideUrl || '').trim();
+      return '<button onclick="openGuideModal(' + p.id + ')" title="가이드라인 링크" class="px-2.5 py-1 '
+        + (on ? 'bg-blue-100 hover:bg-blue-200 text-blue-800' : 'bg-slate-100 hover:bg-slate-200 text-slate-500')
+        + ' font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-file-lines"></i> 가이드'
+        + (p.guideSent ? ' <i class="fa-solid fa-check text-[9px]"></i>' : '') + '</button>';
+    }
+    function openGuideModal(id) {
+      const p = pplList.find(x => x.id === id);
+      if (!p) return;
+      guideEditId = id;
+      setTxt('guideModalWho', p.brand + ' · ' + whoOf(p) + ' · ' + (prodNamesOf(p).join(', ') || '제품 미지정'));
+      document.getElementById('guideModalUrl').value = p.guideUrl || '';
+      document.getElementById('guideModalName').value = p.guideName || '';
+      document.getElementById('guideModalMemo').value = p.guideMemo || '';
+      document.getElementById('guideModalSent').checked = !!p.guideSent;
+      document.getElementById('guideModal').classList.remove('hidden');
+    }
+    function closeGuideModal() { document.getElementById('guideModal').classList.add('hidden'); guideEditId = null; }
+    function saveGuide() {
+      const p = pplList.find(x => x.id === guideEditId);
+      if (!p) return;
+      p.guideUrl = document.getElementById('guideModalUrl').value.trim();
+      p.guideName = document.getElementById('guideModalName').value.trim();
+      p.guideMemo = document.getElementById('guideModalMemo').value.trim();
+      p.guideSent = document.getElementById('guideModalSent').checked;
+      saveAll(); closeGuideModal(); renderAll();
+    }
+
+    /* ==================== 체험단 가이드 파일 ==================== */
+    const GUIDE_FILE_MAX = 700 * 1024;
+    let trialGuideId = null;
+    let trialGuideFiles = [];
+
+    function fmtBytes(n) {
+      return n > 1024 * 1024 ? (n / 1024 / 1024).toFixed(1) + 'MB' : Math.round(n / 1024) + 'KB';
+    }
+    function fileIconOf(name) {
+      const n = (name || '').toLowerCase();
+      if (/\.docx?$/.test(n)) return 'fa-file-word text-sky-600';
+      if (/\.pdf$/.test(n)) return 'fa-file-pdf text-rose-600';
+      if (/\.(xlsx?|csv)$/.test(n)) return 'fa-file-excel text-emerald-600';
+      if (/\.(png|jpe?g|gif|webp)$/.test(n)) return 'fa-file-image text-violet-600';
+      return 'fa-file text-slate-500';
+    }
+    function downloadDataUrl(data, name) {
+      const a = document.createElement('a');
+      a.href = data; a.download = name || 'file';
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+    function openTrialGuideModal(id) {
+      const t = trialList.find(x => x.id === id);
+      if (!t) return;
+      trialGuideId = id;
+      trialGuideFiles = (t.guideFiles || []).slice();
+      setTxt('trialGuideWho', (t.brand || '') + ' · ' + (t.platform || '') + ' · ' + (t.title || ''));
+      document.getElementById('trialGuideUrl').value = t.guideUrl || '';
+      document.getElementById('trialGuideMemo').value = t.guideMemo || '';
+      renderTrialGuideFiles();
+      document.getElementById('trialGuideModal').classList.remove('hidden');
+    }
+    function closeTrialGuideModal() { document.getElementById('trialGuideModal').classList.add('hidden'); trialGuideId = null; }
+    function renderTrialGuideFiles() {
+      const box = document.getElementById('trialGuideFileList');
+      if (!box) return;
+      box.innerHTML = trialGuideFiles.length
+        ? trialGuideFiles.map((f, i) => '<div class="flex items-center justify-between gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200">'
+            + '<div class="min-w-0 flex items-center gap-2"><i class="fa-solid ' + fileIconOf(f.name) + '"></i>'
+            + '<span class="text-[11px] font-semibold text-slate-800 truncate">' + tEsc(f.name) + '</span>'
+            + '<span class="text-[10px] text-slate-400 whitespace-nowrap">' + fmtBytes(f.size || 0) + '</span></div>'
+            + '<div class="flex items-center gap-1 whitespace-nowrap">'
+            + '<button onclick="downloadTrialGuideFile(' + i + ')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-download"></i> 받기</button>'
+            + '<button onclick="removeTrialGuideFile(' + i + ')" class="text-slate-400 hover:text-rose-600 px-1.5"><i class="fa-solid fa-trash text-[11px]"></i></button>'
+            + '</div></div>').join('')
+        : '<p class="text-[11px] text-slate-400 text-center py-3">첨부된 파일이 없습니다.</p>';
+    }
+    function downloadTrialGuideFile(i) {
+      const f = trialGuideFiles[i];
+      if (f) downloadDataUrl(f.data, f.name);
+    }
+    function removeTrialGuideFile(i) { trialGuideFiles.splice(i, 1); renderTrialGuideFiles(); }
+    function addTrialGuideFiles(files) {
+      Array.from(files || []).forEach(f => {
+        if (f.size > GUIDE_FILE_MAX) {
+          alert('"' + f.name + '" 은 ' + fmtBytes(f.size) + ' 로 너무 큽니다.\n700KB 이하로 줄이거나, 구글드라이브에 올린 뒤 위쪽 링크칸에 주소를 넣어 주세요.');
+          return;
+        }
+        const fr = new FileReader();
+        fr.onload = e => {
+          trialGuideFiles.push({ name: f.name, type: f.type, size: f.size, data: e.target.result, addedAt: new Date().toISOString().slice(0, 10) });
+          renderTrialGuideFiles();
+        };
+        fr.readAsDataURL(f);
+      });
+    }
+    function pickTrialGuideFiles(input) { addTrialGuideFiles(input.files); input.value = ''; }
+    function downloadTrialFileDirect(tid, i) {
+      const t = trialList.find(x => x.id === tid);
+      const f = t && (t.guideFiles || [])[i];
+      if (f) downloadDataUrl(f.data, f.name);
+    }
+    function saveTrialGuide() {
+      const t = trialList.find(x => x.id === trialGuideId);
+      if (!t) return;
+      t.guideUrl = document.getElementById('trialGuideUrl').value.trim();
+      t.guideMemo = document.getElementById('trialGuideMemo').value.trim();
+      t.guideFiles = trialGuideFiles.slice();
+      saveAll(); closeTrialGuideModal(); renderTrialDashboard();
+    }
+
+    /* ==================== 유튜브 지표 자동 수집 ==================== */
+    function ytKey() { return localStorage.getItem('onsal_ytApiKey') || ''; }
+    function setYoutubeKey() {
+      const cur = ytKey();
+      const v = window.prompt('YouTube Data API v3 키를 넣어 주세요.\n(구글 클라우드 콘솔 → API 및 서비스 → 사용자 인증 정보 → API 키)\n\n비워서 확인을 누르면 저장된 키가 지워집니다.', cur);
+      if (v === null) return;
+      if (v.trim()) { localStorage.setItem('onsal_ytApiKey', v.trim()); alert('저장했습니다.'); }
+      else { localStorage.removeItem('onsal_ytApiKey'); alert('키를 삭제했습니다.'); }
+    }
+    function youtubeIdOf(url) {
+      const u = String(url || '');
+      let m = u.match(/youtu\.be\/([A-Za-z0-9_-]{6,})/);
+      if (m) return m[1];
+      m = u.match(/[?&]v=([A-Za-z0-9_-]{6,})/);
+      if (m) return m[1];
+      m = u.match(/youtube\.com\/(?:shorts|embed|live)\/([A-Za-z0-9_-]{6,})/);
+      if (m) return m[1];
+      return null;
+    }
+    async function fetchYoutubeStats(ids) {
+      const key = ytKey();
+      if (!key) throw new Error('NOKEY');
+      const out = {};
+      for (let i = 0; i < ids.length; i += 45) {
+        const chunk = ids.slice(i, i + 45);
+        const res = await fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + chunk.join(',') + '&key=' + encodeURIComponent(key));
+        const json = await res.json();
+        if (json.error) throw new Error(json.error.message || 'API 오류');
+        (json.items || []).forEach(it => {
+          const s = it.statistics || {};
+          out[it.id] = { views: s.viewCount || '', likes: s.likeCount || '', comments: s.commentCount || '' };
+        });
+      }
+      return out;
+    }
+    // 업로드/결과 모달 안에서 실행
+    async function fillYoutubeStatsInModal() {
+      const rows = Array.from(document.querySelectorAll('#uploadRowsContainer .upload-row'));
+      const map = [];
+      rows.forEach(r => {
+        const id = youtubeIdOf(r.querySelector('.ul-url').value);
+        if (id) map.push({ r, id });
+      });
+      if (!map.length) { alert('이 건에는 유튜브 링크가 없습니다.\n인스타·틱톡·블로그는 자동 수집이 불가해 인증 폼으로 받아야 해요.'); return; }
+      try {
+        const stats = await fetchYoutubeStats(map.map(m => m.id));
+        let n = 0;
+        map.forEach(({ r, id }) => {
+          const s = stats[id];
+          if (!s) return;
+          r.querySelector('.ul-views').value = s.views;
+          r.querySelector('.ul-likes').value = s.likes;
+          const c = r.querySelector('.ul-comments');
+          if (c) c.value = s.comments;
+          n++;
+        });
+        alert(n + '건의 유튜브 지표를 가져왔습니다. 저장하기를 눌러 주세요.');
+      } catch (e) {
+        if (e.message === 'NOKEY') { alert('먼저 YouTube API 키를 설정해 주세요.'); setYoutubeKey(); }
+        else alert('가져오지 못했습니다: ' + e.message);
+      }
+    }
+    async function refreshAllYoutubeStats() {
+      const targets = [];
+      pplList.forEach(p => (p.uploads || []).forEach(u => {
+        const id = youtubeIdOf(u.url);
+        if (id) targets.push({ p, u, id });
+      }));
+      if (!targets.length) { alert('등록된 유튜브 업로드 링크가 없습니다.'); return; }
+      try {
+        const stats = await fetchYoutubeStats(Array.from(new Set(targets.map(t => t.id))));
+        let n = 0;
+        targets.forEach(({ u, id }) => {
+          const s = stats[id];
+          if (!s) return;
+          u.views = s.views; u.likes = s.likes; u.comments = s.comments;
+          n++;
+        });
+        saveAll(); renderAll();
+        alert(n + '건의 유튜브 지표를 갱신했습니다.');
+      } catch (e) {
+        if (e.message === 'NOKEY') { alert('먼저 YouTube API 키를 설정해 주세요.'); setYoutubeKey(); }
+        else alert('가져오지 못했습니다: ' + e.message);
+      }
+    }
+
+    /* ==================== 계약 · 입금 관리 ==================== */
+    const PAY_MODES = ['선금 + 잔금', '선금(전액) 선지급', '후불(전액)', '무상 / 지급 없음'];
+    const PAY_RULES = [
+      '세금계산서 발행 후 영업일 5일 이내',
+      '세금계산서 발행 후 영업일 7일 이내',
+      '세금계산서 발행 후 10일 이내',
+      '세금계산서 발행 익월 10일',
+      '세금계산서 발행 익월 말일',
+      '업로드 후 영업일 5일 이내',
+      '계약 날인 후 영업일 5일 이내',
+      '직접 입력'
+    ];
+    const CONTRACT_STEPS = [['write', '계약서 작성'], ['revise', '계약서 수정'], ['seal', '계약서 날인']];
+    let payEditKind = null, payEditId = null;
+
+    function addBusinessDays(dateStr, n) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr + 'T00:00:00');
+      if (isNaN(d.getTime())) return '';
+      let added = 0;
+      while (added < n) {
+        d.setDate(d.getDate() + 1);
+        const w = d.getDay();
+        if (w !== 0 && w !== 6) added++;
+      }
+      return d.toISOString().slice(0, 10);
+    }
+    function addDays(dateStr, n) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr + 'T00:00:00');
+      if (isNaN(d.getTime())) return '';
+      d.setDate(d.getDate() + n);
+      return d.toISOString().slice(0, 10);
+    }
+    function nextMonthDay(dateStr, day) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr + 'T00:00:00');
+      if (isNaN(d.getTime())) return '';
+      const y = d.getFullYear(), m = d.getMonth() + 1;
+      if (day === 'last') {
+        const e = new Date(y, m + 1, 0);
+        return e.getFullYear() + '-' + String(e.getMonth() + 1).padStart(2, '0') + '-' + String(e.getDate()).padStart(2, '0');
+      }
+      const e = new Date(y, m, day);
+      return e.getFullYear() + '-' + String(e.getMonth() + 1).padStart(2, '0') + '-' + String(e.getDate()).padStart(2, '0');
+    }
+    function calcDueDate(item, ctx) {
+      const rule = item.dueRule || PAY_RULES[0];
+      const tax = item.taxDate || '';
+      if (rule === '직접 입력') return item.dueDate || '';
+      if (rule === '업로드 후 영업일 5일 이내') return addBusinessDays(ctx.uploadDate, 5);
+      if (rule === '계약 날인 후 영업일 5일 이내') return addBusinessDays(ctx.sealDate, 5);
+      if (!tax) return '';
+      if (rule === '세금계산서 발행 후 영업일 5일 이내') return addBusinessDays(tax, 5);
+      if (rule === '세금계산서 발행 후 영업일 7일 이내') return addBusinessDays(tax, 7);
+      if (rule === '세금계산서 발행 후 10일 이내') return addDays(tax, 10);
+      if (rule === '세금계산서 발행 익월 10일') return nextMonthDay(tax, 10);
+      if (rule === '세금계산서 발행 익월 말일') return nextMonthDay(tax, 'last');
+      return item.dueDate || '';
+    }
+    function todayStr() { return new Date().toISOString().slice(0, 10); }
+    function ddayOf(dateStr) {
+      if (!dateStr) return null;
+      const a = new Date(dateStr + 'T00:00:00'), b = new Date(todayStr() + 'T00:00:00');
+      if (isNaN(a.getTime())) return null;
+      return Math.round((a - b) / 864e5);
+    }
+
+    function newPayItem(label, amount) {
+      return { label: label, amount: Number(amount) || 0, taxDate: '', taxDone: false,
+        dueRule: PAY_RULES[0], dueDate: '', paidDate: '', paid: false, memo: '' };
+    }
+    function ensurePayment(rec, isTrial) {
+      if (!rec.payment) {
+        const total = isTrial ? 0 : totalCostOf(rec);
+        rec.payment = {
+          mode: total ? '후불(전액)' : '무상 / 지급 없음',
+          total: total,
+          contract: { write: { date: '', done: false }, revise: { date: '', done: false }, seal: { date: '', done: false } },
+          items: total ? [newPayItem('대금', total)] : [],
+          memo: ''
+        };
+      }
+      rec.payment.contract = rec.payment.contract || { write: {}, revise: {}, seal: {} };
+      CONTRACT_STEPS.forEach(([k]) => { rec.payment.contract[k] = rec.payment.contract[k] || { date: '', done: false }; });
+      rec.payment.items = rec.payment.items || [];
+      return rec.payment;
+    }
+    function payCtxOf(rec, isTrial) {
+      const sealDate = (rec.payment && rec.payment.contract && rec.payment.contract.seal.date) || '';
+      let uploadDate = '';
+      if (isTrial) uploadDate = trialUploadDate(rec);
+      else {
+        const ups = uploadsOf(rec);
+        if (ups.length) uploadDate = ups.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''))[0].date || '';
+        else {
+          const sd = rec.stepDates && rec.stepDates['업로드'];
+          uploadDate = sd ? (typeof sd === 'object' ? sd.date : sd) : '';
+        }
+      }
+      return { sealDate, uploadDate };
+    }
+    function payRowsOf(rec, isTrial) {
+      const pay = ensurePayment(rec, isTrial);
+      const ctx = payCtxOf(rec, isTrial);
+      return (pay.items || []).map(it => {
+        const due = calcDueDate(it, ctx) || it.dueDate || '';
+        return { it, due, dday: it.paid ? null : ddayOf(due) };
+      });
+    }
+    function payRemainOf(rec, isTrial) {
+      return payRowsOf(rec, isTrial).reduce((a, r) => a + (r.it.paid ? 0 : (Number(r.it.amount) || 0)), 0);
+    }
+
+    function payTargets() {
+      const out = [];
+      pplList.forEach(p => out.push({ rec: p, isTrial: false, cat: catOfPpl(p), who: whoOf(p), brand: p.brand, sub: prodNamesOf(p).join(', ') }));
+      trialList.forEach(t => out.push({ rec: t, isTrial: true, cat: '체험단', who: (t.title || '체험단') + ' · ' + (t.headcount || 0) + '명', brand: t.brand, sub: (t.platform || '') + ' ' + (t.product || '') }));
+      return out;
+    }
+
+    function contractChipHtml(rec, isTrial) {
+      const pay = ensurePayment(rec, isTrial);
+      return CONTRACT_STEPS.map(([k, label]) => {
+        const s = pay.contract[k] || {};
+        return '<div class="flex items-center gap-1 text-[11px]">'
+          + '<span class="' + (s.done ? 'text-emerald-600' : 'text-slate-300') + '"><i class="fa-solid ' + (s.done ? 'fa-circle-check' : 'fa-circle') + '"></i></span>'
+          + '<span class="' + (s.done ? 'text-slate-700 font-semibold' : 'text-slate-400') + '">' + label + '</span>'
+          + (s.date ? '<span class="text-slate-400">' + s.date.slice(5) + '</span>' : '') + '</div>';
+      }).join('');
+    }
+
+    function payItemChipHtml(r) {
+      const it = r.it;
+      let statusCls = 'bg-slate-100 text-slate-600', statusTxt = '기한 미정';
+      if (it.paid) { statusCls = 'bg-emerald-100 text-emerald-700'; statusTxt = '입금 완료' + (it.paidDate ? ' ' + it.paidDate.slice(5) : ''); }
+      else if (r.dday === null) { statusCls = 'bg-slate-100 text-slate-500'; statusTxt = it.taxDone ? '기한 계산 대기' : '세금계산서 전'; }
+      else if (r.dday < 0) { statusCls = 'bg-rose-100 text-rose-700'; statusTxt = (-r.dday) + '일 지남'; }
+      else if (r.dday <= 3) { statusCls = 'bg-amber-100 text-amber-800'; statusTxt = 'D-' + r.dday; }
+      else { statusCls = 'bg-sky-100 text-sky-700'; statusTxt = 'D-' + r.dday; }
+
+      return '<div class="flex flex-wrap items-center gap-1.5 py-1 border-b border-slate-50 last:border-0">'
+        + '<span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-slate-800 text-white">' + tEsc(it.label || '대금') + '</span>'
+        + '<span class="font-bold text-slate-900">' + (Number(it.amount) || 0).toLocaleString() + '원</span>'
+        + '<span class="text-[11px] ' + (it.taxDone ? 'text-emerald-700' : 'text-slate-400') + '"><i class="fa-solid fa-receipt"></i> '
+        + (it.taxDate ? it.taxDate.slice(5) : '세발 전') + '</span>'
+        + '<span class="text-[11px] text-slate-500">기한 ' + (r.due ? r.due.slice(5) : '-') + '</span>'
+        + '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + statusCls + '">' + statusTxt + '</span>'
+        + (it.memo ? '<span class="text-[10px] text-slate-400">' + tEsc(it.memo) + '</span>' : '')
+        + '</div>';
+    }
+
+    function renderPayPage() {
+      const tbody = document.getElementById('payTableBody');
+      if (!tbody) return;
+      const catF = (document.getElementById('payCatFilter') || {}).value || '전체';
+      const stF = (document.getElementById('payStatusFilter') || {}).value || '미완료';
+
+      const all = payTargets();
+      const timeline = [];
+      let dueThisMonth = 0, overdue = 0, taxPending = 0, remainAll = 0;
+      const ym = todayStr().slice(0, 7);
+
+      all.forEach(t => {
+        payRowsOf(t.rec, t.isTrial).forEach(r => {
+          const amt = Number(r.it.amount) || 0;
+          if (!r.it.paid) {
+            remainAll += amt;
+            if (!r.it.taxDone) taxPending += amt;
+            if (r.due && r.due.slice(0, 7) === ym) dueThisMonth += amt;
+            if (r.dday !== null && r.dday < 0) overdue += amt;
+            if (r.due) timeline.push({ t, r });
+          }
+        });
+      });
+      timeline.sort((a, b) => (a.r.due || '').localeCompare(b.r.due || ''));
+
+      const sum = document.getElementById('paySummary');
+      if (sum) {
+        const card = (label, val, sub, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
+          + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
+          + '<div class="text-xl font-black text-' + color + '-600 mt-0.5">' + val + '</div>'
+          + '<div class="text-[11px] text-slate-500 font-semibold">' + sub + '</div></div>';
+        sum.innerHTML = card('이번 달 입금 예정', dueThisMonth.toLocaleString() + '원', todayStr().slice(0, 7), 'emerald')
+          + card('기한 지난 미입금', overdue.toLocaleString() + '원', overdue ? '바로 확인이 필요해요' : '없음', 'rose')
+          + card('세금계산서 미발행', taxPending.toLocaleString() + '원', '발행해야 기한이 잡혀요', 'amber')
+          + card('총 미지급 잔액', remainAll.toLocaleString() + '원', '전체 기준', 'slate');
+      }
+
+      setTxt('payTimelineCount', timeline.length + '건');
+      const tl = document.getElementById('payTimeline');
+      if (tl) {
+        tl.innerHTML = timeline.length
+          ? timeline.slice(0, 25).map(({ t, r }) => {
+              const d = r.dday;
+              const cls = d === null ? 'border-slate-200 bg-slate-50'
+                : (d < 0 ? 'border-rose-200 bg-rose-50' : (d <= 3 ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-white'));
+              const badge = d === null ? '기한 미정' : (d < 0 ? (-d) + '일 지남' : 'D-' + d);
+              const badgeCls = d === null ? 'bg-slate-200 text-slate-600' : (d < 0 ? 'bg-rose-500 text-white' : (d <= 3 ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-700'));
+              return '<div class="flex flex-wrap items-center gap-2 px-3.5 py-2.5 rounded-xl border ' + cls + '">'
+                + '<span class="text-[10px] font-black px-2 py-1 rounded-lg ' + badgeCls + ' whitespace-nowrap">' + badge + '</span>'
+                + '<span class="font-bold text-slate-800 whitespace-nowrap">' + (r.due || '-') + '</span>'
+                + '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + (CAT_STYLE[t.cat] || 'bg-slate-100 text-slate-700') + '">' + t.cat + '</span>'
+                + '<span class="font-semibold text-slate-900">' + tEsc(t.who) + '</span>'
+                + '<span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-slate-800 text-white">' + tEsc(r.it.label || '대금') + '</span>'
+                + '<span class="font-black text-slate-900">' + (Number(r.it.amount) || 0).toLocaleString() + '원</span>'
+                + '<span class="text-[11px] ' + (r.it.taxDone ? 'text-emerald-700' : 'text-rose-600') + '">' + (r.it.taxDone ? '세금계산서 발행 완료' : '세금계산서 미발행') + '</span>'
+                + '<button onclick="openPayModal(\'' + (t.isTrial ? 'trial' : 'ppl') + '\', ' + t.rec.id + ')" class="ml-auto px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">열기</button>'
+                + '</div>';
+            }).join('')
+          : '<p class="text-xs text-slate-400 text-center py-6">예정된 입금 건이 없습니다. 아래 표에서 <b>입금 관리</b>를 눌러 계약 금액과 조건을 넣어 주세요.</p>';
+      }
+
+      let list = all.filter(t => catF === '전체' || t.cat === catF);
+      list = list.filter(t => {
+        const rows = payRowsOf(t.rec, t.isTrial);
+        if (!rows.length) return stF === '전체';
+        if (stF === '전체') return true;
+        if (stF === '완료') return rows.every(r => r.it.paid);
+        if (stF === '지연') return rows.some(r => !r.it.paid && r.dday !== null && r.dday < 0);
+        return rows.some(r => !r.it.paid);
+      });
+
+      setTxt('payTableCount', list.length + '건');
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-slate-400">조건에 맞는 건이 없습니다.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(t => {
+        const pay = ensurePayment(t.rec, t.isTrial);
+        const rows = payRowsOf(t.rec, t.isTrial);
+        const remain = payRemainOf(t.rec, t.isTrial);
+        const brandBadgeClass = t.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+        return '<tr class="hover:bg-emerald-50/20 transition">'
+          + '<td class="py-3 px-3 align-top"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + (CAT_STYLE[t.cat] || 'bg-slate-100 text-slate-700') + '">' + t.cat + '</span> '
+          + '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + tEsc(t.brand || '') + '</span>'
+          + '<div class="font-bold text-slate-900 mt-1">' + tEsc(t.who) + '</div>'
+          + '<div class="text-[11px] text-slate-500 truncate max-w-[180px]">' + tEsc(t.sub || '') + '</div></td>'
+          + '<td class="py-3 px-3 align-top space-y-0.5">' + contractChipHtml(t.rec, t.isTrial) + '</td>'
+          + '<td class="py-3 px-3 align-top text-slate-700 font-semibold">' + tEsc(pay.mode || '-') + '</td>'
+          + '<td class="py-3 px-3 align-top text-right font-black text-slate-900">' + (Number(pay.total) || 0).toLocaleString() + '원</td>'
+          + '<td class="py-3 px-3 align-top min-w-[380px]">' + (rows.length ? rows.map(payItemChipHtml).join('') : '<span class="text-[11px] text-slate-400">항목 없음</span>') + '</td>'
+          + '<td class="py-3 px-3 align-top text-right font-black ' + (remain ? 'text-rose-600' : 'text-emerald-600') + '">' + remain.toLocaleString() + '원</td>'
+          + '<td class="py-3 px-3 align-top text-right"><button onclick="openPayModal(\'' + (t.isTrial ? 'trial' : 'ppl') + '\', ' + t.rec.id + ')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-won-sign"></i> 입금 관리</button></td>'
+          + '</tr>';
+      }).join('');
+    }
+
+    /* ---- 입금 모달 ---- */
+    function payRecOf(kind, id) {
+      return kind === 'trial' ? trialList.find(x => x.id === id) : pplList.find(x => x.id === id);
+    }
+    function payItemRowHtml(it) {
+      it = it || {};
+      return '<div class="pay-item bg-emerald-50/40 p-3 rounded-2xl border border-emerald-200 space-y-2">'
+        + '<div class="grid grid-cols-2 md:grid-cols-12 gap-2 items-center">'
+        + '<input class="pi-label md:col-span-2 px-2 py-1.5 text-xs border border-emerald-200 rounded-lg font-bold" placeholder="선금 / 잔금" value="' + tEsc(it.label || '') + '">'
+        + '<input type="number" class="pi-amount md:col-span-2 px-2 py-1.5 text-xs border border-emerald-200 rounded-lg text-right" oninput="recalcPayRemain()" placeholder="금액" value="' + tEsc(it.amount || '') + '">'
+        + '<div class="md:col-span-3 flex items-center gap-1.5">'
+        + '<label class="text-[10px] font-bold text-slate-500 whitespace-nowrap">세발일</label>'
+        + '<input type="date" class="pi-taxdate flex-1 px-2 py-1.5 text-xs border border-emerald-200 rounded-lg" onchange="onPayItemChange(this)" value="' + tEsc(it.taxDate || '') + '">'
+        + '<label class="flex items-center gap-1 text-[10px] font-bold text-slate-600 whitespace-nowrap"><input type="checkbox" class="pi-taxdone accent-emerald-600 w-4 h-4" ' + (it.taxDone ? 'checked' : '') + '> 발행</label>'
+        + '</div>'
+        + '<select class="pi-rule md:col-span-3 px-2 py-1.5 text-xs border border-emerald-200 rounded-lg bg-white" onchange="onPayItemChange(this)">'
+        + PAY_RULES.map(r => '<option value="' + r + '"' + ((it.dueRule || PAY_RULES[0]) === r ? ' selected' : '') + '>' + r + '</option>').join('')
+        + '</select>'
+        + '<div class="md:col-span-2 text-[11px]"><span class="text-slate-500 font-bold">입금 기한</span>'
+        + '<input type="date" class="pi-due w-full px-2 py-1.5 text-xs border border-emerald-200 rounded-lg" value="' + tEsc(it.dueDate || '') + '"></div>'
+        + '</div>'
+        + '<div class="grid grid-cols-2 md:grid-cols-12 gap-2 items-center">'
+        + '<label class="md:col-span-2 flex items-center gap-1.5 text-[11px] font-bold text-emerald-800"><input type="checkbox" class="pi-paid accent-emerald-600 w-4 h-4" ' + (it.paid ? 'checked' : '') + ' onchange="recalcPayRemain()"> 입금 완료</label>'
+        + '<input type="date" class="pi-paiddate md:col-span-2 px-2 py-1.5 text-xs border border-emerald-200 rounded-lg" value="' + tEsc(it.paidDate || '') + '">'
+        + '<input class="pi-memo md:col-span-7 px-2 py-1.5 text-xs border border-emerald-200 rounded-lg" placeholder="메모 (원천징수, 입금 계좌, 담당자 등)" value="' + tEsc(it.memo || '') + '">'
+        + '<button type="button" onclick="this.closest(\'.pay-item\').remove(); recalcPayRemain();" class="md:col-span-1 text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>'
+        + '</div></div>';
+    }
+    function onPayItemChange(el) {
+      const row = el.closest('.pay-item');
+      const it = {
+        taxDate: row.querySelector('.pi-taxdate').value,
+        dueRule: row.querySelector('.pi-rule').value,
+        dueDate: row.querySelector('.pi-due').value
+      };
+      const rec = payRecOf(payEditKind, payEditId);
+      const ctx = {
+        sealDate: (document.querySelector('#payContractRows [data-ck="seal"] input[type=date]') || {}).value || '',
+        uploadDate: document.getElementById('payUploadDate').value
+      };
+      const d = calcDueDate(it, ctx);
+      if (d) row.querySelector('.pi-due').value = d;
+    }
+    function addPayItemRow() {
+      document.getElementById('payItemContainer').insertAdjacentHTML('beforeend', payItemRowHtml({ label: '잔금' }));
+      recalcPayRemain();
+    }
+    function onPayModeChange() {
+      const mode = document.getElementById('payMode').value;
+      const total = Number(document.getElementById('payTotal').value) || 0;
+      const c = document.getElementById('payItemContainer');
+      if (mode === '선금 + 잔금') {
+        c.innerHTML = payItemRowHtml({ label: '선금', amount: Math.round(total / 2) }) + payItemRowHtml({ label: '잔금', amount: total - Math.round(total / 2) });
+      } else if (mode === '선금(전액) 선지급') {
+        c.innerHTML = payItemRowHtml({ label: '선금(전액)', amount: total });
+      } else if (mode === '후불(전액)') {
+        c.innerHTML = payItemRowHtml({ label: '대금', amount: total });
+      } else {
+        c.innerHTML = '';
+      }
+      recalcPayRemain();
+    }
+    function syncPayAmounts() { recalcPayRemain(); }
+    function recalcPayRemain() {
+      let remain = 0;
+      document.querySelectorAll('#payItemContainer .pay-item').forEach(r => {
+        if (!r.querySelector('.pi-paid').checked) remain += Number(r.querySelector('.pi-amount').value) || 0;
+      });
+      setTxt('payRemain', remain.toLocaleString() + '원');
+    }
+    function openPayModal(kind, id) {
+      const rec = payRecOf(kind, id);
+      if (!rec) return;
+      payEditKind = kind; payEditId = id;
+      const isTrial = kind === 'trial';
+      const pay = ensurePayment(rec, isTrial);
+      const cat = isTrial ? '체험단' : catOfPpl(rec);
+      const who = isTrial ? ((rec.title || '체험단') + ' · ' + (rec.headcount || 0) + '명') : whoOf(rec);
+      setTxt('payModalWho', (rec.brand || '') + ' · ' + cat + ' · ' + who);
+
+      const modeSel = document.getElementById('payMode');
+      modeSel.innerHTML = PAY_MODES.map(m => '<option value="' + m + '"' + (pay.mode === m ? ' selected' : '') + '>' + m + '</option>').join('');
+      document.getElementById('payTotal').value = pay.total || '';
+      document.getElementById('payMemo').value = pay.memo || '';
+      const ctx = payCtxOf(rec, isTrial);
+      document.getElementById('payUploadDate').value = ctx.uploadDate || '';
+
+      document.getElementById('payContractRows').innerHTML = CONTRACT_STEPS.map(([k, label]) => {
+        const s = pay.contract[k] || {};
+        return '<div data-ck="' + k + '" class="bg-white p-2.5 rounded-xl border border-violet-200 space-y-1.5">'
+          + '<label class="flex items-center gap-1.5 text-[11px] font-bold text-violet-800"><input type="checkbox" class="accent-violet-600 w-4 h-4" ' + (s.done ? 'checked' : '') + '> ' + label + ' 완료</label>'
+          + '<input type="date" value="' + tEsc(s.date || '') + '" class="w-full px-2 py-1.5 text-xs border border-violet-200 rounded-lg"></div>';
+      }).join('');
+
+      const c = document.getElementById('payItemContainer');
+      c.innerHTML = (pay.items || []).map(it => payItemRowHtml(Object.assign({}, it, { dueDate: calcDueDate(it, ctx) || it.dueDate }))).join('');
+      recalcPayRemain();
+      document.getElementById('payModal').classList.remove('hidden');
+    }
+    function closePayModal() { document.getElementById('payModal').classList.add('hidden'); payEditKind = null; payEditId = null; }
+    function savePayment() {
+      const rec = payRecOf(payEditKind, payEditId);
+      if (!rec) return;
+      const pay = ensurePayment(rec, payEditKind === 'trial');
+      pay.mode = document.getElementById('payMode').value;
+      pay.total = Number(document.getElementById('payTotal').value) || 0;
+      pay.memo = document.getElementById('payMemo').value;
+      CONTRACT_STEPS.forEach(([k]) => {
+        const box = document.querySelector('#payContractRows [data-ck="' + k + '"]');
+        pay.contract[k] = { done: box.querySelector('input[type=checkbox]').checked, date: box.querySelector('input[type=date]').value };
+      });
+      pay.items = Array.from(document.querySelectorAll('#payItemContainer .pay-item')).map(r => ({
+        label: r.querySelector('.pi-label').value.trim() || '대금',
+        amount: Number(r.querySelector('.pi-amount').value) || 0,
+        taxDate: r.querySelector('.pi-taxdate').value,
+        taxDone: r.querySelector('.pi-taxdone').checked,
+        dueRule: r.querySelector('.pi-rule').value,
+        dueDate: r.querySelector('.pi-due').value,
+        paid: r.querySelector('.pi-paid').checked,
+        paidDate: r.querySelector('.pi-paiddate').value,
+        memo: r.querySelector('.pi-memo').value.trim()
+      }));
+      saveAll(); closePayModal(); renderAll();
+    }
+
+    function exportPaymentExcel() {
+      const out = [];
+      payTargets().forEach(t => {
+        const pay = ensurePayment(t.rec, t.isTrial);
+        const rows = payRowsOf(t.rec, t.isTrial);
+        if (!rows.length) return;
+        rows.forEach(r => out.push({
+          '구분': t.cat, '브랜드': t.brand, '대상': t.who, '제품/채널': t.sub,
+          '계약서작성': pay.contract.write.date || '', '계약서수정': pay.contract.revise.date || '', '계약서날인': pay.contract.seal.date || '',
+          '지급방식': pay.mode, '총금액': pay.total,
+          '항목': r.it.label, '금액': r.it.amount,
+          '세금계산서발행일': r.it.taxDate || '', '발행여부': r.it.taxDone ? 'O' : '',
+          '입금기한규칙': r.it.dueRule, '입금기한': r.due || '',
+          '입금일': r.it.paidDate || '', '입금완료': r.it.paid ? 'O' : '',
+          '상태': r.it.paid ? '완료' : (r.dday === null ? '기한미정' : (r.dday < 0 ? (-r.dday) + '일지남' : 'D-' + r.dday)),
+          '메모': r.it.memo || ''
+        }));
+      });
+      if (!out.length) { alert('내보낼 입금 내역이 없습니다.'); return; }
+      downloadSheet(out, '계약입금현황_' + todayStr());
+    }
+
+    /* ==================== 업로드 인증 폼 취합 ==================== */
+    let formRows = [];
+    const FORM_COLS = {
+      name: ['이름', '성함', '실명', '본명', '성명'],
+      account: ['계정', '아이디', '인스타', 'id', '채널명', '닉네임'],
+      channel: ['채널', '플랫폼', 'sns'],
+      date: ['업로드일', '업로드 날짜', '게시일', '날짜', '타임스탬프'],
+      url: ['링크', 'url', '주소', '게시물'],
+      views: ['조회'], likes: ['좋아요'], comments: ['댓글'], memo: ['비고', '메모', '기타']
+    };
+    function detectCol(headers, keys) {
+      for (let i = 0; i < headers.length; i++) {
+        const h = String(headers[i] || '').toLowerCase().replace(/\s/g, '');
+        for (const k of keys) if (h.includes(String(k).toLowerCase().replace(/\s/g, ''))) return i;
+      }
+      return -1;
+    }
+    function normDateCell(v) {
+      if (v == null || v === '') return '';
+      if (v instanceof Date) return v.toISOString().slice(0, 10);
+      const s = String(v).trim();
+      const m = s.match(/(\d{4})[-./]\s?(\d{1,2})[-./]\s?(\d{1,2})/);
+      if (m) return m[1] + '-' + String(m[2]).padStart(2, '0') + '-' + String(m[3]).padStart(2, '0');
+      return '';
+    }
+    function ingestFormMatrix(matrix) {
+      if (!matrix || matrix.length < 2) { alert('데이터를 읽지 못했습니다. 첫 줄에 제목 행이 있는지 확인해 주세요.'); return; }
+      const headers = matrix[0];
+      const idx = {};
+      Object.keys(FORM_COLS).forEach(k => { idx[k] = detectCol(headers, FORM_COLS[k]); });
+      if (idx.url < 0) { alert('업로드 링크(URL) 열을 찾지 못했습니다. 제목에 "링크" 또는 "URL"이 들어가야 해요.'); return; }
+
+      const get = (row, k) => (idx[k] >= 0 ? row[idx[k]] : '');
+      formRows = [];
+      matrix.slice(1).forEach(row => {
+        const url = String(get(row, 'url') || '').trim();
+        if (!/^https?:\/\//i.test(url)) return;
+        const name = String(get(row, 'name') || '').trim();
+        const account = String(get(row, 'account') || '').trim();
+        const match = matchPersonForForm(name, account);
+        formRows.push({
+          name, account, url,
+          channel: String(get(row, 'channel') || '').trim(),
+          date: normDateCell(get(row, 'date')),
+          views: String(get(row, 'views') || '').replace(/[^\d]/g, ''),
+          likes: String(get(row, 'likes') || '').replace(/[^\d]/g, ''),
+          comments: String(get(row, 'comments') || '').replace(/[^\d]/g, ''),
+          memo: String(get(row, 'memo') || '').trim(),
+          pid: match ? match.id : null,
+          dup: match ? (match.uploads || []).some(u => (u.url || '').trim() === url) : false,
+          pick: !!match
+        });
+      });
+      renderFormImport();
+    }
+    function matchPersonForForm(name, account) {
+      const n = reuseNorm(name), a = reuseNorm(account);
+      let p = null;
+      if (a) p = pplList.find(x => reuseNorm(x.influencer) === a);
+      if (!p && n) p = pplList.find(x => reuseNorm(x.realName) === n);
+      if (!p && a) p = pplList.find(x => reuseNorm(x.realName) === a);
+      return p || null;
+    }
+    function toggleFormRow(i, on) { if (formRows[i]) formRows[i].pick = on; }
+    function setFormRowTarget(i, pid) {
+      if (!formRows[i]) return;
+      formRows[i].pid = pid ? Number(pid) : null;
+      formRows[i].pick = !!pid;
+      renderFormImport();
+    }
+    function renderFormImport() {
+      const box = document.getElementById('formImportResult');
+      if (!box) return;
+      if (!formRows.length) { box.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">불러온 응답이 없습니다.</p>'; return; }
+      const matched = formRows.filter(r => r.pid).length;
+      const options = pplList.filter(p => isSupporters(p) || isAmbPaid(p) || isFreeAmb(p) || isPurePpl(p) || isCreatorType(p) || isMicro(p))
+        .map(p => '<option value="' + p.id + '">' + tEsc((p.realName || '무명') + ' ' + (p.influencer || '') + ' · ' + p.brand) + '</option>').join('');
+
+      box.innerHTML = '<div class="flex flex-wrap justify-between items-center gap-2">'
+        + '<p class="text-xs text-slate-600"><b>' + formRows.length + '건</b> 중 <b class="text-emerald-700">' + matched + '건</b> 자동 매칭됐습니다. 매칭 안 된 건은 직접 골라 주세요.</p>'
+        + '<button onclick="applyFormImport()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl">선택 항목 업로드 기록에 반영</button></div>'
+        + '<div class="overflow-x-auto custom-scrollbar"><table class="w-full text-left text-[11px]"><thead class="bg-slate-50 text-slate-600 font-semibold border-y border-slate-200"><tr>'
+        + '<th class="py-2 px-2 w-8"></th><th class="py-2 px-2">제출자</th><th class="py-2 px-2">반영 대상</th><th class="py-2 px-2">업로드일</th>'
+        + '<th class="py-2 px-2">링크</th><th class="py-2 px-2">지표</th></tr></thead><tbody class="divide-y divide-slate-100">'
+        + formRows.map((r, i) => '<tr class="' + (r.dup ? 'bg-slate-50 text-slate-400' : '') + '">'
+            + '<td class="py-2 px-2"><input type="checkbox" ' + (r.pick && !r.dup ? 'checked' : '') + ' ' + (r.dup ? 'disabled' : '') + ' onchange="toggleFormRow(' + i + ', this.checked)" class="accent-emerald-600 w-4 h-4"></td>'
+            + '<td class="py-2 px-2"><b>' + tEsc(r.name || '-') + '</b> <span class="text-slate-500">' + tEsc(r.account || '') + '</span></td>'
+            + '<td class="py-2 px-2">' + (r.dup ? '<span class="text-slate-400">이미 등록된 링크</span>'
+                : '<select onchange="setFormRowTarget(' + i + ', this.value)" class="px-1.5 py-1 text-[11px] border ' + (r.pid ? 'border-emerald-300' : 'border-rose-300') + ' rounded-lg bg-white max-w-[190px]">'
+                  + '<option value="">— 대상 선택 —</option>' + options.replace('value="' + r.pid + '"', 'value="' + r.pid + '" selected') + '</select>') + '</td>'
+            + '<td class="py-2 px-2 whitespace-nowrap">' + tEsc(r.date || '-') + '</td>'
+            + '<td class="py-2 px-2 max-w-[220px] truncate"><a href="' + tEsc(r.url) + '" target="_blank" rel="noopener" class="text-emerald-700 hover:underline">' + tEsc(r.url) + '</a></td>'
+            + '<td class="py-2 px-2 whitespace-nowrap">' + [r.views && '조회 ' + Number(r.views).toLocaleString(), r.likes && '❤ ' + r.likes, r.comments && '💬 ' + r.comments].filter(Boolean).join(' · ') + '</td>'
+            + '</tr>').join('')
+        + '</tbody></table></div>';
+    }
+    function applyFormImport() {
+      const picks = formRows.filter(r => r.pick && r.pid && !r.dup);
+      if (!picks.length) { alert('반영할 항목을 선택해 주세요.'); return; }
+      let n = 0;
+      picks.forEach(r => {
+        const p = pplList.find(x => x.id === r.pid);
+        if (!p) return;
+        p.uploads = p.uploads || [];
+        if (p.uploads.some(u => (u.url || '').trim() === r.url)) return;
+        p.uploads.push({
+          date: r.date, channel: reuseChannel(r.channel), type: '',
+          url: r.url, views: r.views, likes: r.likes, comments: r.comments,
+          keyword: '', rank: '', memo: r.memo ? ('인증폼 · ' + r.memo) : '인증폼 제출',
+          src: 'form'
+        });
+        p.collabLinks = (p.uploads || []).map(u => ({ date: u.date, product: prodNamesOf(p).join(', '), url: u.url }));
+        n++;
+      });
+      formRows = formRows.filter(r => !(r.pick && r.pid && !r.dup));
+      saveAll(); renderAll(); renderFormImport();
+      alert(n + '건을 업로드 기록에 반영했습니다.');
+    }
+    function pickFormFile(input) {
+      const f = (input.files || [])[0];
+      if (!f) return;
+      const fr = new FileReader();
+      fr.onload = e => {
+        try {
+          const wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          ingestFormMatrix(XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' }));
+        } catch (err) { alert('파일을 읽지 못했습니다: ' + err.message); }
+      };
+      fr.readAsArrayBuffer(f);
+      input.value = '';
+    }
+    function parseFormPaste() {
+      const txt = document.getElementById('formPasteArea').value;
+      if (!txt.trim()) { alert('붙여넣은 내용이 없습니다.'); return; }
+      const sep = txt.indexOf('\t') >= 0 ? '\t' : ',';
+      ingestFormMatrix(txt.trim().split(/\r?\n/).map(l => l.split(sep)));
+    }
+
     function renderPplTable() {
       const tbody = document.getElementById('pplTableBody');
       let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p) && !isSupporters(p));
@@ -5606,6 +6627,7 @@
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
               <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
               <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
+              ${guideBtnHtml(p)}
               <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -5697,6 +6719,7 @@
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
               <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
               <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
+              ${guideBtnHtml(p)}
               <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -5776,6 +6799,7 @@
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
               <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
               <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
+              ${guideBtnHtml(p)}
               <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
