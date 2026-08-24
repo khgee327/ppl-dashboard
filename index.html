@@ -150,6 +150,40 @@
       </div>
     </section>
 
+
+    <!-- 이번 달 집행 비용 -->
+    <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-violet-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-sack-dollar text-violet-600"></i> 이번 달 집행 비용
+          </h2>
+          <p class="text-xs text-slate-500">계약 금액(입금 관리에 넣은 총액)이 있으면 그 값을, 없으면 등록된 단가 합계를 씁니다. 마이크로는 <b>패키지 금액</b>으로 한 번만 잡혀요.</p>
+        </div>
+        <button onclick="exportCostExcel()" class="px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 비용 내역 다운로드
+        </button>
+      </div>
+
+      <div id="costCards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-violet-50/60 text-slate-600 font-semibold border-y border-violet-100">
+            <tr>
+              <th class="py-2.5 px-3">구분</th>
+              <th class="py-2.5 px-3 text-center">건수</th>
+              <th class="py-2.5 px-3 text-right">금액</th>
+              <th class="py-2.5 px-3">비중</th>
+            </tr>
+          </thead>
+          <tbody id="costBreakdownBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+
+      <div id="costDetailNote" class="text-xs"></div>
+    </section>
+
     <!-- 상세: 누가 언제 업로드했는지 -->
     <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-pink-50 pb-3">
@@ -871,6 +905,58 @@
           <tbody id="microTableBody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
+    </section>
+
+    <!-- 마이크로 패키지 관리 -->
+    <section class="bg-white p-5 rounded-2xl border border-sky-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-sky-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-box-open text-sky-600"></i> 마이크로 패키지 (인원 · 금액 묶음)
+            <span id="pkgHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full">0개</span>
+          </h2>
+          <p class="text-xs text-slate-500">"10인에 300만원" 처럼 묶음으로 계약한 건을 등록하고 인플루언서를 배정하세요. 1인당 단가가 자동 계산되고, 월간 비용에는 <b>패키지 금액만</b> 한 번 잡힙니다.</p>
+        </div>
+        <button onclick="exportPackageExcel()" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 패키지 내역 다운로드
+        </button>
+      </div>
+
+      <div class="bg-sky-50/50 p-4 rounded-2xl border border-sky-200 space-y-3">
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-2.5">
+          <div>
+            <label class="block text-[11px] font-bold text-sky-800 mb-1">브랜드</label>
+            <select id="pkgBrand" class="w-full px-2.5 py-2 text-xs border border-sky-200 rounded-xl bg-white font-semibold">
+              <option value="온살">온살</option>
+              <option value="루메아카이브">루메아카이브</option>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-[11px] font-bold text-sky-800 mb-1">패키지명</label>
+            <input id="pkgName" placeholder="예) 8월 마이크로 릴스 10인 패키지" class="w-full px-2.5 py-2 text-xs border border-sky-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-sky-800 mb-1">진행 월</label>
+            <input type="month" id="pkgMonth" class="w-full px-2.5 py-2 text-xs border border-sky-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-sky-800 mb-1">계약 인원 (명)</label>
+            <input type="number" id="pkgHeadcount" placeholder="10" class="w-full px-2.5 py-2 text-xs border border-sky-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-sky-800 mb-1">총 금액 (원)</label>
+            <input type="number" id="pkgAmount" placeholder="3000000" class="w-full px-2.5 py-2 text-xs border border-sky-200 rounded-xl font-bold">
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2.5">
+          <input id="pkgMemo" placeholder="메모 (업체명, 계약 조건, 릴스 1회+2차활용 포함 등)" class="flex-1 min-w-[220px] px-2.5 py-2 text-xs border border-sky-200 rounded-xl">
+          <button onclick="addMicroPackage()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl whitespace-nowrap">
+            <i class="fa-solid fa-plus"></i> 패키지 추가
+          </button>
+        </div>
+      </div>
+
+      <div id="pkgList" class="space-y-3"></div>
     </section>
 
 
@@ -2739,6 +2825,30 @@
     </div>
   </div>
 
+  <!-- ==================== 패키지 인원 배정 모달 ==================== -->
+  <div id="pkgAssignModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between z-10">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-user-plus text-sky-600"></i> 패키지 인원 배정</h3>
+          <p class="text-xs text-slate-500 mt-0.5"><span id="pkgAssignWho"></span></p>
+        </div>
+        <button onclick="closePkgAssign()" class="text-slate-400 hover:text-slate-700 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="p-6 space-y-3">
+        <p class="text-xs text-slate-500">마이크로로 등록된 인플루언서 중에서 이 패키지에 포함할 사람을 골라 주세요. 다른 패키지에 이미 들어간 사람은 선택할 수 없어요.</p>
+        <div id="pkgAssignList" class="space-y-1.5 max-h-[46vh] overflow-y-auto custom-scrollbar"></div>
+      </div>
+      <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-between items-center">
+        <div class="text-xs font-bold text-slate-600">선택 <span id="pkgAssignCount" class="text-sky-700">0</span>명</div>
+        <div class="flex gap-2">
+          <button onclick="closePkgAssign()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+          <button onclick="savePkgAssign()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl">저장하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== SCRIPT ==================== -->
   <script>
     // ===== 구글 시트 동기화 설정 =====
@@ -2778,7 +2888,8 @@
         onsal_trialStages: trialStages,
         onsal_monthlyNotes: monthlyNotes,
         onsal_contactList: contactList,
-        onsal_creatorMissions: creatorMissions
+        onsal_creatorMissions: creatorMissions,
+        onsal_microPackages: microPackages
       };
     }
 
@@ -2843,6 +2954,7 @@
           if (Array.isArray(d.onsal_monthlyNotes)) monthlyNotes = d.onsal_monthlyNotes;
           if (Array.isArray(d.onsal_contactList)) contactList = d.onsal_contactList;
           if (Array.isArray(d.onsal_creatorMissions)) creatorMissions = d.onsal_creatorMissions;
+          if (Array.isArray(d.onsal_microPackages)) microPackages = d.onsal_microPackages;
 
           localStorage.setItem('onsal_products', JSON.stringify(products));
           localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
@@ -2858,6 +2970,7 @@
           localStorage.setItem('onsal_monthlyNotes', JSON.stringify(monthlyNotes));
           localStorage.setItem('onsal_contactList', JSON.stringify(contactList));
           localStorage.setItem('onsal_creatorMissions', JSON.stringify(creatorMissions));
+          localStorage.setItem('onsal_microPackages', JSON.stringify(microPackages));
         }
 
         syncReady = true;
@@ -3153,6 +3266,9 @@
 
     // 크리에이터 월간 미션 설정 [{ month:'2026-08', m1, m2, baseFee, bonusFee, keywordGoal, rankLimit }]
     let creatorMissions = JSON.parse(localStorage.getItem('onsal_creatorMissions')) || [];
+
+    // 마이크로 패키지 [{ id, brand, name, month, headcount, amount, memo, memberIds:[] }]
+    let microPackages = JSON.parse(localStorage.getItem('onsal_microPackages')) || [];
 
     /* ==================== 체험단 관리 ==================== */
     const TRIAL_RECRUIT_DAYS = 4;   // 총 모집 일수
@@ -3676,6 +3792,7 @@
       localStorage.setItem('onsal_monthlyNotes', JSON.stringify(monthlyNotes));
       localStorage.setItem('onsal_contactList', JSON.stringify(contactList));
       localStorage.setItem('onsal_creatorMissions', JSON.stringify(creatorMissions));
+      localStorage.setItem('onsal_microPackages', JSON.stringify(microPackages));
       queueSync();
       queueSchedulerSync();
     }
@@ -3733,6 +3850,7 @@
       renderTrialDashboard();
       renderPayPage();
       renderFormImport();
+      renderPackages();
     }
 
     // 페이지 전환 (PPL / 시딩재고 / UTM)
@@ -3756,7 +3874,7 @@
 
       if (pageId === 'monthly') renderMonthly();
       if (pageId === 'contact') { updateContactProductList(); renderContactList(); }
-      if (pageId === 'micro') { renderMicroTable(); renderUploadTables(); }
+      if (pageId === 'micro') { renderMicroTable(); renderPackages(); renderUploadTables(); }
       if (pageId === 'sup') { renderSupTable(); renderRankTable(); renderCreatorMissions(); renderUploadTables(); }
       if (pageId === 'amb') { renderAmbTable(); renderFreeAmbTable(); renderUploadTables(); }
       if (pageId === 'creator') { renderCreatorTable(); renderInfluencerCards(); renderProposals(); renderUploadTables(); }
@@ -4706,6 +4824,7 @@
           : '';
       }
 
+      renderMonthlyCost(ym, rows);
       renderMonthlyNotes(ym, rows);
     }
 
@@ -6054,7 +6173,7 @@
     }
     function ensurePayment(rec, isTrial) {
       if (!rec.payment) {
-        const total = isTrial ? 0 : totalCostOf(rec);
+        const total = isTrial ? 0 : (typeof costOfPpl === 'function' ? costOfPpl(rec) : totalCostOf(rec));
         rec.payment = {
           mode: total ? '후불(전액)' : '무상 / 지급 없음',
           total: total,
@@ -6515,6 +6634,279 @@
       ingestFormMatrix(txt.trim().split(/\r?\n/).map(l => l.split(sep)));
     }
 
+
+    /* ==================== 마이크로 패키지 ==================== */
+    let pkgAssignId = null;
+
+    function packageOfPpl(id) {
+      return microPackages.find(k => (k.memberIds || []).includes(id)) || null;
+    }
+    function pkgUnitCost(k) {
+      const n = (k.memberIds || []).length || Number(k.headcount) || 0;
+      return n ? Math.round((Number(k.amount) || 0) / n) : 0;
+    }
+    // 이 건의 비용 (패키지 소속이면 패키지 1인당 단가)
+    function costOfPpl(p) {
+      const k = packageOfPpl(p.id);
+      if (k) return pkgUnitCost(k);
+      if (p.payment && Number(p.payment.total) > 0) return Number(p.payment.total);
+      return totalCostOf(p);
+    }
+
+    function addMicroPackage() {
+      const name = document.getElementById('pkgName').value.trim();
+      const amount = Number(document.getElementById('pkgAmount').value) || 0;
+      if (!name) { alert('패키지명을 입력해 주세요.'); return; }
+      microPackages.unshift({
+        id: Date.now(),
+        brand: document.getElementById('pkgBrand').value,
+        name: name,
+        month: document.getElementById('pkgMonth').value || new Date().toISOString().slice(0, 7),
+        headcount: Number(document.getElementById('pkgHeadcount').value) || 0,
+        amount: amount,
+        memo: document.getElementById('pkgMemo').value.trim(),
+        memberIds: []
+      });
+      ['pkgName', 'pkgHeadcount', 'pkgAmount', 'pkgMemo'].forEach(id => { document.getElementById(id).value = ''; });
+      saveAll();
+      renderPackages();
+    }
+    function updatePackageField(id, field, value) {
+      const k = microPackages.find(x => x.id === id);
+      if (!k) return;
+      k[field] = (field === 'amount' || field === 'headcount') ? (Number(value) || 0) : value;
+      saveAll();
+      renderPackages();
+      renderMicroTable();
+      renderMonthly();
+    }
+    function deletePackage(id) {
+      if (!confirm('이 패키지를 삭제할까요? (배정된 인플루언서 데이터는 그대로 남습니다)')) return;
+      microPackages = microPackages.filter(x => x.id !== id);
+      saveAll();
+      renderAll();
+    }
+    function removePkgMember(pkgId, pid) {
+      const k = microPackages.find(x => x.id === pkgId);
+      if (!k) return;
+      k.memberIds = (k.memberIds || []).filter(x => x !== pid);
+      saveAll();
+      renderAll();
+    }
+
+    function renderPackages() {
+      const box = document.getElementById('pkgList');
+      if (!box) return;
+      setTxt('pkgHeaderCount', microPackages.length + '개');
+      if (!microPackages.length) {
+        box.innerHTML = '<p class="text-xs text-slate-400 text-center py-8">등록된 패키지가 없습니다. 위에서 "10인에 300만원" 같은 묶음 계약을 추가해 보세요.</p>';
+        return;
+      }
+      box.innerHTML = microPackages.map(k => {
+        const members = (k.memberIds || []).map(id => pplList.find(p => p.id === id)).filter(Boolean);
+        const unit = pkgUnitCost(k);
+        const filled = members.length;
+        const cap = Number(k.headcount) || 0;
+        const pct = cap ? Math.min(100, Math.round(filled / cap * 100)) : 0;
+        const brandBadgeClass = k.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+        return '<div class="bg-white p-4 rounded-2xl border border-sky-200 space-y-3">'
+          + '<div class="flex flex-wrap items-center gap-2 justify-between">'
+          + '<div class="min-w-0"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + tEsc(k.brand) + '</span> '
+          + '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-white">' + tEsc(k.month || '월 미정') + '</span>'
+          + '<div class="font-black text-slate-900 mt-1">' + tEsc(k.name) + '</div>'
+          + (k.memo ? '<div class="text-[11px] text-slate-500">' + tEsc(k.memo) + '</div>' : '') + '</div>'
+          + '<div class="flex items-center gap-2">'
+          + '<button onclick="openPkgAssign(' + k.id + ')" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-bold rounded-xl"><i class="fa-solid fa-user-plus"></i> 인원 배정</button>'
+          + '<button onclick="deletePackage(' + k.id + ')" class="text-slate-400 hover:text-rose-600 px-2"><i class="fa-solid fa-trash"></i></button>'
+          + '</div></div>'
+
+          + '<div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">'
+          + '<div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">계약 인원</label>'
+          + '<input type="number" value="' + tEsc(k.headcount || '') + '" onchange="updatePackageField(' + k.id + ", 'headcount', this.value)\" class=\"w-full px-2 py-1.5 text-xs border border-sky-200 rounded-lg\"></div>"
+          + '<div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">총 금액 (원)</label>'
+          + '<input type="number" value="' + tEsc(k.amount || '') + '" onchange="updatePackageField(' + k.id + ", 'amount', this.value)\" class=\"w-full px-2 py-1.5 text-xs border border-sky-200 rounded-lg font-bold\"></div>"
+          + '<div class="bg-sky-50/60 rounded-lg border border-sky-100 px-2.5 py-1.5"><span class="text-[10px] font-bold text-slate-500">1인당 단가</span>'
+          + '<div class="text-sm font-black text-sky-700">' + unit.toLocaleString() + '원</div></div>'
+          + '<div class="bg-slate-50 rounded-lg border border-slate-200 px-2.5 py-1.5"><span class="text-[10px] font-bold text-slate-500">배정 현황</span>'
+          + '<div class="text-sm font-black ' + (cap && filled === cap ? 'text-emerald-600' : 'text-slate-800') + '">' + filled + ' / ' + (cap || '-') + '명</div>'
+          + '<div class="h-1.5 bg-slate-200 rounded-full overflow-hidden mt-1"><div class="h-full ' + (cap && filled === cap ? 'bg-emerald-500' : 'bg-sky-400') + '" style="width:' + pct + '%"></div></div></div>'
+          + '</div>'
+
+          + '<div class="flex flex-wrap gap-1.5">'
+          + (members.length
+              ? members.map(p => '<span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-sky-50 text-sky-800 border border-sky-200 rounded-lg px-2 py-1">'
+                  + tEsc(p.realName || '무명') + '<span class="text-slate-400">' + tEsc(p.influencer || '') + '</span>'
+                  + '<button onclick="removePkgMember(' + k.id + ', ' + p.id + ')" class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-xmark text-[10px]"></i></button></span>').join('')
+              : '<span class="text-[11px] text-slate-400">아직 배정된 인플루언서가 없습니다.</span>')
+          + '</div></div>';
+      }).join('');
+    }
+
+    function openPkgAssign(id) {
+      const k = microPackages.find(x => x.id === id);
+      if (!k) return;
+      pkgAssignId = id;
+      setTxt('pkgAssignWho', k.brand + ' · ' + k.name + ' · ' + (Number(k.amount) || 0).toLocaleString() + '원 / ' + (k.headcount || 0) + '명');
+      const list = pplList.filter(isMicro);
+      const box = document.getElementById('pkgAssignList');
+      box.innerHTML = list.length
+        ? list.map(p => {
+            const other = microPackages.find(x => x.id !== id && (x.memberIds || []).includes(p.id));
+            const on = (k.memberIds || []).includes(p.id);
+            return '<label class="flex items-center gap-2.5 px-3 py-2 rounded-xl border ' + (other ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-sky-300 cursor-pointer') + '">'
+              + '<input type="checkbox" class="pkg-pick accent-sky-600 w-4 h-4" value="' + p.id + '" ' + (on ? 'checked' : '') + ' ' + (other ? 'disabled' : '') + ' onchange="updatePkgAssignCount()">'
+              + '<span class="flex-1 min-w-0"><b class="text-xs text-slate-900">' + tEsc(p.realName || '무명') + '</b> '
+              + '<span class="text-[11px] text-slate-500">' + tEsc(p.influencer || '') + '</span>'
+              + '<span class="text-[10px] text-slate-400"> · ' + tEsc(p.brand) + ' · ' + tEsc(prodNamesOf(p).join(', ') || '제품 미지정') + '</span></span>'
+              + (other ? '<span class="text-[10px] font-bold text-slate-400 whitespace-nowrap">' + tEsc(other.name) + '</span>' : '')
+              + '</label>';
+          }).join('')
+        : '<p class="text-xs text-slate-400 text-center py-6">마이크로로 등록된 인플루언서가 없습니다.</p>';
+      updatePkgAssignCount();
+      document.getElementById('pkgAssignModal').classList.remove('hidden');
+    }
+    function updatePkgAssignCount() {
+      setTxt('pkgAssignCount', document.querySelectorAll('#pkgAssignList .pkg-pick:checked').length);
+    }
+    function closePkgAssign() { document.getElementById('pkgAssignModal').classList.add('hidden'); pkgAssignId = null; }
+    function savePkgAssign() {
+      const k = microPackages.find(x => x.id === pkgAssignId);
+      if (!k) return;
+      k.memberIds = Array.from(document.querySelectorAll('#pkgAssignList .pkg-pick:checked')).map(c => Number(c.value));
+      saveAll();
+      closePkgAssign();
+      renderAll();
+    }
+
+    function exportPackageExcel() {
+      if (!microPackages.length) { alert('등록된 패키지가 없습니다.'); return; }
+      const out = [];
+      microPackages.forEach(k => {
+        const members = (k.memberIds || []).map(id => pplList.find(p => p.id === id)).filter(Boolean);
+        const unit = pkgUnitCost(k);
+        if (!members.length) {
+          out.push({ '진행월': k.month || '', '브랜드': k.brand, '패키지명': k.name, '계약인원': k.headcount,
+            '총금액': k.amount, '1인당단가': unit, '배정인원': 0, '인플루언서': '', '계정': '', '제품': '', '메모': k.memo || '' });
+          return;
+        }
+        members.forEach(p => out.push({
+          '진행월': k.month || '', '브랜드': k.brand, '패키지명': k.name, '계약인원': k.headcount,
+          '총금액': k.amount, '1인당단가': unit, '배정인원': members.length,
+          '인플루언서': p.realName || '', '계정': p.influencer || '',
+          '제품': prodNamesOf(p).join(', '), '메모': k.memo || ''
+        }));
+      });
+      downloadSheet(out, '마이크로패키지_' + todayStr());
+    }
+
+    /* ==================== 월간 집행 비용 ==================== */
+    function monthlyCost(ym, rows) {
+      const byCat = {};
+      const byBrand = { '온살': 0, '루메아카이브': 0 };
+      const details = [];
+      const seen = new Set();
+      const add = (cat, brand, amt) => {
+        if (!amt) return;
+        if (!byCat[cat]) byCat[cat] = { n: 0, amt: 0 };
+        byCat[cat].n++; byCat[cat].amt += amt;
+        byBrand[brand] = (byBrand[brand] || 0) + amt;
+      };
+      const brandOk = b => monthlyBrandFilter === '전체' || b === monthlyBrandFilter;
+
+      (rows || []).forEach(r => {
+        const key = (r.isTrial ? 't' : 'p') + r.pid;
+        if (seen.has(key)) return;
+        seen.add(key);
+        if (r.isTrial) {
+          const t = trialList.find(x => x.id === r.pid);
+          if (!t) return;
+          const amt = (t.payment && Number(t.payment.total)) || 0;
+          add('체험단', t.brand, amt);
+        } else {
+          const p = pplList.find(x => x.id === r.pid);
+          if (!p) return;
+          if (packageOfPpl(p.id)) return; // 패키지 금액으로 따로 집계
+          add(r.cat, p.brand, costOfPpl(p));
+        }
+      });
+
+      microPackages.forEach(k => {
+        if ((k.month || '') !== ym || !brandOk(k.brand)) return;
+        const amt = Number(k.amount) || 0;
+        add('마이크로 패키지', k.brand, amt);
+        if (amt) details.push({ type: '마이크로 패키지', label: k.name, sub: (k.memberIds || []).length + '/' + (k.headcount || 0) + '명 · 1인당 ' + pkgUnitCost(k).toLocaleString() + '원', brand: k.brand, amt: amt });
+      });
+
+      const cfg = getMissionCfg(ym, false);
+      pplList.filter(isSupporters).forEach(p => {
+        if (!brandOk(p.brand)) return;
+        const pay = missionPayOf(p, ym, cfg);
+        if (!pay.total) return;
+        add('크리에이터 활동비', p.brand, pay.total);
+        details.push({ type: '크리에이터 활동비', label: p.realName || '무명', sub: '월 활동비 ' + pay.base.toLocaleString() + (pay.bonus ? ' + 추가 ' + pay.bonus.toLocaleString() : ''), brand: p.brand, amt: pay.total });
+      });
+
+      const total = Object.values(byCat).reduce((a, v) => a + v.amt, 0);
+      const count = Object.values(byCat).reduce((a, v) => a + v.n, 0);
+      return { byCat, byBrand, total, count, details };
+    }
+
+    function renderMonthlyCost(ym, rows) {
+      const cardBox = document.getElementById('costCards');
+      if (!cardBox) return;
+      const c = monthlyCost(ym, rows);
+
+      const card = (label, val, sub, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
+        + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
+        + '<div class="text-xl font-black text-' + color + '-600 mt-0.5">' + val + '</div>'
+        + '<div class="text-[11px] text-slate-500 font-semibold">' + sub + '</div></div>';
+      cardBox.innerHTML = card('총 집행 비용', c.total.toLocaleString() + '원', c.count + '건 기준', 'violet')
+        + card('온살', (c.byBrand['온살'] || 0).toLocaleString() + '원', '', 'pink')
+        + card('루메아카이브', (c.byBrand['루메아카이브'] || 0).toLocaleString() + '원', '', 'skyblue')
+        + card('1건당 평균', (c.count ? Math.round(c.total / c.count) : 0).toLocaleString() + '원', '', 'slate');
+
+      const tb = document.getElementById('costBreakdownBody');
+      const entries = Object.entries(c.byCat).sort((a, b) => b[1].amt - a[1].amt);
+      tb.innerHTML = entries.length
+        ? entries.map(([cat, v]) => {
+            const pct = c.total ? Math.round(v.amt / c.total * 100) : 0;
+            return '<tr class="hover:bg-slate-50/60">'
+              + '<td class="py-2.5 px-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + (CAT_STYLE[cat] || 'bg-violet-100 text-violet-700') + '">' + cat + '</span></td>'
+              + '<td class="py-2.5 px-3 text-center font-bold text-slate-700">' + v.n + '</td>'
+              + '<td class="py-2.5 px-3 text-right font-black text-slate-900">' + v.amt.toLocaleString() + '원</td>'
+              + '<td class="py-2.5 px-3"><div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-violet-400" style="width:' + pct + '%"></div></div>'
+              + '<span class="text-[11px] font-bold text-slate-600 w-9 text-right">' + pct + '%</span></div></td></tr>';
+          }).join('')
+          + '<tr class="bg-slate-50 font-black"><td class="py-2.5 px-3 text-slate-800">합계</td>'
+          + '<td class="py-2.5 px-3 text-center text-slate-800">' + c.count + '</td>'
+          + '<td class="py-2.5 px-3 text-right text-slate-900">' + c.total.toLocaleString() + '원</td><td></td></tr>'
+        : '<tr><td colspan="4" class="py-8 text-center text-slate-400">이번 달 집행 비용이 없습니다.<br>단가를 등록하거나 <b>입금 관리</b>에 계약 금액을 넣으면 여기에 잡혀요.</td></tr>';
+
+      const note = document.getElementById('costDetailNote');
+      if (note) {
+        note.innerHTML = c.details.length
+          ? '<div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-1"><b class="text-slate-700">묶음 · 활동비 상세</b>'
+            + c.details.map(d => '<div class="flex flex-wrap justify-between gap-2 text-slate-600 border-t border-slate-100 pt-1 first:border-0">'
+                + '<span>· <b class="text-slate-800">' + tEsc(d.label) + '</b> <span class="text-slate-400">' + tEsc(d.type) + ' · ' + tEsc(d.sub) + '</span></span>'
+                + '<span class="font-bold text-slate-800">' + d.amt.toLocaleString() + '원</span></div>').join('')
+            + '</div>'
+          : '';
+      }
+    }
+
+    function exportCostExcel() {
+      const ym = currentYm();
+      const rows = collectMonthlyRows(ym);
+      const c = monthlyCost(ym, rows);
+      const out = Object.entries(c.byCat).map(([cat, v]) => ({
+        '월': ym, '구분': cat, '건수': v.n, '금액': v.amt
+      }));
+      c.details.forEach(d => out.push({ '월': ym, '구분': d.type + ' 상세', '건수': d.label + ' (' + d.sub + ')', '금액': d.amt }));
+      if (!out.length) { alert('이번 달 비용 내역이 없습니다.'); return; }
+      out.push({ '월': ym, '구분': '합계', '건수': c.count, '금액': c.total });
+      downloadSheet(out, '월간집행비용_' + ym);
+    }
+
     function renderPplTable() {
       const tbody = document.getElementById('pplTableBody');
       let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p) && !isSupporters(p));
@@ -6714,7 +7106,13 @@
             <td class="py-3 px-3 align-top min-w-[170px]">${addrLine}</td>
             <td class="py-3 px-3 align-top">
               <div class="font-bold text-sky-700">${p.seedingCount || 0}개</div>
-              <div class="text-[11px] text-slate-500 font-bold">${totalCost.toLocaleString()}원</div>
+              ${(() => { const k = packageOfPpl(p.id); return k
+                ? `<div class="mt-1 text-[10px] font-bold text-sky-800 bg-sky-50 border border-sky-200 rounded-lg px-2 py-1 leading-tight">
+                     <i class="fa-solid fa-box-open"></i> ${tEsc(k.name)}<br>
+                     <span class="text-slate-500">${(k.memberIds || []).length}/${k.headcount || 0}명 · 총 ${(Number(k.amount) || 0).toLocaleString()}원</span><br>
+                     <span class="text-sky-700">1인당 ${pkgUnitCost(k).toLocaleString()}원</span>
+                   </div>`
+                : `<div class="text-[11px] text-slate-500 font-bold">${totalCost.toLocaleString()}원</div>`; })()}
             </td>
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
               <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
