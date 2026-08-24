@@ -44,17 +44,32 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <div class="flex p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold">
-          <button onclick="switchMainPage('ppl')" id="nav-ppl" class="px-4 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5">
+        <div class="flex flex-wrap p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold">
+          <button onclick="switchMainPage('monthly')" id="nav-monthly" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-column"></i> 월간 통합 현황
+          </button>
+          <button onclick="switchMainPage('contact')" id="nav-contact" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-address-book"></i> 컨택 리스트
+          </button>
+          <button onclick="switchMainPage('ppl')" id="nav-ppl" class="px-3 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5">
             <i class="fa-solid fa-bullhorn"></i> PPL & 협찬 관리
           </button>
-          <button onclick="switchMainPage('trial')" id="nav-trial" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+          <button onclick="switchMainPage('micro')" id="nav-micro" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-users-rays"></i> 마이크로 관리
+          </button>
+          <button onclick="switchMainPage('amb')" id="nav-amb" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-crown"></i> 앰버서더 관리
+          </button>
+          <button onclick="switchMainPage('creator')" id="nav-creator" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-video"></i> 크리에이터 관리
+          </button>
+          <button onclick="switchMainPage('trial')" id="nav-trial" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-users-rectangle"></i> 체험단 관리
           </button>
-          <button onclick="switchMainPage('seeding')" id="nav-seeding" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-boxes-stacked"></i> 시딩 샘플 & 재고 관리
+          <button onclick="switchMainPage('seeding')" id="nav-seeding" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-boxes-stacked"></i> 시딩 샘플 & 재고
           </button>
-          <button onclick="switchMainPage('utm')" id="nav-utm" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+          <button onclick="switchMainPage('utm')" id="nav-utm" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-link"></i> UTM
           </button>
         </div>
@@ -70,6 +85,262 @@
       </div>
     </div>
   </header>
+
+  <!-- ==================== PAGE: 월간 통합 현황 ==================== -->
+  <main id="page-monthly" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap justify-between items-center gap-3">
+        <div class="flex items-center gap-3">
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-chart-column text-pink-500"></i> 월간 총 협업 현황
+          </h2>
+          <span id="monthlyTitle" class="text-base font-black text-pink-600"></span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex p-1 bg-pink-50 rounded-xl border border-pink-100 text-xs font-bold">
+            <button onclick="setMonthlyBrand('전체')" id="mbrand-전체" class="px-3 py-1.5 rounded-lg bg-white text-pink-600 shadow-xs">전체</button>
+            <button onclick="setMonthlyBrand('온살')" id="mbrand-온살" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">온살</button>
+            <button onclick="setMonthlyBrand('루메아카이브')" id="mbrand-루메아카이브" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">루메아카이브</button>
+          </div>
+          <div class="flex items-center gap-1">
+            <button onclick="moveMonthly(-1)" class="p-2 hover:bg-pink-50 rounded-xl text-slate-600 text-xs"><i class="fa-solid fa-chevron-left"></i></button>
+            <button onclick="moveMonthly(0)" class="px-3 py-1.5 text-xs font-semibold border border-pink-200 rounded-xl hover:bg-pink-50 text-pink-700">이번 달</button>
+            <button onclick="moveMonthly(1)" class="p-2 hover:bg-pink-50 rounded-xl text-slate-600 text-xs"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <div id="monthlyCards" class="grid grid-cols-2 md:grid-cols-6 gap-3"></div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-pink-50/60 text-slate-600 font-semibold border-y border-pink-100">
+            <tr>
+              <th class="py-2.5 px-3">구분</th>
+              <th class="py-2.5 px-3 text-center">온살</th>
+              <th class="py-2.5 px-3 text-center">루메아카이브</th>
+              <th class="py-2.5 px-3 text-center">업로드 완료</th>
+              <th class="py-2.5 px-3 text-center">업로드 예정</th>
+            </tr>
+          </thead>
+          <tbody id="monthlyBreakdownBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 상세: 누가 언제 업로드했는지 -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-pink-50 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-pink-500"></i> 업로드 상세 내역
+            <span id="monthlyDetailCount" class="text-xs font-bold px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">PPL · 앰버서더 · 크리에이터 · 체험단을 한 표에서 봅니다. 회색 배지는 아직 업로드 전(예정)이에요.</p>
+        </div>
+        <button onclick="exportMonthlyExcel()" class="px-3.5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 이번 달 내역 다운로드
+        </button>
+      </div>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-pink-50/60 text-slate-600 font-semibold border-y border-pink-100">
+            <tr>
+              <th class="py-3 px-3 whitespace-nowrap">업로드 일자</th>
+              <th class="py-3 px-3">구분</th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">인플루언서 / 체험단</th>
+              <th class="py-3 px-3">채널 / 유형</th>
+              <th class="py-3 px-3 text-center">수량</th>
+              <th class="py-3 px-3">업로드 링크</th>
+              <th class="py-3 px-3">성과 / 상위노출</th>
+            </tr>
+          </thead>
+          <tbody id="monthlyDetailBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 월간 결과 / 상위노출 기록 -->
+    <section class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-amber-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-ranking-star text-amber-500"></i> 이번 달 결과 · 상위노출 기록
+          </h2>
+          <p class="text-xs text-slate-500">기획전 결과, 검색 상위노출 순위, 매출/전환 등 월 단위 성과를 자유롭게 기록하세요. 자동 저장됩니다.</p>
+        </div>
+        <button onclick="addMonthlyNoteRow()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-plus"></i> 결과 행 추가
+        </button>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-amber-50/60 text-slate-600 font-semibold border-y border-amber-100">
+            <tr>
+              <th class="py-2.5 px-2 w-28">구분</th>
+              <th class="py-2.5 px-2 w-24">채널/플랫폼</th>
+              <th class="py-2.5 px-2">키워드 / 기획전명</th>
+              <th class="py-2.5 px-2 w-24">순위 / 결과</th>
+              <th class="py-2.5 px-2">링크</th>
+              <th class="py-2.5 px-2">메모</th>
+              <th class="py-2.5 px-2 w-10"></th>
+            </tr>
+          </thead>
+          <tbody id="monthlyNoteBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-bold text-amber-800 mb-1">이번 달 총평 / 리포트 메모</label>
+        <textarea id="monthlyMemo" onchange="saveMonthlyMemo()" rows="4" placeholder="이번 달 협업 총평, 반응 좋았던 콘텐츠, 다음 달 액션 아이템 등을 적어 두세요." class="w-full px-3 py-2 text-xs border border-amber-200 rounded-xl bg-amber-50/30"></textarea>
+      </div>
+
+      <div id="monthlyRankAuto" class="text-xs"></div>
+    </section>
+
+  </main>
+
+  <!-- ==================== PAGE: 컨택 리스트 ==================== -->
+  <main id="page-contact" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl px-5 py-3.5 text-xs text-emerald-900">
+      <b>컨택 대기 인플루언서 풀</b> · 나중에 연락할 인플루언서를 미리 모아 두는 곳이에요. 컨택하면 체크하고, <b>진행이 확정된 사람만</b> PPL·앰버서더·크리에이터·마이크로 카테고리로 넘길 수 있습니다.
+    </div>
+
+    <div id="contactSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+
+    <!-- 등록 폼 -->
+    <section class="bg-white rounded-3xl border border-emerald-100 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 flex items-center justify-between cursor-pointer select-none" onclick="toggleSection('contactFormSection')">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i id="contactFormSection-icon" class="fa-solid fa-chevron-right text-emerald-500 text-xs transition-transform"></i>
+          <i class="fa-solid fa-user-plus text-emerald-600"></i> 컨택할 인플루언서 등록
+        </h2>
+        <span class="text-xs text-slate-400">클릭해서 열기</span>
+      </div>
+
+      <div id="contactFormSection" class="hidden px-6 pb-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">브랜드</label>
+            <select id="ctBrand" onchange="updateContactProductList()" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-semibold">
+              <option value="온살">온살</option>
+              <option value="루메아카이브">루메아카이브</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">본명 / 구분명</label>
+            <input id="ctRealName" placeholder="김민지" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">대표 계정</label>
+            <input id="ctInfluencer" placeholder="@beauty_su" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">팔로워 / 구독자</label>
+            <input id="ctFollowers" placeholder="4.5만" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">채널</label>
+            <select id="ctChannelType" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white">
+              <option value="인스타">인스타</option>
+              <option value="유튜브">유튜브</option>
+              <option value="블로그">블로그</option>
+              <option value="틱톡">틱톡</option>
+              <option value="스레드">스레드</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">프로필 URL</label>
+            <input id="ctChannelUrl" placeholder="https://instagram.com/..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">카테고리</label>
+            <input id="ctCategory" list="categoryList" placeholder="뷰티" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-[11px] font-bold text-emerald-700 mb-1"><i class="fa-solid fa-envelope"></i> 이메일 주소</label>
+            <input id="ctEmail" placeholder="influencer@gmail.com" class="w-full px-3 py-2 text-xs border border-emerald-200 rounded-xl bg-emerald-50/30">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">예상 단가 (원)</label>
+            <input type="number" id="ctExpectedCost" placeholder="300000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">컨택 경로 / MCN</label>
+            <input id="ctSource" placeholder="DM / 이메일 / 샌드박스" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+        </div>
+
+        <div class="bg-emerald-50/40 p-3.5 rounded-xl border border-emerald-200 space-y-2">
+          <label class="block text-[11px] font-bold text-emerald-800"><i class="fa-solid fa-box-open"></i> 제안 제품 (복수 선택 가능)</label>
+          <div id="ctProductList" class="grid grid-cols-2 md:grid-cols-4 gap-1.5 max-h-32 overflow-y-auto custom-scrollbar"></div>
+          <input id="ctProductEtc" placeholder="목록에 없는 제품은 직접 입력 (쉼표로 구분)" class="w-full px-3 py-2 text-xs border border-emerald-200 rounded-xl">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">제안 내용 / 메모</label>
+          <textarea id="ctMemo" rows="2" placeholder="예) 9월 신제품 시딩 + 릴스 1회 제안 예정 / 지난번 단가 협의 필요" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></textarea>
+        </div>
+
+        <button onclick="addContact()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-2xl shadow-xs transition">
+          <i class="fa-solid fa-plus"></i> 컨택 리스트에 추가
+        </button>
+      </div>
+    </section>
+
+    <!-- 컨택 리스트 테이블 -->
+    <section class="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-emerald-50 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-address-book text-emerald-600"></i> 컨택 리스트
+            <span id="contactHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">0명</span>
+          </h2>
+          <p class="text-xs text-slate-500">컨택하면 체크하고, 회신 결과를 남겨 두세요. <b>진행 확정</b>을 누르면 원하는 카테고리로 이관됩니다.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex p-1 bg-emerald-50 rounded-xl border border-emerald-100 text-xs font-bold">
+            <button onclick="setContactFilter('전체')" id="cfilter-전체" class="px-3 py-1.5 rounded-lg bg-white text-emerald-700 shadow-xs">전체</button>
+            <button onclick="setContactFilter('미컨택')" id="cfilter-미컨택" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">미컨택</button>
+            <button onclick="setContactFilter('컨택완료')" id="cfilter-컨택완료" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">컨택완료</button>
+            <button onclick="setContactFilter('확정')" id="cfilter-확정" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">확정/이관</button>
+          </div>
+          <button onclick="copyContactEmails()" class="px-3 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-copy"></i> 이메일 일괄 복사
+          </button>
+          <button onclick="exportContactExcel()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-arrow-down"></i> 엑셀 다운로드
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-emerald-50/60 text-slate-600 font-semibold border-y border-emerald-100">
+            <tr>
+              <th class="py-3 px-3 w-8"><input type="checkbox" onchange="toggleSelectAllBy('contact-select', this.checked)" class="accent-emerald-600 w-4 h-4 cursor-pointer"></th>
+              <th class="py-3 px-3">브랜드 / 인플루언서</th>
+              <th class="py-3 px-3">카테고리 / 팔로워</th>
+              <th class="py-3 px-3">이메일</th>
+              <th class="py-3 px-3">제안 제품</th>
+              <th class="py-3 px-3 text-center">컨택</th>
+              <th class="py-3 px-3">회신 상태</th>
+              <th class="py-3 px-3">진행 확정</th>
+              <th class="py-3 px-3">메모</th>
+              <th class="py-3 px-3 text-right">삭제</th>
+            </tr>
+          </thead>
+          <tbody id="contactTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
 
   <!-- ==================== PAGE 1: PPL & 협찬 진행 대시보드 ==================== -->
   <main id="page-ppl" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
@@ -216,6 +487,13 @@
               </label>
               <input type="number" id="cost_shorts" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
             </div>
+            <div class="bg-violet-50 p-2.5 rounded-xl border border-violet-200 space-y-1.5">
+              <label class="flex items-center gap-1.5 font-bold text-violet-800 cursor-pointer">
+                <input type="checkbox" id="type_creator" class="w-4 h-4 accent-violet-600 rounded"> 크리에이터
+              </label>
+              <input type="number" id="cost_creator" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-violet-200 rounded-lg">
+              <p class="text-[10px] text-violet-700 leading-tight">체크 시 <b>크리에이터 관리</b> 페이지로 분리됩니다</p>
+            </div>
             <div class="bg-sky-50 p-2.5 rounded-xl border border-sky-200 space-y-1.5">
               <label class="flex items-center gap-1.5 font-bold text-sky-800 cursor-pointer">
                 <input type="checkbox" id="type_microReels" class="w-4 h-4 accent-sky-600 rounded"> 마이크로 릴스
@@ -230,9 +508,10 @@
             </div>
             <div class="bg-white p-2.5 rounded-xl border border-amber-200/60 space-y-1.5">
               <label class="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
-                <input type="checkbox" id="type_ambassador" class="w-4 h-4 text-pink-500 accent-pink-500 rounded"> 앰버서더
+                <input type="checkbox" id="type_ambassador" class="w-4 h-4 accent-indigo-500 rounded"> 앰버서더
               </label>
               <input type="number" id="cost_ambassador" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
+              <p class="text-[10px] text-indigo-700 leading-tight">체크 시 <b>앰버서더 관리</b> 페이지로 분리됩니다</p>
             </div>
             <div class="bg-teal-50 p-2.5 rounded-xl border border-teal-200 space-y-1.5">
               <label class="flex items-center gap-1.5 font-bold text-teal-800 cursor-pointer">
@@ -411,6 +690,45 @@
       </div>
     </section>
 
+    <!-- 업로드 일자 & 링크 표 -->
+    <section class="bg-white p-5 rounded-2xl border border-pink-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-pink-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-arrow-up-right-from-square text-pink-600"></i> PPL 업로드 일자 & 링크
+            <span id="pplUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">업로드한 날짜와 링크만 모아서 봅니다. 목록의 “업로드/결과 입력”에서 기록하면 자동으로 쌓여요.</p>
+        </div>
+        <button onclick="exportUploadExcel('ppl')" class="px-3.5 py-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 업로드 내역 다운로드
+        </button>
+      </div>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-pink-50/60 text-slate-600 font-semibold border-y border-pink-100">
+            <tr>
+              <th class="py-3 px-3 whitespace-nowrap">업로드 일자</th>
+              <th class="py-3 px-3">인플루언서</th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">채널 / 유형</th>
+              <th class="py-3 px-3">업로드 링크</th>
+              <th class="py-3 px-3">성과 / 상위노출</th>
+            </tr>
+          </thead>
+          <tbody id="pplUploadBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== PAGE: 마이크로 관리 ==================== -->
+  <main id="page-micro" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <div class="bg-sky-50/60 border border-sky-100 rounded-2xl px-5 py-3.5 text-xs text-sky-900">
+      <b>마이크로 전용 페이지</b> · PPL 등록 시 <b>마이크로 릴스</b> 또는 <b>마이크로 PPL</b>을 체크하면 이 페이지로 분리됩니다. (PPL 목록에서는 빠져요)
+    </div>
     <!-- SECTION 4-2: 마이크로 진행 목록 -->
     <section class="bg-white p-5 rounded-2xl border border-sky-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-sky-100 pb-3">
@@ -486,6 +804,96 @@
       </div>
     </section>
 
+
+
+    <!-- 업로드 일자 & 링크 표 -->
+    <section class="bg-white p-5 rounded-2xl border border-sky-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-sky-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-arrow-up-right-from-square text-sky-600"></i> 마이크로 업로드 일자 &amp; 링크
+            <span id="microUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">마이크로 릴스 / 마이크로 PPL 업로드 일자와 링크를 모아서 봅니다.</p>
+        </div>
+        <button onclick="exportUploadExcel('micro')" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 업로드 내역 다운로드
+        </button>
+      </div>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-sky-50/60 text-slate-600 font-semibold border-y border-sky-100">
+            <tr>
+              <th class="py-3 px-3 whitespace-nowrap">업로드 일자</th>
+              <th class="py-3 px-3">인플루언서</th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">채널 / 유형</th>
+              <th class="py-3 px-3">업로드 링크</th>
+              <th class="py-3 px-3">성과 / 상위노출</th>
+            </tr>
+          </thead>
+          <tbody id="microUploadBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== PAGE: 앰버서더 관리 ==================== -->
+  <main id="page-amb" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl px-5 py-3.5 text-xs text-indigo-900">
+      <b>앰버서더 전용 페이지</b> · PPL 등록 시 <b>앰버서더</b> 또는 <b>무상앰버서더</b>를 체크하면 이 페이지로 분리됩니다. (PPL 목록에서는 빠져요)
+    </div>
+
+    <section class="bg-white p-5 rounded-2xl border border-indigo-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-indigo-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-crown text-indigo-600"></i> 유상 앰버서더 관리
+            <span id="ambHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full">0명</span>
+          </h2>
+          <p class="text-xs text-slate-500">단가가 발생하는 앰버서더 계약 건입니다.</p>
+        </div>
+        <button onclick="exportShippingExcel('amb')" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 배송정보 다운로드
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-100">
+          <span class="text-[11px] text-slate-500 font-semibold">전체</span>
+          <div id="ambTotal" class="text-2xl font-black text-indigo-700 mt-0.5">0명</div>
+        </div>
+        <div class="bg-pink-50/60 p-4 rounded-xl border border-pink-100">
+          <span class="text-[11px] text-slate-500 font-semibold">온살</span>
+          <div id="ambOnsal" class="text-2xl font-black text-pink-600 mt-0.5">0명</div>
+        </div>
+        <div class="bg-skyblue-50/60 p-4 rounded-xl border border-skyblue-100">
+          <span class="text-[11px] text-slate-500 font-semibold">루메아카이브</span>
+          <div id="ambLume" class="text-2xl font-black text-skyblue-600 mt-0.5">0명</div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-indigo-50/60 text-slate-600 font-semibold border-y border-indigo-100">
+            <tr>
+              <th class="py-3 px-3 w-8"><input type="checkbox" onchange="toggleSelectAllBy('amb-select', this.checked)" class="accent-indigo-600 w-4 h-4 cursor-pointer"></th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">인플루언서</th>
+              <th class="py-3 px-3">협업 형태 / 단가</th>
+              <th class="py-3 px-3">진행 상태</th>
+              <th class="py-3 px-3">단계별 일자</th>
+              <th class="py-3 px-3">업로드 / 결과</th>
+              <th class="py-3 px-3">배송 정보</th>
+              <th class="py-3 px-3 text-right">수정 / 삭제</th>
+            </tr>
+          </thead>
+          <tbody id="ambTableBody" class="divide-y divide-slate-100" data-empty="등록된 유상 앰버서더가 없습니다. PPL 등록 시 '앰버서더'를 체크하면 여기로 들어옵니다."></tbody>
+        </table>
+      </div>
+    </section>
     <!-- SECTION 4-3: 무상앰버서더 -->
     <section class="bg-white p-5 rounded-2xl border border-teal-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-teal-100 pb-3">
@@ -546,6 +954,126 @@
       </div>
     </section>
 
+
+    <!-- 업로드 일자 & 링크 표 -->
+    <section class="bg-white p-5 rounded-2xl border border-indigo-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-indigo-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-arrow-up-right-from-square text-indigo-600"></i> 앰버서더 업로드 일자 &amp; 링크
+            <span id="ambUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">유상·무상 앰버서더의 업로드 일자와 링크를 모아서 봅니다.</p>
+        </div>
+        <button onclick="exportUploadExcel('amb')" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 업로드 내역 다운로드
+        </button>
+      </div>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-indigo-50/60 text-slate-600 font-semibold border-y border-indigo-100">
+            <tr>
+              <th class="py-3 px-3 whitespace-nowrap">업로드 일자</th>
+              <th class="py-3 px-3">인플루언서</th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">채널 / 유형</th>
+              <th class="py-3 px-3">업로드 링크</th>
+              <th class="py-3 px-3">성과 / 상위노출</th>
+            </tr>
+          </thead>
+          <tbody id="ambUploadBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== PAGE: 크리에이터 관리 ==================== -->
+  <main id="page-creator" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <div class="bg-violet-50/60 border border-violet-100 rounded-2xl px-5 py-3.5 text-xs text-violet-900">
+      <b>크리에이터 전용 페이지</b> · PPL 등록 시 <b>크리에이터</b>를 체크하면 이 페이지로 분리됩니다. 아래에서 인플루언서 풀(리스트)과 MCN 소개서도 함께 관리해요.
+    </div>
+
+    <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-violet-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-video text-violet-600"></i> 크리에이터 협업 관리
+            <span id="creatorHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">0명</span>
+          </h2>
+          <p class="text-xs text-slate-500">크리에이터 형태로 진행하는 협업 건입니다.</p>
+        </div>
+        <button onclick="exportShippingExcel('creator')" class="px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 배송정보 다운로드
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-violet-50/60 p-4 rounded-xl border border-violet-100">
+          <span class="text-[11px] text-slate-500 font-semibold">전체</span>
+          <div id="creatorTotal" class="text-2xl font-black text-violet-700 mt-0.5">0명</div>
+        </div>
+        <div class="bg-pink-50/60 p-4 rounded-xl border border-pink-100">
+          <span class="text-[11px] text-slate-500 font-semibold">온살</span>
+          <div id="creatorOnsal" class="text-2xl font-black text-pink-600 mt-0.5">0명</div>
+        </div>
+        <div class="bg-skyblue-50/60 p-4 rounded-xl border border-skyblue-100">
+          <span class="text-[11px] text-slate-500 font-semibold">루메아카이브</span>
+          <div id="creatorLume" class="text-2xl font-black text-skyblue-600 mt-0.5">0명</div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-violet-50/60 text-slate-600 font-semibold border-y border-violet-100">
+            <tr>
+              <th class="py-3 px-3 w-8"><input type="checkbox" onchange="toggleSelectAllBy('creator-select', this.checked)" class="accent-violet-600 w-4 h-4 cursor-pointer"></th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">인플루언서</th>
+              <th class="py-3 px-3">협업 형태 / 단가</th>
+              <th class="py-3 px-3">진행 상태</th>
+              <th class="py-3 px-3">단계별 일자</th>
+              <th class="py-3 px-3">업로드 / 결과</th>
+              <th class="py-3 px-3">배송 정보</th>
+              <th class="py-3 px-3 text-right">수정 / 삭제</th>
+            </tr>
+          </thead>
+          <tbody id="creatorTableBody" class="divide-y divide-slate-100" data-empty="등록된 크리에이터 협업이 없습니다. PPL 등록 시 '크리에이터'를 체크하면 여기로 들어옵니다."></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 업로드 일자 & 링크 표 -->
+    <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-violet-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-arrow-up-right-from-square text-violet-600"></i> 크리에이터 업로드 일자 &amp; 링크
+            <span id="creatorUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">크리에이터 업로드 일자와 링크를 모아서 봅니다.</p>
+        </div>
+        <button onclick="exportUploadExcel('creator')" class="px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 업로드 내역 다운로드
+        </button>
+      </div>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-violet-50/60 text-slate-600 font-semibold border-y border-violet-100">
+            <tr>
+              <th class="py-3 px-3 whitespace-nowrap">업로드 일자</th>
+              <th class="py-3 px-3">인플루언서</th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">채널 / 유형</th>
+              <th class="py-3 px-3">업로드 링크</th>
+              <th class="py-3 px-3">성과 / 상위노출</th>
+            </tr>
+          </thead>
+          <tbody id="creatorUploadBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
     <!-- SECTION 5: 인플루언서 카드 뷰 -->
     <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
       <div class="flex justify-between items-center">
@@ -579,6 +1107,7 @@
         <!-- JS 로딩 -->
       </div>
     </section>
+
 
   </main>
 
@@ -1027,6 +1556,12 @@
             </label>
             <input type="number" id="editCost_shorts" placeholder="단가" class="w-full px-2 py-1 border border-slate-200 rounded">
           </div>
+          <div class="bg-violet-50 p-2 rounded-lg border border-violet-200 space-y-1">
+            <label class="flex items-center gap-1.5 font-bold text-violet-800 cursor-pointer">
+              <input type="checkbox" id="editType_creator" class="accent-violet-600 w-4 h-4"> 크리에이터
+            </label>
+            <input type="number" id="editCost_creator" placeholder="단가" class="w-full px-2 py-1 border border-violet-200 rounded">
+          </div>
           <div class="bg-sky-50 p-2 rounded-lg border border-sky-200 space-y-1">
             <label class="flex items-center gap-1.5 font-bold text-sky-800 cursor-pointer">
               <input type="checkbox" id="editType_microReels" class="accent-sky-600 w-4 h-4"> 마이크로 릴스
@@ -1460,6 +1995,94 @@
     </div>
   </div>
 
+  <!-- ==================== 업로드 / 결과 입력 모달 ==================== -->
+  <div id="uploadModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-3xl w-full max-w-5xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between z-10">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-chart-simple text-pink-500"></i> 업로드 일자 · 링크 · 결과 입력
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5"><span id="uploadModalWho"></span> · <span id="uploadModalProduct"></span></p>
+        </div>
+        <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-700 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div class="flex justify-between items-center">
+          <p class="text-xs text-slate-500">업로드 건마다 한 줄씩 넣어 주세요. 여기 넣은 일자·링크가 <b>업로드 표</b>와 <b>월간 통합 현황</b>에 자동 반영됩니다.</p>
+          <button onclick="addUploadRow()" class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i> 업로드 행 추가
+          </button>
+        </div>
+
+        <div id="uploadRowsContainer" class="space-y-2"></div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1">기획전 / PPL 결과 정리</label>
+          <textarea id="uploadResultNote" rows="4" placeholder="예) 무신사 기획전 매출 320만원 · 리뷰 42건 / 네이버 '수분크림 추천' 3위 노출 / 2차활용 광고 소재로 사용 중" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50/50"></textarea>
+        </div>
+      </div>
+
+      <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+        <button onclick="closeUploadModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+        <button onclick="saveUploads()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 진행 확정 → 카테고리 이관 모달 ==================== -->
+  <div id="convertModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-3xl w-full max-w-lg max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-600"></i> 진행 확정 · 카테고리 등록
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5"><span id="convertWho"></span></p>
+        </div>
+        <button onclick="closeConvertModal()" class="text-slate-400 hover:text-slate-700 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1.5">어느 카테고리로 넣을까요? (복수 선택 가능)</label>
+          <div id="convertTypeBox" class="grid grid-cols-2 gap-2"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">단가 (원)</label>
+            <input type="number" id="convertCost" placeholder="300000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">컨택 일자</label>
+            <input type="date" id="convertDate" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1">진행 제품 (컨택 리스트의 제안 제품이 기본으로 들어갑니다)</label>
+          <input id="convertProducts" placeholder="제품명, 제품명" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1">시딩 발송 수량 (개)</label>
+          <input type="number" id="convertSeeding" value="1" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+
+        <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 cursor-pointer">
+          <input type="checkbox" id="convertKeep" class="accent-emerald-600 w-4 h-4"> 이관 후에도 컨택 리스트에 남겨 두기 (기본은 <b>확정</b> 표시만 하고 유지)
+        </label>
+      </div>
+
+      <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+        <button onclick="closeConvertModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+        <button onclick="confirmConvert()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl">등록하기</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== SCRIPT ==================== -->
   <script>
     // ===== 구글 시트 동기화 설정 =====
@@ -1496,7 +2119,9 @@
         onsal_trialPlatforms: trialPlatforms,
         onsal_trialSnsList: trialSnsList,
         onsal_trialTypes: trialTypes,
-        onsal_trialStages: trialStages
+        onsal_trialStages: trialStages,
+        onsal_monthlyNotes: monthlyNotes,
+        onsal_contactList: contactList
       };
     }
 
@@ -1552,6 +2177,8 @@
           if (Array.isArray(d.onsal_trialSnsList)) trialSnsList = d.onsal_trialSnsList;
           if (Array.isArray(d.onsal_trialTypes)) trialTypes = d.onsal_trialTypes;
           if (Array.isArray(d.onsal_trialStages)) trialStages = d.onsal_trialStages;
+          if (Array.isArray(d.onsal_monthlyNotes)) monthlyNotes = d.onsal_monthlyNotes;
+          if (Array.isArray(d.onsal_contactList)) contactList = d.onsal_contactList;
 
           localStorage.setItem('onsal_products', JSON.stringify(products));
           localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
@@ -1564,6 +2191,8 @@
           localStorage.setItem('onsal_trialSnsList', JSON.stringify(trialSnsList));
           localStorage.setItem('onsal_trialTypes', JSON.stringify(trialTypes));
           localStorage.setItem('onsal_trialStages', JSON.stringify(trialStages));
+          localStorage.setItem('onsal_monthlyNotes', JSON.stringify(monthlyNotes));
+          localStorage.setItem('onsal_contactList', JSON.stringify(contactList));
         }
 
         syncReady = true;
@@ -1594,6 +2223,7 @@
     function schedulerCategoryOf(p) {
       if (p.types && p.types.freeAmb) return '무엠버서더';
       if (p.types && (p.types.ambassador || p.types.sample)) return '엠버서더';
+      if (p.types && p.types.creator) return '크리에이터';
       return 'PPL';
     }
 
@@ -1848,6 +2478,12 @@
     ];
 
     let categories = JSON.parse(localStorage.getItem('onsal_categories')) || ["브이로그", "뷰티", "운동", "여행"];
+
+    // 월간 결과 · 상위노출 기록 [{ month:'2026-08', rows:[...], memo:'' }]
+    let monthlyNotes = JSON.parse(localStorage.getItem('onsal_monthlyNotes')) || [];
+
+    // 컨택 리스트 (나중에 연락할 인플루언서 풀)
+    let contactList = JSON.parse(localStorage.getItem('onsal_contactList')) || [];
 
     /* ==================== 체험단 관리 ==================== */
     const TRIAL_RECRUIT_DAYS = 4;   // 총 모집 일수
@@ -2343,6 +2979,8 @@
       localStorage.setItem('onsal_trialSnsList', JSON.stringify(trialSnsList));
       localStorage.setItem('onsal_trialTypes', JSON.stringify(trialTypes));
       localStorage.setItem('onsal_trialStages', JSON.stringify(trialStages));
+      localStorage.setItem('onsal_monthlyNotes', JSON.stringify(monthlyNotes));
+      localStorage.setItem('onsal_contactList', JSON.stringify(contactList));
       queueSync();
       queueSchedulerSync();
     }
@@ -2382,6 +3020,12 @@
       renderPplTable();
       renderMicroTable();
       renderFreeAmbTable();
+      renderAmbTable();
+      renderCreatorTable();
+      renderUploadTables();
+      renderMonthly();
+      updateContactProductList();
+      renderContactList();
       renderCalendar();
       renderInfluencerCards();
       renderProposals();
@@ -2392,9 +3036,9 @@
 
     // 페이지 전환 (PPL / 시딩재고 / UTM)
     function switchMainPage(pageId) {
-      const pages = ['ppl', 'trial', 'seeding', 'utm'];
-      const activeClass = "px-4 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
-      const idleClass = "px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
+      const pages = ['monthly', 'contact', 'ppl', 'micro', 'amb', 'creator', 'trial', 'seeding', 'utm'];
+      const activeClass = "px-3 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
+      const idleClass = "px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
 
       pages.forEach(id => {
         const page = document.getElementById('page-' + id);
@@ -2409,6 +3053,11 @@
         }
       });
 
+      if (pageId === 'monthly') renderMonthly();
+      if (pageId === 'contact') { updateContactProductList(); renderContactList(); }
+      if (pageId === 'micro') { renderMicroTable(); renderUploadTables(); }
+      if (pageId === 'amb') { renderAmbTable(); renderFreeAmbTable(); renderUploadTables(); }
+      if (pageId === 'creator') { renderCreatorTable(); renderInfluencerCards(); renderProposals(); renderUploadTables(); }
       if (pageId === 'trial') renderTrialDashboard();
       if (pageId === 'seeding') renderSeedingDashboard();
       if (pageId === 'utm') renderUtmDashboard();
@@ -2752,6 +3401,7 @@
         microPpl: document.getElementById('type_microPpl').checked,
         reels: document.getElementById('type_reels').checked,
         shorts: document.getElementById('type_shorts').checked,
+        creator: document.getElementById('type_creator').checked,
         ambassador: document.getElementById('type_ambassador').checked,
         freeAmb: document.getElementById('type_freeAmb').checked
       };
@@ -2764,6 +3414,7 @@
         microPpl: Number(document.getElementById('cost_microPpl').value) || 0,
         reels: Number(document.getElementById('cost_reels').value) || 0,
         shorts: Number(document.getElementById('cost_shorts').value) || 0,
+        creator: Number(document.getElementById('cost_creator').value) || 0,
         ambassador: Number(document.getElementById('cost_ambassador').value) || 0,
         freeAmb: 0
       };
@@ -2785,7 +3436,7 @@
         id: Date.now(),
         brand, product, productList, realName, influencer, category, channels, followers, email,
         types, costs, status, contactDate, targetDate: "", isCompleted: false, stepDates,
-        collabLinks: [],
+        collabLinks: [], uploads: [], resultNote: "",
         mcnCompany: document.getElementById('mcnCompany').value,
         mcnAgentName: document.getElementById('mcnAgentName').value,
         mcnAgentPhone: document.getElementById('mcnAgentPhone').value,
@@ -2860,12 +3511,811 @@
     }
 
     function isMicro(p) {
-      return !!(p.types && (p.types.microReels || p.types.microPpl)) && !isFreeAmb(p);
+      return !!(p.types && (p.types.microReels || p.types.microPpl)) && !isFreeAmb(p)
+        && !(p.types && (p.types.ambassador || p.types.sample)) && !(p.types && p.types.creator);
+    }
+
+
+    /* ==================== 협업 구분(카테고리) 분류 ==================== */
+    function isAmbPaid(p) {
+      return !!(p.types && (p.types.ambassador || p.types.sample)) && !isFreeAmb(p);
+    }
+    function isCreatorType(p) {
+      return !!(p.types && p.types.creator) && !isFreeAmb(p) && !isAmbPaid(p);
+    }
+    function isPurePpl(p) {
+      return !isFreeAmb(p) && !isAmbPaid(p) && !isCreatorType(p) && !isMicro(p);
+    }
+    function catOfPpl(p) {
+      if (isFreeAmb(p)) return '무상앰버서더';
+      if (isAmbPaid(p)) return '앰버서더';
+      if (isCreatorType(p)) return '크리에이터';
+      if (isMicro(p)) return '마이크로';
+      return 'PPL';
+    }
+    const CAT_STYLE = {
+      'PPL': 'bg-pink-100 text-pink-700',
+      '앰버서더': 'bg-indigo-100 text-indigo-700',
+      '무상앰버서더': 'bg-teal-100 text-teal-700',
+      '크리에이터': 'bg-violet-100 text-violet-700',
+      '마이크로': 'bg-sky-100 text-sky-700',
+      '체험단': 'bg-amber-100 text-amber-800'
+    };
+    function prodNamesOf(p) {
+      return (p.productList && p.productList.length ? p.productList : [p.product]).filter(Boolean);
+    }
+    function whoOf(p) {
+      return (p.realName || '무명') + (p.influencer ? ' (' + p.influencer + ')' : '');
+    }
+    function setTxt(id, v) { const el = document.getElementById(id); if (el) el.innerText = v; }
+    function toggleSelectAllBy(cls, checked) {
+      document.querySelectorAll('.' + cls).forEach(cb => { cb.checked = checked; });
+    }
+    function totalCostOf(p) {
+      const c = p.costs || {};
+      return (c.branded||0)+(c.ppl||0)+(c.reuse||0)+(c.microReels||0)+(c.microPpl||0)+(c.reels||0)+(c.shorts||0)+(c.ambassador||0)+(c.sample||0)+(c.creator||0);
+    }
+    function uploadsOf(p) { return (p.uploads || []).filter(u => u && (u.date || u.url)); }
+
+    /* ==================== 앰버서더 / 크리에이터 테이블 ==================== */
+    function catRowHtml(p, prefix, accent) {
+      const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+      const prods = prodNamesOf(p);
+
+      const badgeDefs = [
+        { on: p.types && p.types.branded, label: '브랜디드', cost: p.costs && p.costs.branded },
+        { on: p.types && p.types.ppl, label: 'PPL', cost: p.costs && p.costs.ppl },
+        { on: p.types && p.types.reuse, label: '2차활용', cost: p.costs && p.costs.reuse },
+        { on: p.types && p.types.reels, label: '릴스', cost: p.costs && p.costs.reels },
+        { on: p.types && p.types.shorts, label: '숏츠', cost: p.costs && p.costs.shorts },
+        { on: p.types && p.types.creator, label: '크리에이터', cost: p.costs && p.costs.creator },
+        { on: p.types && (p.types.ambassador || p.types.sample), label: '앰버서더', cost: (p.costs && (p.costs.ambassador || p.costs.sample)) },
+        { on: p.types && p.types.freeAmb, label: '무상앰버서더', cost: 0 }
+      ].filter(t => t.on);
+
+      const typeHtml = badgeDefs.length
+        ? badgeDefs.map(t => '<div class="inline-flex flex-col items-start px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 mb-1 mr-1">'
+            + '<span class="text-[11px] font-black text-slate-700">' + t.label + '</span>'
+            + (t.cost ? '<span class="text-[10px] font-semibold text-slate-500">' + Number(t.cost).toLocaleString() + '원</span>' : '')
+            + '</div>').join('')
+        : '<span class="text-[11px] text-slate-400">형태 미지정</span>';
+
+      let stepHtml = '';
+      if (p.stepDates) {
+        stepHtml = sortedStepEntries(p.stepDates).map(([st, info]) => {
+          const dt = typeof info === 'object' ? info.date : info;
+          const done = typeof info === 'object' ? info.done : false;
+          return '<div class="text-[11px] ' + (done ? 'line-through text-slate-400' : 'text-slate-700 font-semibold') + '">' + st + ': ' + dt + '</div>';
+        }).join('');
+      }
+
+      const ups = uploadsOf(p);
+      const upHtml = ups.length
+        ? ups.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,3).map(u =>
+            (u.url
+              ? '<a href="' + tEsc(u.url) + '" target="_blank" rel="noopener" class="block text-[11px] text-amber-800 hover:underline bg-amber-50 px-2 py-1 rounded border border-amber-100 mb-1 truncate"><i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> ' + (u.date || '날짜미정') + '</a>'
+              : '<div class="text-[11px] text-slate-500 bg-slate-50 px-2 py-1 rounded border border-slate-100 mb-1">' + (u.date || '날짜미정') + '</div>')
+          ).join('')
+        : '<span class="text-[11px] text-slate-400">기록 없음</span>';
+
+      const addrLine = (p.receiverName || p.receiverPhone || p.address)
+        ? '<div class="text-[11px] leading-relaxed text-slate-700"><div class="font-bold text-slate-900">' + (p.receiverName || '수령인 미입력') + '</div><div>' + (p.receiverPhone || '연락처 없음') + '</div><div class="text-slate-500">' + (p.postalCode ? '(' + p.postalCode + ') ' : '') + ([p.address, p.addressDetail].filter(Boolean).join(' ') || '주소 없음') + '</div></div>'
+        : '<span class="text-[11px] text-slate-400">배송정보 없음</span>';
+
+      return '<tr class="hover:bg-' + accent + '-50/30 transition">'
+        + '<td class="py-3 px-3 align-top"><input type="checkbox" class="' + prefix + '-select accent-' + accent + '-600 w-4 h-4 cursor-pointer" value="' + p.id + '"></td>'
+        + '<td class="py-3 px-3 align-top"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + p.brand + '</span>'
+        + '<div class="mt-1 space-y-0.5">' + prods.map(pn => '<div class="font-bold text-slate-800 text-[11px]">· ' + pn + '</div>').join('') + '</div></td>'
+        + '<td class="py-3 px-3 align-top"><div class="font-bold text-slate-900">' + (p.realName || '무명') + '</div>'
+        + '<div class="text-[11px] text-slate-500">' + (p.influencer || '') + '</div>'
+        + '<div class="text-[11px] text-slate-400">' + (p.followers ? '팔로워 ' + p.followers : '') + '</div></td>'
+        + '<td class="py-3 px-3 align-top min-w-[110px]"><div class="flex flex-wrap">' + typeHtml + '</div>'
+        + '<div class="text-[11px] text-slate-500 font-bold mt-1">합계: ' + totalCostOf(p).toLocaleString() + '원</div></td>'
+        + '<td class="py-3 px-3 align-top"><select onchange="updatePplStatus(' + p.id + ', this.value)" class="px-2 py-1 text-xs border border-slate-200 rounded-lg font-bold text-slate-700 bg-slate-50">'
+        + STAGES.map(st => '<option value="' + st + '"' + (p.status === st ? ' selected' : '') + '>' + st + '</option>').join('') + '</select></td>'
+        + '<td class="py-3 px-3 align-top max-w-[180px]"><div class="max-h-[90px] overflow-y-auto custom-scrollbar pr-1">' + (stepHtml || '<span class="text-slate-400 text-[11px]">일정 없음</span>') + '</div></td>'
+        + '<td class="py-3 px-3 align-top max-w-[190px]">' + upHtml
+        + '<button onclick="openUploadModal(' + p.id + ')" class="mt-1 text-[11px] text-' + accent + '-700 font-semibold hover:underline"><i class="fa-solid fa-chart-simple"></i> 업로드/결과 입력</button></td>'
+        + '<td class="py-3 px-3 align-top min-w-[170px]">' + addrLine + '</td>'
+        + '<td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">'
+        + '<button onclick="openStepDateModal(' + p.id + ')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>'
+        + '<button onclick="deletePpl(' + p.id + ')" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button></td>'
+        + '</tr>';
+    }
+
+    function renderCatTable(prefix, accent, filterFn) {
+      const tbody = document.getElementById(prefix + 'TableBody');
+      if (!tbody) return;
+      const list = pplList.filter(filterFn);
+      setTxt(prefix + 'Total', list.length + '명');
+      setTxt(prefix + 'HeaderCount', list.length + '명');
+      setTxt(prefix + 'Onsal', list.filter(p => p.brand === '온살').length + '명');
+      setTxt(prefix + 'Lume', list.filter(p => p.brand === '루메아카이브').length + '명');
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-slate-400">' + (tbody.dataset.empty || '등록된 건이 없습니다.') + '</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(p => catRowHtml(p, prefix, accent)).join('');
+    }
+
+    function renderAmbTable() { renderCatTable('amb', 'indigo', isAmbPaid); }
+    function renderCreatorTable() { renderCatTable('creator', 'violet', isCreatorType); }
+
+    /* ==================== 업로드 / 결과 기록 ==================== */
+    const UPLOAD_CHANNELS = ['인스타', '유튜브', '네이버 블로그', '틱톡', '스레드', '기타'];
+    let uploadEditId = null;
+
+    function uploadRowHtml(u) {
+      u = u || {};
+      return '<div class="upload-row grid grid-cols-2 md:grid-cols-12 gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">'
+        + '<input type="date" class="ul-date md:col-span-2 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" value="' + tEsc(u.date || '') + '">'
+        + '<select class="ul-channel md:col-span-2 px-2 py-1.5 text-xs border border-slate-200 rounded-lg bg-white">'
+        + UPLOAD_CHANNELS.map(c => '<option value="' + c + '"' + ((u.channel || '인스타') === c ? ' selected' : '') + '>' + c + '</option>').join('')
+        + '</select>'
+        + '<input class="ul-type md:col-span-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="릴스" value="' + tEsc(u.type || '') + '">'
+        + '<input class="ul-url md:col-span-3 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="업로드 링크 (URL)" value="' + tEsc(u.url || '') + '">'
+        + '<input type="number" class="ul-views md:col-span-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="조회수" value="' + tEsc(u.views || '') + '">'
+        + '<input type="number" class="ul-likes md:col-span-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="좋아요" value="' + tEsc(u.likes || '') + '">'
+        + '<input class="ul-keyword md:col-span-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="상위노출 키워드" value="' + tEsc(u.keyword || '') + '">'
+        + '<input class="ul-rank md:col-span-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="순위" value="' + tEsc(u.rank || '') + '">'
+        + '<div class="md:col-span-12 flex gap-2 items-center">'
+        + '<input class="ul-memo flex-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" placeholder="비고 (기획전명, 2차활용 여부, 특이사항 등)" value="' + tEsc(u.memo || '') + '">'
+        + '<button type="button" onclick="this.closest(\'.upload-row\').remove()" class="text-slate-400 hover:text-rose-600 px-2"><i class="fa-solid fa-trash"></i></button>'
+        + '</div></div>';
+    }
+
+    function addUploadRow() {
+      const c = document.getElementById('uploadRowsContainer');
+      if (c) c.insertAdjacentHTML('beforeend', uploadRowHtml({}));
+    }
+
+    function openUploadModal(id) {
+      const p = pplList.find(x => x.id === id);
+      if (!p) return;
+      uploadEditId = id;
+      setTxt('uploadModalWho', p.brand + ' · ' + whoOf(p));
+      setTxt('uploadModalProduct', prodNamesOf(p).join(', ') || '제품 미지정');
+      document.getElementById('uploadResultNote').value = p.resultNote || '';
+      const c = document.getElementById('uploadRowsContainer');
+      c.innerHTML = '';
+      const ups = (p.uploads || []);
+      if (ups.length) ups.forEach(u => c.insertAdjacentHTML('beforeend', uploadRowHtml(u)));
+      else addUploadRow();
+      document.getElementById('uploadModal').classList.remove('hidden');
+    }
+
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.add('hidden');
+      uploadEditId = null;
+    }
+
+    function saveUploads() {
+      const p = pplList.find(x => x.id === uploadEditId);
+      if (!p) return;
+      p.uploads = Array.from(document.querySelectorAll('#uploadRowsContainer .upload-row')).map(r => ({
+        date: r.querySelector('.ul-date').value,
+        channel: r.querySelector('.ul-channel').value,
+        type: r.querySelector('.ul-type').value,
+        url: r.querySelector('.ul-url').value.trim(),
+        views: r.querySelector('.ul-views').value,
+        likes: r.querySelector('.ul-likes').value,
+        keyword: r.querySelector('.ul-keyword').value,
+        rank: r.querySelector('.ul-rank').value,
+        memo: r.querySelector('.ul-memo').value
+      })).filter(u => u.date || u.url || u.views || u.keyword || u.memo);
+      p.resultNote = document.getElementById('uploadResultNote').value;
+      p.collabLinks = p.uploads.map(u => ({ date: u.date, product: prodNamesOf(p).join(', '), url: u.url }));
+      saveAll();
+      closeUploadModal();
+      renderAll();
+    }
+
+    /* ---- 업로드 일자 & 링크 표 ---- */
+    function uploadRowsFor(filterFn) {
+      const out = [];
+      pplList.filter(filterFn).forEach(p => uploadsOf(p).forEach(u => out.push({ p, u })));
+      out.sort((a, b) => (b.u.date || '').localeCompare(a.u.date || ''));
+      return out;
+    }
+
+    function metricText(u) {
+      const parts = [];
+      if (u.views) parts.push('조회 ' + Number(u.views).toLocaleString());
+      if (u.likes) parts.push('좋아요 ' + Number(u.likes).toLocaleString());
+      if (u.keyword) parts.push(u.keyword + (u.rank ? ' ' + u.rank + '위' : ''));
+      if (u.memo) parts.push(u.memo);
+      return parts.join(' · ');
+    }
+
+    function renderUploadLinkTable(bodyId, filterFn) {
+      const tb = document.getElementById(bodyId);
+      if (!tb) return;
+      const rows = uploadRowsFor(filterFn);
+      setTxt(bodyId + 'Count', rows.length + '건');
+      if (!rows.length) {
+        tb.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">아직 업로드 기록이 없습니다. 위 목록의 <b>업로드/결과 입력</b> 버튼에서 업로드 일자와 링크를 넣어 주세요.</td></tr>';
+        return;
+      }
+      tb.innerHTML = rows.map(({ p, u }) => {
+        const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+        return '<tr class="hover:bg-slate-50/60 transition">'
+          + '<td class="py-2.5 px-3 font-bold text-slate-800 whitespace-nowrap">' + (u.date || '-') + '</td>'
+          + '<td class="py-2.5 px-3"><span class="font-bold text-slate-900">' + (p.realName || '무명') + '</span> <span class="text-slate-500">' + (p.influencer || '') + '</span></td>'
+          + '<td class="py-2.5 px-3"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + p.brand + '</span> <span class="text-slate-600">' + (prodNamesOf(p).join(', ') || '-') + '</span></td>'
+          + '<td class="py-2.5 px-3 text-slate-600">' + (u.channel || '-') + (u.type ? ' / ' + u.type : '') + '</td>'
+          + '<td class="py-2.5 px-3 max-w-[260px]">' + (u.url
+              ? '<a href="' + tEsc(u.url) + '" target="_blank" rel="noopener" class="text-pink-600 hover:underline break-all">' + tEsc(u.url) + '</a>'
+              : '<span class="text-slate-400">링크 없음</span>') + '</td>'
+          + '<td class="py-2.5 px-3 text-slate-600">' + (metricText(u) || '-') + '</td>'
+          + '</tr>';
+      }).join('');
+    }
+
+    function renderUploadTables() {
+      renderUploadLinkTable('pplUploadBody', isPurePpl);
+      renderUploadLinkTable('ambUploadBody', p => isFreeAmb(p) || isAmbPaid(p));
+      renderUploadLinkTable('creatorUploadBody', isCreatorType);
+      renderUploadLinkTable('microUploadBody', isMicro);
+    }
+
+    function exportUploadExcel(prefix) {
+      const map = { ppl: isPurePpl, amb: p => isFreeAmb(p) || isAmbPaid(p), creator: isCreatorType, micro: isMicro };
+      const rows = uploadRowsFor(map[prefix] || isPurePpl);
+      if (!rows.length) { alert('내보낼 업로드 기록이 없습니다.'); return; }
+      const data = rows.map(({ p, u }) => ({
+        '업로드일자': u.date || '',
+        '구분': catOfPpl(p),
+        '브랜드': p.brand,
+        '제품': prodNamesOf(p).join(', '),
+        '인플루언서': whoOf(p),
+        '채널': u.channel || '',
+        '콘텐츠유형': u.type || '',
+        '업로드링크': u.url || '',
+        '조회수': u.views || '',
+        '좋아요': u.likes || '',
+        '상위노출키워드': u.keyword || '',
+        '순위': u.rank || '',
+        '비고': u.memo || ''
+      }));
+      downloadSheet(data, '업로드내역_' + prefix + '_' + new Date().toISOString().slice(0, 10));
+    }
+
+    function downloadSheet(data, fileBase) {
+      if (typeof XLSX !== 'undefined') {
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+        XLSX.writeFile(wb, fileBase + '.xlsx');
+      } else {
+        const headers = Object.keys(data[0]);
+        let csv = '\ufeff' + headers.join(',') + '\n';
+        data.forEach(r => { csv += headers.map(h => '"' + String(r[h]).replace(/"/g, '""') + '"').join(',') + '\n'; });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = fileBase + '.csv';
+        a.click();
+      }
+    }
+
+    /* ==================== 월간 통합 현황 ==================== */
+    let monthlyDate = new Date();
+    let monthlyBrandFilter = '전체';
+
+    function currentYm() {
+      return monthlyDate.getFullYear() + '-' + String(monthlyDate.getMonth() + 1).padStart(2, '0');
+    }
+    function moveMonthly(dir) {
+      if (dir === 0) monthlyDate = new Date();
+      else monthlyDate = new Date(monthlyDate.getFullYear(), monthlyDate.getMonth() + dir, 1);
+      renderMonthly();
+    }
+    function setMonthlyBrand(b) {
+      monthlyBrandFilter = b;
+      ['전체', '온살', '루메아카이브'].forEach(x => {
+        const el = document.getElementById('mbrand-' + x);
+        if (el) el.className = (x === b)
+          ? 'px-3 py-1.5 rounded-lg bg-white text-pink-600 shadow-xs'
+          : 'px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800';
+      });
+      renderMonthly();
+    }
+    function trialUploadDate(t) {
+      const s = t.stages || {};
+      const pick = ['후기 작성 마감일', '후기 작성 시작일', '제품 발송일', '모집 시작일'];
+      for (const k of pick) {
+        const v = s[k];
+        const dt = v && (typeof v === 'object' ? v.date : v);
+        if (dt) return dt;
+      }
+      return t.openDate || '';
+    }
+
+    function collectMonthlyRows(ym) {
+      const rows = [];
+      pplList.forEach(p => {
+        if (monthlyBrandFilter !== '전체' && p.brand !== monthlyBrandFilter) return;
+        const cat = catOfPpl(p);
+        const prod = prodNamesOf(p).join(', ');
+        let matched = false;
+        uploadsOf(p).forEach(u => {
+          if ((u.date || '').slice(0, 7) !== ym) return;
+          matched = true;
+          rows.push({ cat, brand: p.brand, product: prod, who: whoOf(p), date: u.date, channel: u.channel || '', type: u.type || '', url: u.url || '', count: 1, done: true, metric: metricText(u), pid: p.id });
+        });
+        if (!matched) {
+          const sd = p.stepDates && p.stepDates['업로드'];
+          const dt = sd ? (typeof sd === 'object' ? sd.date : sd) : '';
+          if (dt && dt.slice(0, 7) === ym) {
+            rows.push({ cat, brand: p.brand, product: prod, who: whoOf(p), date: dt, channel: '', type: '', url: '', count: 1, done: false, metric: '', pid: p.id });
+          }
+        }
+      });
+      trialList.forEach(t => {
+        if (monthlyBrandFilter !== '전체' && t.brand !== monthlyBrandFilter) return;
+        const dt = trialUploadDate(t);
+        if (!dt || dt.slice(0, 7) !== ym) return;
+        const done = ['후기수집', '완료'].includes(t.status);
+        rows.push({
+          cat: '체험단', brand: t.brand, product: t.product || '',
+          who: (t.title || '체험단') + ' · ' + (t.headcount || 0) + '명',
+          date: dt, channel: t.sns || '', type: t.type || '', url: '',
+          count: Number(t.headcount) || 0, done, metric: (t.platform || '') + (t.notes ? ' · ' + t.notes : ''), pid: t.id, isTrial: true
+        });
+      });
+      rows.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      return rows;
+    }
+
+    function renderMonthly() {
+      if (!document.getElementById('monthlyDetailBody')) return;
+      const ym = currentYm();
+      setTxt('monthlyTitle', monthlyDate.getFullYear() + '년 ' + (monthlyDate.getMonth() + 1) + '월');
+      const rows = collectMonthlyRows(ym);
+
+      const CATS = ['PPL', '마이크로', '앰버서더', '무상앰버서더', '크리에이터', '체험단'];
+      const sum = (fn) => rows.filter(fn).reduce((a, r) => a + r.count, 0);
+
+      const cardDefs = [
+        { label: 'PPL', color: 'pink', fn: r => r.cat === 'PPL' },
+        { label: '마이크로', color: 'sky', fn: r => r.cat === '마이크로' },
+        { label: '앰버서더', color: 'indigo', fn: r => r.cat === '앰버서더' || r.cat === '무상앰버서더' },
+        { label: '크리에이터', color: 'violet', fn: r => r.cat === '크리에이터' },
+        { label: '체험단', color: 'amber', fn: r => r.cat === '체험단' },
+        { label: '총 업로드', color: 'emerald', fn: () => true }
+      ];
+      const cards = document.getElementById('monthlyCards');
+      if (cards) {
+        cards.innerHTML = cardDefs.map(c => {
+          const done = sum(r => c.fn(r) && r.done);
+          const plan = sum(r => c.fn(r) && !r.done);
+          return '<div class="bg-' + c.color + '-50/60 p-4 rounded-2xl border border-' + c.color + '-100">'
+            + '<span class="text-[11px] text-slate-500 font-semibold">' + c.label + '</span>'
+            + '<div class="text-2xl font-black text-' + c.color + '-600 mt-0.5">' + done + '건</div>'
+            + '<div class="text-[11px] text-slate-500 font-semibold">예정 ' + plan + '건</div></div>';
+        }).join('');
+      }
+
+      const bd = document.getElementById('monthlyBreakdownBody');
+      if (bd) {
+        const line = (label, fn) => {
+          const on = rows.filter(r => fn(r) && r.brand === '온살').reduce((a, r) => a + r.count, 0);
+          const lu = rows.filter(r => fn(r) && r.brand === '루메아카이브').reduce((a, r) => a + r.count, 0);
+          const done = sum(r => fn(r) && r.done);
+          const plan = sum(r => fn(r) && !r.done);
+          return '<tr class="hover:bg-slate-50/60"><td class="py-2.5 px-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + (CAT_STYLE[label] || 'bg-slate-100 text-slate-700') + '">' + label + '</span></td>'
+            + '<td class="py-2.5 px-3 text-center font-bold text-pink-600">' + on + '</td>'
+            + '<td class="py-2.5 px-3 text-center font-bold text-skyblue-600">' + lu + '</td>'
+            + '<td class="py-2.5 px-3 text-center font-black text-slate-800">' + done + '</td>'
+            + '<td class="py-2.5 px-3 text-center text-slate-500 font-semibold">' + plan + '</td></tr>';
+        };
+        bd.innerHTML = CATS.map(c => line(c, r => r.cat === c)).join('')
+          + '<tr class="bg-slate-50 font-black"><td class="py-2.5 px-3 text-slate-800">합계</td>'
+          + '<td class="py-2.5 px-3 text-center text-pink-600">' + rows.filter(r => r.brand === '온살').reduce((a, r) => a + r.count, 0) + '</td>'
+          + '<td class="py-2.5 px-3 text-center text-skyblue-600">' + rows.filter(r => r.brand === '루메아카이브').reduce((a, r) => a + r.count, 0) + '</td>'
+          + '<td class="py-2.5 px-3 text-center text-slate-900">' + sum(r => r.done) + '</td>'
+          + '<td class="py-2.5 px-3 text-center text-slate-500">' + sum(r => !r.done) + '</td></tr>';
+      }
+
+      setTxt('monthlyDetailCount', rows.length + '건');
+      const tb = document.getElementById('monthlyDetailBody');
+      if (!rows.length) {
+        tb.innerHTML = '<tr><td colspan="8" class="py-10 text-center text-slate-400">이번 달 업로드 기록이 없습니다.<br>각 페이지 목록의 <b>업로드/결과 입력</b>에서 업로드 일자를 넣으면 여기에 모입니다.</td></tr>';
+      } else {
+        tb.innerHTML = rows.map(r => {
+          const brandBadgeClass = r.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+          return '<tr class="hover:bg-pink-50/30 transition">'
+            + '<td class="py-2.5 px-3 whitespace-nowrap font-bold text-slate-800">' + (r.date || '-')
+            + (r.done ? '' : ' <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">예정</span>') + '</td>'
+            + '<td class="py-2.5 px-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + (CAT_STYLE[r.cat] || 'bg-slate-100 text-slate-700') + '">' + r.cat + '</span></td>'
+            + '<td class="py-2.5 px-3"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + r.brand + '</span> <span class="text-slate-600">' + (r.product || '-') + '</span></td>'
+            + '<td class="py-2.5 px-3 font-semibold text-slate-900">' + r.who + '</td>'
+            + '<td class="py-2.5 px-3 text-slate-600">' + (r.channel || '-') + (r.type ? ' / ' + r.type : '') + '</td>'
+            + '<td class="py-2.5 px-3 text-center font-bold text-slate-800">' + r.count + '</td>'
+            + '<td class="py-2.5 px-3 max-w-[220px]">' + (r.url
+                ? '<a href="' + tEsc(r.url) + '" target="_blank" rel="noopener" class="text-pink-600 hover:underline break-all">' + tEsc(r.url) + '</a>'
+                : '<span class="text-slate-400">-</span>') + '</td>'
+            + '<td class="py-2.5 px-3 text-slate-600">' + (r.metric || '-') + '</td>'
+            + '</tr>';
+        }).join('');
+      }
+
+      renderMonthlyNotes(ym, rows);
+    }
+
+    function exportMonthlyExcel() {
+      const rows = collectMonthlyRows(currentYm());
+      if (!rows.length) { alert('이번 달 내역이 없습니다.'); return; }
+      downloadSheet(rows.map(r => ({
+        '업로드일자': r.date || '', '진행상태': r.done ? '업로드 완료' : '예정',
+        '구분': r.cat, '브랜드': r.brand, '제품': r.product,
+        '인플루언서/체험단': r.who, '채널': r.channel, '유형': r.type,
+        '수량': r.count, '업로드링크': r.url, '성과/비고': r.metric
+      })), '월간협업현황_' + currentYm());
+    }
+
+    /* ---- 월간 결과 / 상위노출 메모 ---- */
+    function getMonthlyNote(ym, create) {
+      let n = monthlyNotes.find(x => x && x.month === ym);
+      if (!n && create) { n = { month: ym, rows: [], memo: '' }; monthlyNotes.push(n); }
+      return n;
+    }
+    function addMonthlyNoteRow() {
+      const n = getMonthlyNote(currentYm(), true);
+      n.rows.push({ kind: '상위노출', platform: '', keyword: '', rank: '', url: '', memo: '' });
+      saveAll();
+      renderMonthly();
+    }
+    function updateMonthlyNote(idx, field, value) {
+      const n = getMonthlyNote(currentYm(), true);
+      if (!n.rows[idx]) return;
+      n.rows[idx][field] = value;
+      saveAll();
+    }
+    function deleteMonthlyNoteRow(idx) {
+      const n = getMonthlyNote(currentYm(), true);
+      n.rows.splice(idx, 1);
+      saveAll();
+      renderMonthly();
+    }
+    function saveMonthlyMemo() {
+      const n = getMonthlyNote(currentYm(), true);
+      n.memo = document.getElementById('monthlyMemo').value;
+      saveAll();
+    }
+    const MONTHLY_NOTE_KINDS = ['상위노출', '기획전 결과', '매출/전환', '리포트', '기타'];
+
+    function renderMonthlyNotes(ym, rows) {
+      const body = document.getElementById('monthlyNoteBody');
+      if (!body) return;
+      const n = getMonthlyNote(ym, false) || { rows: [], memo: '' };
+      const memoEl = document.getElementById('monthlyMemo');
+      if (memoEl) memoEl.value = n.memo || '';
+
+      if (!n.rows.length) {
+        body.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-400">아직 기록이 없습니다. <b>결과 행 추가</b>를 눌러 기획전 결과나 상위노출 순위를 기록해 보세요.</td></tr>';
+      } else {
+        const inp = (idx, field, val, ph) => '<input value="' + tEsc(val || '') + '" placeholder="' + ph + '" onchange="updateMonthlyNote(' + idx + ', \'' + field + '\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg">';
+        body.innerHTML = n.rows.map((r, i) =>
+          '<tr class="hover:bg-amber-50/30">'
+          + '<td class="py-2 px-2"><select onchange="updateMonthlyNote(' + i + ', \'kind\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg bg-white font-bold text-amber-700">'
+          + MONTHLY_NOTE_KINDS.map(k => '<option value="' + k + '"' + ((r.kind || '상위노출') === k ? ' selected' : '') + '>' + k + '</option>').join('') + '</select></td>'
+          + '<td class="py-2 px-2">' + inp(i, 'platform', r.platform, '네이버') + '</td>'
+          + '<td class="py-2 px-2">' + inp(i, 'keyword', r.keyword, '키워드 / 기획전명') + '</td>'
+          + '<td class="py-2 px-2">' + inp(i, 'rank', r.rank, '1위 / 달성') + '</td>'
+          + '<td class="py-2 px-2">' + inp(i, 'url', r.url, 'https://') + '</td>'
+          + '<td class="py-2 px-2">' + inp(i, 'memo', r.memo, '메모') + '</td>'
+          + '<td class="py-2 px-2 text-right"><button onclick="deleteMonthlyNoteRow(' + i + ')" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash"></i></button></td>'
+          + '</tr>').join('');
+      }
+
+      const auto = document.getElementById('monthlyRankAuto');
+      if (auto) {
+        const picks = (rows || []).filter(r => r.metric && /위/.test(r.metric));
+        auto.innerHTML = picks.length
+          ? '<div class="bg-slate-50 border border-slate-200 rounded-xl p-3"><b class="text-slate-700">업로드 기록에서 자동 수집된 상위노출</b><div class="mt-1.5 space-y-1">'
+            + picks.map(r => '<div class="text-slate-600">· ' + r.who + ' — ' + r.metric + '</div>').join('') + '</div></div>'
+          : '';
+      }
+    }
+
+
+    /* ==================== 컨택 리스트 ==================== */
+    const CONTACT_REPLY = ['대기', '회신 - 긍정', '회신 - 조율중', '회신 - 거절', '무응답'];
+    const CONVERT_TYPES = [
+      { key: 'branded', label: '브랜디드' },
+      { key: 'ppl', label: 'PPL' },
+      { key: 'reels', label: '릴스' },
+      { key: 'shorts', label: '숏츠' },
+      { key: 'reuse', label: '2차활용' },
+      { key: 'microReels', label: '마이크로 릴스' },
+      { key: 'microPpl', label: '마이크로 PPL' },
+      { key: 'creator', label: '크리에이터' },
+      { key: 'ambassador', label: '앰버서더' },
+      { key: 'freeAmb', label: '무상앰버서더' }
+    ];
+
+    function copyText(t) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(() => alert('복사했습니다.'), () => fallbackCopy(t, () => alert('복사했습니다.')));
+      } else {
+        fallbackCopy(t, () => alert('복사했습니다.'));
+      }
+    }
+
+    let contactFilter = '전체';
+    let convertingId = null;
+
+    function updateContactProductList() {
+      const box = document.getElementById('ctProductList');
+      if (!box) return;
+      const brand = document.getElementById('ctBrand').value;
+      const filtered = products.filter(p => p.brand === brand);
+      box.innerHTML = filtered.length
+        ? filtered.map(p => '<label class="flex items-center gap-1.5 text-[11px] cursor-pointer hover:bg-emerald-100/60 px-1 py-0.5 rounded">'
+            + '<input type="checkbox" class="ct-product-check accent-emerald-600 w-3.5 h-3.5" value="' + tEsc(p.name) + '">'
+            + '<span class="text-slate-700">' + tEsc(p.name) + '</span></label>').join('')
+        : '<span class="text-[11px] text-slate-400">등록된 제품이 없습니다</span>';
+    }
+
+    function addContact() {
+      const realName = document.getElementById('ctRealName').value.trim();
+      const influencer = document.getElementById('ctInfluencer').value.trim();
+      if (!realName && !influencer) { alert('본명 또는 대표 계정 중 하나는 입력해 주세요.'); return; }
+
+      const picked = Array.from(document.querySelectorAll('.ct-product-check:checked')).map(c => c.value);
+      const etc = document.getElementById('ctProductEtc').value.split(',').map(s => s.trim()).filter(Boolean);
+
+      contactList.unshift({
+        id: Date.now(),
+        brand: document.getElementById('ctBrand').value,
+        realName, influencer,
+        followers: document.getElementById('ctFollowers').value.trim(),
+        channelType: document.getElementById('ctChannelType').value,
+        channelUrl: document.getElementById('ctChannelUrl').value.trim(),
+        category: addCategoryIfNew(document.getElementById('ctCategory').value),
+        email: document.getElementById('ctEmail').value.trim(),
+        expectedCost: Number(document.getElementById('ctExpectedCost').value) || 0,
+        source: document.getElementById('ctSource').value.trim(),
+        proposalProducts: picked.concat(etc),
+        memo: document.getElementById('ctMemo').value.trim(),
+        contacted: false,
+        contactDate: '',
+        reply: '대기',
+        confirmed: false,
+        movedId: null,
+        createdAt: new Date().toISOString().slice(0, 10)
+      });
+
+      ['ctRealName', 'ctInfluencer', 'ctFollowers', 'ctChannelUrl', 'ctCategory', 'ctEmail', 'ctExpectedCost', 'ctSource', 'ctProductEtc', 'ctMemo']
+        .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      document.querySelectorAll('.ct-product-check:checked').forEach(c => { c.checked = false; });
+
+      saveAll();
+      renderContactList();
+    }
+
+    function setContactFilter(f) {
+      contactFilter = f;
+      ['전체', '미컨택', '컨택완료', '확정'].forEach(x => {
+        const el = document.getElementById('cfilter-' + x);
+        if (el) el.className = (x === f)
+          ? 'px-3 py-1.5 rounded-lg bg-white text-emerald-700 shadow-xs'
+          : 'px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800';
+      });
+      renderContactList();
+    }
+
+    function toggleContacted(id, checked) {
+      const c = contactList.find(x => x.id === id);
+      if (!c) return;
+      c.contacted = checked;
+      if (checked && !c.contactDate) c.contactDate = new Date().toISOString().slice(0, 10);
+      if (!checked) c.contactDate = '';
+      saveAll();
+      renderContactList();
+    }
+    function updateContactField(id, field, value) {
+      const c = contactList.find(x => x.id === id);
+      if (!c) return;
+      c[field] = value;
+      if (field === 'contactDate' && value) c.contacted = true;
+      saveAll();
+      if (field === 'reply') renderContactList();
+    }
+    function deleteContact(id) {
+      if (!confirm('이 컨택 건을 삭제할까요?')) return;
+      contactList = contactList.filter(x => x.id !== id);
+      saveAll();
+      renderContactList();
+    }
+
+    function renderContactList() {
+      const tbody = document.getElementById('contactTableBody');
+      if (!tbody) return;
+
+      const total = contactList.length;
+      const doneCnt = contactList.filter(c => c.contacted).length;
+      const waitCnt = contactList.filter(c => c.contacted && !c.confirmed && (c.reply === '대기' || c.reply === '회신 - 조율중')).length;
+      const confirmCnt = contactList.filter(c => c.confirmed).length;
+
+      const sum = document.getElementById('contactSummary');
+      if (sum) {
+        const card = (label, val, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
+          + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
+          + '<div class="text-2xl font-black text-' + color + '-600 mt-0.5">' + val + '명</div></div>';
+        sum.innerHTML = card('전체 컨택 풀', total, 'slate') + card('컨택 완료', doneCnt, 'emerald')
+          + card('회신 대기/조율', waitCnt, 'amber') + card('진행 확정', confirmCnt, 'pink');
+      }
+      setTxt('contactHeaderCount', total + '명');
+
+      let list = contactList.slice();
+      if (contactFilter === '미컨택') list = list.filter(c => !c.contacted);
+      else if (contactFilter === '컨택완료') list = list.filter(c => c.contacted && !c.confirmed);
+      else if (contactFilter === '확정') list = list.filter(c => c.confirmed);
+
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="py-10 text-center text-slate-400">해당하는 컨택 건이 없습니다.<br>위 <b>컨택할 인플루언서 등록</b>에서 추가해 보세요.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(c => {
+        const brandBadgeClass = c.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+        const prods = (c.proposalProducts || []);
+        const replyColor = /긍정/.test(c.reply) ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+          : (/거절|무응답/.test(c.reply) ? 'text-rose-700 bg-rose-50 border-rose-200' : 'text-slate-700 bg-slate-50 border-slate-200');
+
+        const confirmCell = c.confirmed
+          ? '<div class="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2 py-1.5 text-center">'
+            + '<i class="fa-solid fa-circle-check"></i> ' + tEsc(c.movedCat || '진행 확정') + '<div class="text-[10px] font-semibold text-slate-500">' + tEsc(c.movedDate || '') + '</div></div>'
+          : (c.contacted
+              ? '<button onclick="openConvertModal(' + c.id + ')" class="w-full px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-[11px]"><i class="fa-solid fa-arrow-right-to-bracket"></i> 진행 확정</button>'
+              : '<div class="text-[11px] text-slate-400 text-center leading-tight">컨택 체크 후<br>확정할 수 있어요</div>');
+
+        return '<tr class="hover:bg-emerald-50/30 transition' + (c.confirmed ? ' bg-emerald-50/20' : '') + '">'
+          + '<td class="py-3 px-3 align-top"><input type="checkbox" class="contact-select accent-emerald-600 w-4 h-4 cursor-pointer" value="' + c.id + '"></td>'
+          + '<td class="py-3 px-3 align-top"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + tEsc(c.brand) + '</span>'
+          + '<div class="font-bold text-slate-900 mt-1">' + tEsc(c.realName || '무명') + '</div>'
+          + (c.channelUrl
+              ? '<a href="' + tEsc(c.channelUrl) + '" target="_blank" rel="noopener" class="text-[11px] text-emerald-700 hover:underline"><i class="fa-solid fa-link text-[9px]"></i> ' + tEsc(c.channelType || '') + ' ' + tEsc(c.influencer || '') + '</a>'
+              : '<div class="text-[11px] text-slate-500">' + tEsc(c.channelType || '') + ' ' + tEsc(c.influencer || '') + '</div>')
+          + (c.source ? '<div class="text-[10px] text-slate-400 mt-0.5">경로: ' + tEsc(c.source) + '</div>' : '') + '</td>'
+          + '<td class="py-3 px-3 align-top">'
+          + (c.category ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">' + tEsc(c.category) + '</span>' : '')
+          + '<div class="text-[11px] text-slate-500 mt-1">' + (c.followers ? '팔로워 ' + tEsc(c.followers) : '-') + '</div>'
+          + (c.expectedCost ? '<div class="text-[11px] text-slate-500 font-semibold">예상 ' + Number(c.expectedCost).toLocaleString() + '원</div>' : '') + '</td>'
+          + '<td class="py-3 px-3 align-top min-w-[170px]">'
+          + (c.email
+              ? '<div class="flex items-center gap-1"><span class="text-[11px] text-slate-700 break-all">' + tEsc(c.email) + '</span>'
+                + '<button onclick="copyText(\'' + tArg(c.email) + '\')" class="text-slate-400 hover:text-emerald-600 p-1"><i class="fa-regular fa-copy text-[11px]"></i></button></div>'
+                + '<a href="mailto:' + tEsc(c.email) + '" class="text-[10px] text-emerald-700 font-semibold hover:underline">메일 보내기</a>'
+              : '<span class="text-[11px] text-slate-400">이메일 없음</span>') + '</td>'
+          + '<td class="py-3 px-3 align-top max-w-[170px]">'
+          + (prods.length
+              ? prods.map(p => '<div class="text-[11px] text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-100 mb-1 truncate">· ' + tEsc(p) + '</div>').join('')
+              : '<span class="text-[11px] text-slate-400">미지정</span>') + '</td>'
+          + '<td class="py-3 px-3 align-top text-center">'
+          + '<input type="checkbox" ' + (c.contacted ? 'checked' : '') + ' onchange="toggleContacted(' + c.id + ', this.checked)" class="accent-emerald-600 w-5 h-5 cursor-pointer">'
+          + '<div class="mt-1"><input type="date" value="' + tEsc(c.contactDate || '') + '" onchange="updateContactField(' + c.id + ', \'contactDate\', this.value)" class="px-1.5 py-1 text-[10px] border border-slate-200 rounded-lg w-[112px]"></div></td>'
+          + '<td class="py-3 px-3 align-top"><select onchange="updateContactField(' + c.id + ', \'reply\', this.value)" class="px-2 py-1 text-[11px] font-bold border rounded-lg ' + replyColor + '">'
+          + CONTACT_REPLY.map(r => '<option value="' + r + '"' + ((c.reply || '대기') === r ? ' selected' : '') + '>' + r + '</option>').join('') + '</select></td>'
+          + '<td class="py-3 px-3 align-top min-w-[120px]">' + confirmCell + '</td>'
+          + '<td class="py-3 px-3 align-top max-w-[180px]"><input value="' + tEsc(c.memo || '') + '" onchange="updateContactField(' + c.id + ', \'memo\', this.value)" placeholder="메모" class="w-full px-2 py-1 text-[11px] border border-slate-200 rounded-lg"></td>'
+          + '<td class="py-3 px-3 align-top text-right"><button onclick="deleteContact(' + c.id + ')" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button></td>'
+          + '</tr>';
+      }).join('');
+    }
+
+    function copyContactEmails() {
+      const checked = Array.from(document.querySelectorAll('.contact-select:checked')).map(cb => Number(cb.value));
+      let list = contactList.filter(c => c.email);
+      if (checked.length) list = list.filter(c => checked.includes(c.id));
+      if (!list.length) { alert('복사할 이메일이 없습니다.'); return; }
+      copyText(list.map(c => c.email).join(', '));
+    }
+
+    function exportContactExcel() {
+      if (!contactList.length) { alert('컨택 리스트가 비어 있습니다.'); return; }
+      downloadSheet(contactList.map(c => ({
+        '브랜드': c.brand, '본명': c.realName || '', '대표계정': c.influencer || '',
+        '채널': c.channelType || '', '프로필URL': c.channelUrl || '',
+        '카테고리': c.category || '', '팔로워': c.followers || '',
+        '이메일': c.email || '', '제안제품': (c.proposalProducts || []).join(', '),
+        '예상단가': c.expectedCost || '', '컨택여부': c.contacted ? 'O' : '',
+        '컨택일자': c.contactDate || '', '회신상태': c.reply || '',
+        '진행확정': c.confirmed ? (c.movedCat || 'O') : '', '메모': c.memo || ''
+      })), '컨택리스트_' + new Date().toISOString().slice(0, 10));
+    }
+
+    /* ---- 진행 확정 → 카테고리 이관 ---- */
+    function openConvertModal(id) {
+      const c = contactList.find(x => x.id === id);
+      if (!c) return;
+      convertingId = id;
+      setTxt('convertWho', c.brand + ' · ' + (c.realName || '무명') + (c.influencer ? ' (' + c.influencer + ')' : ''));
+      document.getElementById('convertTypeBox').innerHTML = CONVERT_TYPES.map(t =>
+        '<label class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 cursor-pointer hover:bg-emerald-50">'
+        + '<input type="checkbox" class="convert-type accent-emerald-600 w-4 h-4" value="' + t.key + '" data-label="' + t.label + '"> ' + t.label + '</label>').join('');
+      document.getElementById('convertCost').value = c.expectedCost || '';
+      document.getElementById('convertDate').value = c.contactDate || new Date().toISOString().slice(0, 10);
+      document.getElementById('convertProducts').value = (c.proposalProducts || []).join(', ');
+      document.getElementById('convertSeeding').value = 1;
+      document.getElementById('convertKeep').checked = false;
+      document.getElementById('convertModal').classList.remove('hidden');
+    }
+    function closeConvertModal() {
+      document.getElementById('convertModal').classList.add('hidden');
+      convertingId = null;
+    }
+
+    function confirmConvert() {
+      const c = contactList.find(x => x.id === convertingId);
+      if (!c) return;
+      const picked = Array.from(document.querySelectorAll('.convert-type:checked'));
+      if (!picked.length) { alert('카테고리를 하나 이상 선택해 주세요.'); return; }
+
+      const cost = Number(document.getElementById('convertCost').value) || 0;
+      const date = document.getElementById('convertDate').value || new Date().toISOString().slice(0, 10);
+      const productList = document.getElementById('convertProducts').value.split(',').map(s => s.trim()).filter(Boolean);
+      const seeding = Number(document.getElementById('convertSeeding').value) || 0;
+
+      const types = {}, costs = {};
+      CONVERT_TYPES.forEach(t => { types[t.key] = false; costs[t.key] = 0; });
+      picked.forEach((el, i) => {
+        types[el.value] = true;
+        if (el.value !== 'freeAmb' && i === 0) costs[el.value] = cost;
+      });
+
+      const newId = Date.now();
+      pplList.unshift({
+        id: newId,
+        brand: c.brand,
+        product: productList[0] || '',
+        productList,
+        realName: c.realName || '',
+        influencer: c.influencer || '',
+        category: c.category || '',
+        channels: c.channelUrl || c.influencer
+          ? [{ type: c.channelType || '인스타', account: c.influencer || '', url: c.channelUrl || '' }] : [],
+        followers: c.followers || '',
+        email: c.email || '',
+        types, costs,
+        status: '컨택중',
+        contactDate: date,
+        targetDate: '',
+        isCompleted: false,
+        stepDates: { '컨택중': { date: date, done: true, sched: false } },
+        collabLinks: [], uploads: [], resultNote: '',
+        mcnCompany: c.source || '', mcnAgentName: '', mcnAgentPhone: '', mcnAgentEmail: '',
+        receiverName: '', receiverPhone: '', postalCode: '', address: '', addressDetail: '',
+        guideUrl: '',
+        notes: c.memo || '',
+        seedingCount: seeding,
+        stockDeducted: false,
+        fromContactId: c.id
+      });
+
+      const label = picked.map(el => el.dataset.label).join(' / ');
+      const keep = document.getElementById('convertKeep').checked;
+      if (keep) {
+        contactList = contactList.filter(x => x.id !== c.id);
+      } else {
+        c.confirmed = true;
+        c.movedId = newId;
+        c.movedCat = label;
+        c.movedDate = date;
+        c.reply = '회신 - 긍정';
+      }
+
+      saveAll();
+      closeConvertModal();
+      renderAll();
+      alert(label + ' 카테고리로 등록했습니다. 해당 페이지에서 일정·배송지·단가를 이어서 채워 주세요.');
     }
 
     function renderPplTable() {
       const tbody = document.getElementById('pplTableBody');
-      let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p));
+      let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p));
       if (currentTableBrandFilter !== '전체') filtered = filtered.filter(p => p.brand === currentTableBrandFilter);
 
       if (filtered.length === 0) {
@@ -2883,6 +4333,7 @@
           { on: p.types.microPpl, label: '마이크로 PPL', cost: p.costs.microPpl, cls: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
           { on: p.types.reels, label: '릴스', cost: p.costs.reels, cls: 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200' },
           { on: p.types.shorts, label: '숏츠', cost: p.costs.shorts, cls: 'bg-red-100 text-red-700 border-red-200' },
+          { on: p.types.creator, label: '크리에이터', cost: p.costs.creator, cls: 'bg-violet-100 text-violet-700 border-violet-200' },
           { on: p.types.ambassador || p.types.sample, label: '앰버서더', cost: p.costs.ambassador || p.costs.sample, cls: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
           { on: p.types.freeAmb, label: '무상앰버서더', cost: 0, cls: 'bg-teal-100 text-teal-700 border-teal-200' }
         ].filter(t => t.on);
@@ -2971,6 +4422,7 @@
               <div class="text-[11px] text-slate-500 font-bold">합계: ${totalCost.toLocaleString()}원</div>
             </td>
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
+              <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
               <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -3060,6 +4512,7 @@
               <div class="text-[11px] text-slate-500 font-bold">${totalCost.toLocaleString()}원</div>
             </td>
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
+              <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
               <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -3137,6 +4590,7 @@
             <td class="py-3 px-3 align-top min-w-[170px]">${addrLine}</td>
             <td class="py-3 px-3 align-top font-bold text-teal-700">${p.seedingCount || 0}개</td>
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
+              <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
               <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -3321,6 +4775,7 @@
       document.getElementById('editType_microPpl').checked = !!(ppl.types && ppl.types.microPpl);
       document.getElementById('editType_reels').checked = !!(ppl.types && ppl.types.reels);
       document.getElementById('editType_shorts').checked = !!(ppl.types && ppl.types.shorts);
+      document.getElementById('editType_creator').checked = !!(ppl.types && ppl.types.creator);
       document.getElementById('editType_ambassador').checked = !!(ppl.types && (ppl.types.ambassador || ppl.types.sample));
       document.getElementById('editType_freeAmb').checked = !!(ppl.types && ppl.types.freeAmb);
       document.getElementById('editCost_branded').value = (ppl.costs && ppl.costs.branded) || '';
@@ -3330,6 +4785,7 @@
       document.getElementById('editCost_microPpl').value = (ppl.costs && ppl.costs.microPpl) || '';
       document.getElementById('editCost_reels').value = (ppl.costs && ppl.costs.reels) || '';
       document.getElementById('editCost_shorts').value = (ppl.costs && ppl.costs.shorts) || '';
+      document.getElementById('editCost_creator').value = (ppl.costs && ppl.costs.creator) || '';
       document.getElementById('editCost_ambassador').value = (ppl.costs && (ppl.costs.ambassador || ppl.costs.sample)) || '';
 
       document.getElementById('editModalChannelContainer').innerHTML = (ppl.channels || []).map(c => editChannelRowHtml(c)).join('');
@@ -3420,6 +4876,7 @@
         microPpl: document.getElementById('editType_microPpl').checked,
         reels: document.getElementById('editType_reels').checked,
         shorts: document.getElementById('editType_shorts').checked,
+        creator: document.getElementById('editType_creator').checked,
         ambassador: document.getElementById('editType_ambassador').checked,
         freeAmb: document.getElementById('editType_freeAmb').checked
       };
@@ -3431,6 +4888,7 @@
         microPpl: Number(document.getElementById('editCost_microPpl').value) || 0,
         reels: Number(document.getElementById('editCost_reels').value) || 0,
         shorts: Number(document.getElementById('editCost_shorts').value) || 0,
+        creator: Number(document.getElementById('editCost_creator').value) || 0,
         ambassador: Number(document.getElementById('editCost_ambassador').value) || 0,
         freeAmb: 0
       };
@@ -3500,6 +4958,7 @@
         if (p.types && p.types.microPpl) typeList.push({ t: '마이크로 PPL', c: 'bg-cyan-100 text-cyan-700' });
         if (p.types && p.types.reels) typeList.push({ t: '릴스', c: 'bg-fuchsia-100 text-fuchsia-700' });
         if (p.types && p.types.shorts) typeList.push({ t: '숏츠', c: 'bg-red-100 text-red-700' });
+        if (p.types && p.types.creator) typeList.push({ t: '크리에이터', c: 'bg-violet-100 text-violet-700' });
         if (p.types && (p.types.ambassador || p.types.sample)) typeList.push({ t: '앰버서더', c: 'bg-indigo-100 text-indigo-700' });
         if (p.types && p.types.freeAmb) typeList.push({ t: '무상앰버서더', c: 'bg-teal-100 text-teal-700' });
         const typeChips = typeList.map(x => `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${x.c}">${x.t}</span>`).join(' ');
@@ -4298,16 +5757,24 @@
     function exportShippingExcel(mode) {
       const isFree = mode === true || mode === 'free';
       const isMicroMode = mode === 'micro';
+      const isAmbMode = mode === 'amb';
+      const isCreatorMode = mode === 'creator';
+      const isPplMode = !isFree && !isMicroMode && !isAmbMode && !isCreatorMode;
 
-      const selector = isFree ? '.freeamb-select:checked' : (isMicroMode ? '.micro-select:checked' : '.ppl-select:checked');
+      const selector = isFree ? '.freeamb-select:checked'
+        : (isMicroMode ? '.micro-select:checked'
+        : (isAmbMode ? '.amb-select:checked'
+        : (isCreatorMode ? '.creator-select:checked' : '.ppl-select:checked')));
       const checked = Array.from(document.querySelectorAll(selector)).map(cb => Number(cb.value));
 
       let rows;
       if (isFree) rows = pplList.filter(isFreeAmb);
       else if (isMicroMode) rows = pplList.filter(isMicro);
-      else rows = pplList.filter(p => !isFreeAmb(p) && !isMicro(p));
+      else if (isAmbMode) rows = pplList.filter(isAmbPaid);
+      else if (isCreatorMode) rows = pplList.filter(isCreatorType);
+      else rows = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p));
 
-      if (!isFree && !isMicroMode && currentTableBrandFilter !== '전체') rows = rows.filter(p => p.brand === currentTableBrandFilter);
+      if (isPplMode && currentTableBrandFilter !== '전체') rows = rows.filter(p => p.brand === currentTableBrandFilter);
       if (checked.length > 0) rows = rows.filter(p => checked.includes(p.id));
 
       if (rows.length === 0) {
@@ -4325,7 +5792,10 @@
       }));
 
       const today = new Date().toISOString().slice(0, 10);
-      const fileBase = isFree ? `무상앰버서더_배송정보_${today}` : (isMicroMode ? `마이크로_배송정보_${today}` : `배송정보_${today}`);
+      const fileBase = isFree ? `무상앰버서더_배송정보_${today}`
+        : (isMicroMode ? `마이크로_배송정보_${today}`
+        : (isAmbMode ? `앰버서더_배송정보_${today}`
+        : (isCreatorMode ? `크리에이터_배송정보_${today}` : `배송정보_${today}`)));
 
       if (typeof XLSX !== 'undefined') {
         const ws = XLSX.utils.json_to_sheet(data);
