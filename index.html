@@ -721,6 +721,47 @@
       </div>
     </section>
 
+    <!-- 2차활용 대시보드 연동 -->
+    <section class="bg-white p-5 rounded-2xl border border-orange-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-orange-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-rotate text-orange-500"></i> 2차활용 대시보드 연동
+            <span id="reuseHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">
+            2차활용 대시보드에 넣은 <b>업로드 완료 링크</b>를 자동으로 가져와 이 대시보드의 업로드 기록에 넣어 줍니다.
+            <span id="reuseSyncAt" class="text-slate-400"></span>
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <a href="https://khgee327.github.io/reuse-dashboard/" target="_blank" rel="noopener" class="px-3 py-2 bg-orange-100 hover:bg-orange-200 text-orange-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> 2차활용 대시보드 열기
+          </a>
+          <button id="reuseSyncBtn" onclick="pullReuseRecords(true)" class="px-3.5 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-rotate"></i> <span id="reuseSyncText">지금 불러오기</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-orange-50/60 text-slate-600 font-semibold border-y border-orange-100">
+            <tr>
+              <th class="py-3 px-3">인플루언서</th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">채널 / 유형</th>
+              <th class="py-3 px-3 whitespace-nowrap">업로드일</th>
+              <th class="py-3 px-3">업로드 완료 링크</th>
+              <th class="py-3 px-3">활용 기간</th>
+              <th class="py-3 px-3">연동 상태</th>
+            </tr>
+          </thead>
+          <tbody id="reuseTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
   </main>
 
   <!-- ==================== PAGE: 마이크로 관리 ==================== -->
@@ -2964,6 +3005,7 @@
       pullFromSheet().then(() => {
         renderAll();
         syncToScheduler(true);
+        pullReuseRecords(false);
       });
     });
 
@@ -3026,6 +3068,7 @@
       renderMonthly();
       updateContactProductList();
       renderContactList();
+      renderReuseTable();
       renderCalendar();
       renderInfluencerCards();
       renderProposals();
@@ -3647,7 +3690,9 @@
 
     function uploadRowHtml(u) {
       u = u || {};
-      return '<div class="upload-row grid grid-cols-2 md:grid-cols-12 gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">'
+      const fromReuse = u.src === 'reuse';
+      return '<div class="upload-row grid grid-cols-2 md:grid-cols-12 gap-2 items-center ' + (fromReuse ? 'bg-orange-50/60 border-orange-200' : 'bg-slate-50 border-slate-200') + ' p-2.5 rounded-xl border" data-src="' + tEsc(u.src || '') + '" data-reuse-id="' + tEsc(u.reuseId || '') + '">'
+        + (fromReuse ? '<div class="md:col-span-12 text-[10px] font-bold text-orange-700"><i class="fa-solid fa-rotate"></i> 2차활용 대시보드에서 자동으로 가져온 링크예요 (거기서 수정하면 여기도 바뀝니다)</div>' : '')
         + '<input type="date" class="ul-date md:col-span-2 px-2 py-1.5 text-xs border border-slate-200 rounded-lg" value="' + tEsc(u.date || '') + '">'
         + '<select class="ul-channel md:col-span-2 px-2 py-1.5 text-xs border border-slate-200 rounded-lg bg-white">'
         + UPLOAD_CHANNELS.map(c => '<option value="' + c + '"' + ((u.channel || '인스타') === c ? ' selected' : '') + '>' + c + '</option>').join('')
@@ -3701,7 +3746,9 @@
         likes: r.querySelector('.ul-likes').value,
         keyword: r.querySelector('.ul-keyword').value,
         rank: r.querySelector('.ul-rank').value,
-        memo: r.querySelector('.ul-memo').value
+        memo: r.querySelector('.ul-memo').value,
+        src: r.dataset.src || '',
+        reuseId: r.dataset.reuseId || ''
       })).filter(u => u.date || u.url || u.views || u.keyword || u.memo);
       p.resultNote = document.getElementById('uploadResultNote').value;
       p.collabLinks = p.uploads.map(u => ({ date: u.date, product: prodNamesOf(p).join(', '), url: u.url }));
@@ -3746,7 +3793,8 @@
           + '<td class="py-2.5 px-3 max-w-[260px]">' + (u.url
               ? '<a href="' + tEsc(u.url) + '" target="_blank" rel="noopener" class="text-pink-600 hover:underline break-all">' + tEsc(u.url) + '</a>'
               : '<span class="text-slate-400">링크 없음</span>') + '</td>'
-          + '<td class="py-2.5 px-3 text-slate-600">' + (metricText(u) || '-') + '</td>'
+          + '<td class="py-2.5 px-3 text-slate-600">' + (metricText(u) || '-')
+          + (u.src === 'reuse' ? ' <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 whitespace-nowrap"><i class="fa-solid fa-rotate"></i> 2차활용 연동</span>' : '') + '</td>'
           + '</tr>';
       }).join('');
     }
@@ -4311,6 +4359,199 @@
       closeConvertModal();
       renderAll();
       alert(label + ' 카테고리로 등록했습니다. 해당 페이지에서 일정·배송지·단가를 이어서 채워 주세요.');
+    }
+
+
+    /* ==================== 2차활용 대시보드 연동 ==================== */
+    const REUSE_SYNC_URL = 'https://script.google.com/macros/s/AKfycbw6-nj_J_-M6NFaznQrbkG9ARopOA7qLrJDYBljIK7ig70_V4txyamVVpiv3jSEQRyD/exec';
+    const REUSE_SYNC_KEY = 'reuse';
+    let reuseRecords = JSON.parse(localStorage.getItem('onsal_reuseRecords') || '[]');
+    let reuseSyncAt = localStorage.getItem('onsal_reuseSyncAt') || '';
+    let reuseUnmatched = [];
+
+    const REUSE_CH_MAP = { '인스타그램': '인스타', '인스타': '인스타', '릴스': '인스타', '피드': '인스타', '유튜브': '유튜브', '숏츠': '유튜브', '틱톡': '틱톡', '네이버 블로그': '네이버 블로그', '블로그': '네이버 블로그' };
+    function reuseChannel(c) { return REUSE_CH_MAP[c] || c || '인스타'; }
+
+    function reuseAddMonths(date, n) {
+      const dt = new Date(date.getTime());
+      const day = dt.getDate();
+      dt.setDate(1);
+      dt.setMonth(dt.getMonth() + n);
+      const last = new Date(dt.getFullYear(), dt.getMonth() + 1, 0).getDate();
+      dt.setDate(Math.min(day, last));
+      return dt;
+    }
+    function reusePeriod(r) {
+      const startStr = r.reuseStart || r.uploadDate;
+      if (!startStr) return null;
+      const s = new Date(startStr + 'T00:00:00');
+      if (isNaN(s.getTime())) return null;
+      if (r.reuseMonths === 'perm') return { start: s, end: null, perm: true };
+      const e = reuseAddMonths(s, Number(r.reuseMonths) || 0);
+      e.setDate(e.getDate() - 1);
+      return { start: s, end: e, perm: false };
+    }
+    function reuseFmt(d) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    function reusePeriodText(r) {
+      const p = reusePeriod(r);
+      if (!p) return '';
+      return p.perm ? (reuseFmt(p.start) + ' ~ 제한 없음') : (reuseFmt(p.start) + ' ~ ' + reuseFmt(p.end));
+    }
+    function reuseStatus(r) {
+      const p = reusePeriod(r);
+      if (!p) return { label: '기간 미입력', cls: 'bg-slate-100 text-slate-500' };
+      if (p.perm) return { label: '기간 제한 없음', cls: 'bg-indigo-100 text-indigo-700' };
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      if (today < p.start) return { label: '시작 전', cls: 'bg-sky-100 text-sky-700' };
+      const days = Math.floor((p.end - today) / 864e5);
+      if (days < 0) return { label: '만료', cls: 'bg-rose-100 text-rose-700' };
+      if (days <= 30) return { label: 'D-' + days + ' 만료 임박', cls: 'bg-orange-100 text-orange-700' };
+      return { label: 'D-' + days + ' 사용 가능', cls: 'bg-emerald-100 text-emerald-700' };
+    }
+
+    function reuseNorm(s) { return String(s == null ? '' : s).replace(/[\s@]/g, '').toLowerCase(); }
+
+    function matchPplForReuse(r) {
+      let p = pplList.find(x => String(x.id) === String(r.sourceId));
+      if (p) return p;
+      const nm = reuseNorm(r.name), ac = reuseNorm(r.account);
+      if (ac) { p = pplList.find(x => reuseNorm(x.influencer) === ac); if (p) return p; }
+      if (nm) { p = pplList.find(x => reuseNorm(x.realName) === nm && x.brand === r.brand); if (p) return p; }
+      if (nm) { p = pplList.find(x => reuseNorm(x.realName) === nm); if (p) return p; }
+      return null;
+    }
+
+    // 2차활용 대시보드의 업로드 링크를 이 대시보드의 업로드 기록에 병합 (수동 입력분은 건드리지 않음)
+    function mergeReuseUploads() {
+      let changed = 0;
+      reuseUnmatched = [];
+      const touched = new Set();
+
+      (reuseRecords || []).forEach(r => {
+        const p = matchPplForReuse(r);
+        if (!p) { if (r.uploadUrl) reuseUnmatched.push(r); return; }
+        r._pid = p.id;
+        p.uploads = p.uploads || [];
+
+        let u = p.uploads.find(x => x.reuseId === r.id);
+        if (!u && r.uploadUrl) u = p.uploads.find(x => (x.url || '').trim() === String(r.uploadUrl).trim());
+
+        if (!r.uploadUrl) {
+          if (u && u.src === 'reuse') { p.uploads = p.uploads.filter(x => x !== u); changed++; touched.add(p.id); }
+          return;
+        }
+
+        const date = r.uploadDate || r.reuseStart || '';
+        if (!u) {
+          p.uploads.push({
+            date: date,
+            channel: reuseChannel((r.channels || [])[0]),
+            type: (r.types || [])[0] || '2차활용',
+            url: String(r.uploadUrl).trim(),
+            views: '', likes: '', keyword: '', rank: '',
+            memo: '2차활용 연동' + (reusePeriodText(r) ? ' · 활용 ' + reusePeriodText(r) : ''),
+            src: 'reuse', reuseId: r.id
+          });
+          changed++; touched.add(p.id);
+        } else {
+          const url = String(r.uploadUrl).trim();
+          if (u.url !== url) { u.url = url; changed++; touched.add(p.id); }
+          if (date && u.date !== date) { u.date = date; changed++; touched.add(p.id); }
+          if (u.reuseId !== r.id) { u.reuseId = r.id; changed++; touched.add(p.id); }
+          if (u.src !== 'reuse') { u.src = 'reuse'; changed++; touched.add(p.id); }
+        }
+      });
+
+      touched.forEach(pid => {
+        const p = pplList.find(x => x.id === pid);
+        if (p) p.collabLinks = (p.uploads || []).map(u => ({ date: u.date, product: prodNamesOf(p).join(', '), url: u.url }));
+      });
+
+      return changed;
+    }
+
+    function setReuseStatus(state, text) {
+      const btn = document.getElementById('reuseSyncBtn');
+      const label = document.getElementById('reuseSyncText');
+      if (!btn || !label) return;
+      const styles = {
+        loading: 'px-3.5 py-2 bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition flex items-center gap-1.5',
+        ok: 'px-3.5 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5',
+        error: 'px-3.5 py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5'
+      };
+      btn.className = styles[state] || styles.ok;
+      label.innerText = text;
+    }
+
+    async function pullReuseRecords(manual) {
+      setReuseStatus('loading', '불러오는 중...');
+      try {
+        const res = await fetch(REUSE_SYNC_URL + '?key=' + encodeURIComponent(REUSE_SYNC_KEY) + '&t=' + Date.now());
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'load failed');
+        const d = json.data || {};
+        if (!Array.isArray(d.reuse_records)) throw new Error('2차활용 데이터를 찾지 못했습니다');
+
+        reuseRecords = d.reuse_records;
+        reuseSyncAt = new Date().toISOString();
+        localStorage.setItem('onsal_reuseRecords', JSON.stringify(reuseRecords));
+        localStorage.setItem('onsal_reuseSyncAt', reuseSyncAt);
+
+        const n = mergeReuseUploads();
+        if (n > 0) saveAll();
+        renderAll();
+        setReuseStatus('ok', '지금 불러오기');
+        if (manual) {
+          alert(n > 0
+            ? '2차활용 대시보드에서 업로드 링크 ' + n + '건을 가져왔습니다.'
+            : '새로 가져올 업로드 링크가 없습니다. (이미 최신 상태예요)');
+        }
+        return true;
+      } catch (e) {
+        setReuseStatus('error', '불러오기 실패 · 다시 시도');
+        if (manual) alert('2차활용 대시보드에 연결하지 못했습니다.\n잠시 후 다시 시도해 주세요.\n\n원인: ' + (e && e.message ? e.message : e));
+        return false;
+      }
+    }
+
+    function renderReuseTable() {
+      const tbody = document.getElementById('reuseTableBody');
+      if (!tbody) return;
+
+      const at = document.getElementById('reuseSyncAt');
+      if (at) {
+        at.innerText = reuseSyncAt
+          ? ' · 마지막 연동 ' + new Date(reuseSyncAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : '';
+      }
+
+      const list = (reuseRecords || []).filter(r => r.uploadUrl);
+      setTxt('reuseHeaderCount', list.length + '건');
+
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-400">2차활용 대시보드에 업로드 완료 링크가 아직 없습니다.<br>링크를 넣고 <b>지금 불러오기</b>를 누르면 여기와 업로드 표에 자동으로 들어옵니다.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.slice().sort((a, b) => (b.uploadDate || '').localeCompare(a.uploadDate || '')).map(r => {
+        const brandBadgeClass = r.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+        const st = reuseStatus(r);
+        const matched = matchPplForReuse(r);
+        return '<tr class="hover:bg-orange-50/30 transition">'
+          + '<td class="py-2.5 px-3"><span class="font-bold text-slate-900">' + tEsc(r.name || '이름 없음') + '</span> <span class="text-slate-500">' + tEsc(r.account || '') + '</span></td>'
+          + '<td class="py-2.5 px-3"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + tEsc(r.brand || '') + '</span> <span class="text-slate-600">' + tEsc(r.product || '-') + '</span></td>'
+          + '<td class="py-2.5 px-3 text-slate-600">' + tEsc((r.channels || []).join(', ') || '-') + (((r.types || []).length) ? ' / ' + tEsc(r.types.join(', ')) : '') + '</td>'
+          + '<td class="py-2.5 px-3 font-bold text-slate-800 whitespace-nowrap">' + tEsc(r.uploadDate || '-') + '</td>'
+          + '<td class="py-2.5 px-3 max-w-[240px]"><a href="' + tEsc(r.uploadUrl) + '" target="_blank" rel="noopener" class="text-orange-700 hover:underline break-all">' + tEsc(r.uploadUrl) + '</a></td>'
+          + '<td class="py-2.5 px-3"><div class="text-slate-600">' + tEsc(reusePeriodText(r) || '-') + '</div>'
+          + '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + st.cls + '">' + st.label + '</span></td>'
+          + '<td class="py-2.5 px-3">' + (matched
+              ? '<span class="text-[11px] font-bold text-emerald-700"><i class="fa-solid fa-circle-check"></i> ' + tEsc(catOfPpl(matched)) + '에 반영됨</span>'
+              : '<span class="text-[11px] font-bold text-amber-700" title="이름·계정이 달라 자동으로 짝을 찾지 못했습니다"><i class="fa-solid fa-triangle-exclamation"></i> 매칭 대상 없음</span>')
+          + '</td></tr>';
+      }).join('');
     }
 
     function renderPplTable() {
