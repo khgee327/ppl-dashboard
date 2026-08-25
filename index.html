@@ -2566,7 +2566,7 @@
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
             <i class="fa-brands fa-youtube text-rose-600"></i> 유튜브 채널 분석
           </h2>
-          <p class="text-xs text-slate-500">채널 주소를 넣으면 <b>구독자 수 · 최근 영상 평균 조회수 · 좋아요 · 댓글 · 참여율</b>을 자동으로 가져옵니다.</p>
+          <p class="text-xs text-slate-500">채널 주소를 넣으면 <b>구독자 수 · 평균 조회수 · 평균 인터랙션(좋아요+댓글) · 인터랙션율</b>을 자동으로 가져옵니다. 롱폼/쇼츠도 나눠서 보여줘요.</p>
         </div>
         <button onclick="setYoutubeKey()" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl">API 키 설정</button>
       </div>
@@ -6856,7 +6856,7 @@
         title: (v.snippet || {}).title || '',
         date: ((v.snippet || {}).publishedAt || '').slice(0, 10),
         id: v.id,
-        short: /^PT(\d+S|\d+M\d*S?)$/.test(((v.contentDetails || {}).duration) || '') && durSec(v.contentDetails.duration) <= 60,
+        short: (function () { const s = durSec(((v.contentDetails || {}).duration) || ''); return s > 0 && s <= 60; })(),
         views: Number((v.statistics || {}).viewCount || 0),
         likes: Number((v.statistics || {}).likeCount || 0),
         comments: Number((v.statistics || {}).commentCount || 0)
@@ -6872,8 +6872,16 @@
       const views = nums.map(n => n.views);
       const avgViews = avg(views), medViews = med(views);
       const avgLikes = avg(nums.map(n => n.likes)), avgComments = avg(nums.map(n => n.comments));
-      const engagement = avgViews ? ((avgLikes + avgComments) / avgViews * 100) : 0;
+      const avgInteraction = avgLikes + avgComments;
+      const engagement = avgViews ? (avgInteraction / avgViews * 100) : 0;
       const viewRate = subs ? (avgViews / subs * 100) : 0;
+
+      const longs = nums.filter(n => !n.short), shorts = nums.filter(n => n.short);
+      const avgViewsLong = avg(longs.map(n => n.views)), avgViewsShort = avg(shorts.map(n => n.views));
+      const engLong = avgViewsLong ? ((avg(longs.map(n => n.likes)) + avg(longs.map(n => n.comments))) / avgViewsLong * 100) : 0;
+      const engShort = avgViewsShort ? ((avg(shorts.map(n => n.likes)) + avg(shorts.map(n => n.comments))) / avgViewsShort * 100) : 0;
+      const noLikes = nums.length > 0 && nums.every(n => n.likes === 0);
+      const noComments = nums.length > 0 && nums.every(n => n.comments === 0);
 
       return {
         channelId: item.id,
@@ -6886,10 +6894,15 @@
         totalViews: Number(st.viewCount || 0),
         videoCount: Number(st.videoCount || 0),
         sample: nums.length,
-        avgViews, medViews, avgLikes, avgComments,
+        avgViews, medViews, avgLikes, avgComments, avgInteraction,
         engagement: Math.round(engagement * 100) / 100,
         viewRate: Math.round(viewRate * 10) / 10,
-        recent: nums.slice(0, 5),
+        longCount: longs.length, shortCount: shorts.length,
+        avgViewsLong, avgViewsShort,
+        engLong: Math.round(engLong * 100) / 100,
+        engShort: Math.round(engShort * 100) / 100,
+        noLikes, noComments,
+        recent: nums.slice(0, 6),
         fetchedAt: todayStr()
       };
     }
@@ -6942,11 +6955,31 @@
         + card('총 영상 수', fmtCount(s.videoCount), '누적 ' + fmtCount(s.totalViews) + '회', 'sky')
         + '</div>'
 
-        + '<div class="grid grid-cols-2 md:grid-cols-3 gap-2.5 mt-2.5">'
-        + card('평균 좋아요', fmtCount(s.avgLikes), '', 'pink')
-        + card('평균 댓글', fmtCount(s.avgComments), '', 'amber')
-        + card('참여율', s.engagement + '%', '(좋아요+댓글) ÷ 조회수 · ' + grade[0], grade[1])
+        + '<div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-2.5">'
+        + card('평균 인터랙션', fmtCount(s.avgInteraction || (s.avgLikes + s.avgComments)), '좋아요 + 댓글', 'fuchsia')
+        + card('평균 좋아요', fmtCount(s.avgLikes), s.noLikes ? '표시 안 함' : '', 'pink')
+        + card('평균 댓글', fmtCount(s.avgComments), s.noComments ? '댓글 사용 안 함' : '', 'amber')
+        + card('인터랙션율', s.engagement + '%', '인터랙션 ÷ 조회수 · ' + grade[0], grade[1])
         + '</div>'
+
+        + (s.sample === 0
+            ? '<div class="mt-2.5 bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-900">'
+              + '<b><i class="fa-solid fa-triangle-exclamation"></i> 최근 영상을 가져오지 못했습니다.</b> 업로드 목록이 비공개이거나 영상이 없는 채널이에요. '
+              + '구독자 수는 정상이지만 평균 조회수 · 인터랙션은 계산할 수 없습니다.</div>'
+            : '')
+
+        + ((s.longCount || s.shortCount)
+            ? '<div class="mt-2.5 grid grid-cols-1 md:grid-cols-2 gap-2.5">'
+              + '<div class="bg-white border border-slate-200 rounded-2xl p-3.5">'
+              + '<div class="text-[11px] font-black text-slate-700 mb-1"><i class="fa-solid fa-film"></i> 롱폼 <span class="text-slate-400 font-semibold">' + s.longCount + '개</span></div>'
+              + (s.longCount ? '<div class="text-xs text-slate-600">평균 조회 <b class="text-slate-900">' + fmtCount(s.avgViewsLong) + '</b> · 인터랙션율 <b class="text-slate-900">' + s.engLong + '%</b></div>'
+                             : '<div class="text-xs text-slate-400">최근 영상 중 없음</div>') + '</div>'
+              + '<div class="bg-white border border-slate-200 rounded-2xl p-3.5">'
+              + '<div class="text-[11px] font-black text-slate-700 mb-1"><i class="fa-solid fa-mobile-screen"></i> 쇼츠 <span class="text-slate-400 font-semibold">' + s.shortCount + '개</span></div>'
+              + (s.shortCount ? '<div class="text-xs text-slate-600">평균 조회 <b class="text-slate-900">' + fmtCount(s.avgViewsShort) + '</b> · 인터랙션율 <b class="text-slate-900">' + s.engShort + '%</b></div>'
+                              : '<div class="text-xs text-slate-400">최근 영상 중 없음</div>') + '</div>'
+              + '</div>'
+            : '')
 
         + (s.subscribers ? '<div class="mt-2.5 bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-xs text-slate-600">'
             + '<b class="text-slate-800">구독자 대비 조회율 ' + s.viewRate + '%</b> — 구독자 수 대비 영상이 실제로 얼마나 도달하는지 보는 지표예요. '
@@ -6956,13 +6989,15 @@
             + '<div class="overflow-x-auto custom-scrollbar"><table class="w-full text-left text-[11px]">'
             + '<thead class="text-slate-500 font-bold border-b border-slate-200"><tr>'
             + '<th class="py-1.5 pr-2">업로드일</th><th class="py-1.5 pr-2">제목</th>'
-            + '<th class="py-1.5 pr-2 text-right">조회</th><th class="py-1.5 pr-2 text-right">좋아요</th><th class="py-1.5 text-right">댓글</th></tr></thead>'
+            + '<th class="py-1.5 pr-2 text-right">조회</th><th class="py-1.5 pr-2 text-right">좋아요</th><th class="py-1.5 pr-2 text-right">댓글</th><th class="py-1.5 text-right">인터랙션율</th></tr></thead>'
             + '<tbody class="divide-y divide-slate-100">'
             + s.recent.map(v => '<tr><td class="py-1.5 pr-2 whitespace-nowrap text-slate-500">' + v.date + '</td>'
-                + '<td class="py-1.5 pr-2 max-w-[220px] truncate"><a href="https://youtu.be/' + v.id + '" target="_blank" rel="noopener" class="text-slate-800 hover:underline">' + tEsc(v.title) + '</a></td>'
+                + '<td class="py-1.5 pr-2 max-w-[220px] truncate">' + (v.short ? '<span class="text-[9px] font-bold px-1 py-0.5 bg-rose-100 text-rose-700 rounded mr-1">쇼츠</span>' : '')
+                + '<a href="https://youtu.be/' + v.id + '" target="_blank" rel="noopener" class="text-slate-800 hover:underline">' + tEsc(v.title) + '</a></td>'
                 + '<td class="py-1.5 pr-2 text-right font-bold">' + v.views.toLocaleString() + '</td>'
                 + '<td class="py-1.5 pr-2 text-right">' + v.likes.toLocaleString() + '</td>'
-                + '<td class="py-1.5 text-right">' + v.comments.toLocaleString() + '</td></tr>').join('')
+                + '<td class="py-1.5 pr-2 text-right">' + v.comments.toLocaleString() + '</td>'
+                + '<td class="py-1.5 text-right font-bold text-slate-700">' + (v.views ? (((v.likes + v.comments) / v.views) * 100).toFixed(1) + '%' : '-') + '</td></tr>').join('')
             + '</tbody></table></div></div>' : '')
 
         + '<p class="text-[10px] text-slate-400 mt-3">* 조회수·좋아요·댓글은 유튜브가 공개하는 값이며, 비공개 설정된 항목은 0으로 표시됩니다.</p>';
@@ -7024,7 +7059,7 @@
       const s = rec && rec.ytStats;
       if (!s) return '';
       return '<div class="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-100 rounded-md px-1.5 py-0.5 mt-1 inline-block">'
-        + '<i class="fa-brands fa-youtube"></i> 평균 ' + fmtCount(s.avgViews) + '뷰 · 참여율 ' + s.engagement + '%</div>';
+        + '<i class="fa-brands fa-youtube"></i> 평균 ' + fmtCount(s.avgViews) + '뷰 · 인터랙션 ' + fmtCount(s.avgInteraction || (s.avgLikes + s.avgComments)) + ' (' + s.engagement + '%)</div>';
     }
 
     function payRecOf(kind, id) {
