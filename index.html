@@ -3059,9 +3059,28 @@
 
       <div class="p-6 space-y-4">
         <!-- 계약 진행 -->
-        <div class="bg-violet-50/50 p-4 rounded-2xl border border-violet-200 space-y-2.5">
+        <div class="bg-violet-50/50 p-4 rounded-2xl border border-violet-200 space-y-3">
           <h4 class="text-xs font-black text-violet-900"><i class="fa-solid fa-file-signature"></i> 계약 진행</h4>
           <div id="payContractRows" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-violet-800 mb-1">계약서 링크 (구글드라이브 · 전자계약 등)</label>
+            <input type="url" id="payContractUrl" placeholder="https://drive.google.com/..." class="w-full px-3 py-2 text-xs border border-violet-200 rounded-xl bg-white">
+          </div>
+
+          <div id="payContractDrop" class="bg-white p-3.5 rounded-xl border-2 border-dashed border-violet-300 space-y-2.5">
+            <div class="flex flex-wrap justify-between items-center gap-2">
+              <div>
+                <h5 class="text-[11px] font-black text-violet-900"><i class="fa-solid fa-file-pdf text-rose-600"></i> 계약서 파일 첨부 (PDF · 이미지 · 워드)</h5>
+                <p class="text-[10px] text-slate-500">파일을 끌어다 놓거나 선택하세요. <b>파일 1개당 최대 1.2MB</b>까지 올릴 수 있어요.</p>
+              </div>
+              <label class="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold rounded-xl cursor-pointer whitespace-nowrap">
+                <i class="fa-solid fa-upload"></i> 파일 선택
+                <input type="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.hwp" multiple class="hidden" onchange="pickContractFiles(this)">
+              </label>
+            </div>
+            <div id="payContractFileList" class="space-y-1.5"></div>
+          </div>
         </div>
 
         <!-- 지급 조건 -->
@@ -4051,6 +4070,13 @@
       renderAll();
 
       document.addEventListener('paste', handleGlobalPaste);
+      const cz = document.getElementById('payContractDrop');
+      if (cz) {
+        cz.addEventListener('dragover', e => { e.preventDefault(); cz.classList.add('border-violet-500'); });
+        cz.addEventListener('dragleave', () => cz.classList.remove('border-violet-500'));
+        cz.addEventListener('drop', e => { e.preventDefault(); cz.classList.remove('border-violet-500'); addContractFiles(e.dataTransfer.files); });
+      }
+
       const gz = document.getElementById('trialGuideDrop');
       if (gz) {
         gz.addEventListener('dragover', e => { e.preventDefault(); gz.classList.add('border-pink-400'); });
@@ -6534,13 +6560,23 @@
 
     function contractChipHtml(rec, isTrial) {
       const pay = ensurePayment(rec, isTrial);
+      const kind = isTrial ? 'trial' : 'ppl';
+      const files = pay.contractFiles || [];
+      let attach = '';
+      if (pay.contractUrl) {
+        attach += '<a href="' + tEsc(pay.contractUrl) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-md hover:underline mr-1 mb-1"><i class="fa-solid fa-link"></i> 계약서 링크</a>';
+      }
+      attach += files.map((f, i) => '<button onclick="openContractFileDirect(\'' + kind + '\', ' + rec.id + ', ' + i + ')" title="' + tEsc(f.name) + '" class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-violet-50 text-violet-700 border border-violet-200 rounded-md hover:bg-violet-100 mr-1 mb-1 max-w-[150px]"><i class="fa-solid ' + fileIconOf(f.name) + '"></i> <span class="truncate">' + tEsc(f.name) + '</span></button>').join('');
+      if (attach) attach = '<div class="mt-1.5 flex flex-wrap">' + attach + '</div>';
+      else attach = '<div class="mt-1.5 text-[10px] text-slate-300 font-semibold">계약서 미첨부</div>';
+
       return CONTRACT_STEPS.map(([k, label]) => {
         const s = pay.contract[k] || {};
         return '<div class="flex items-center gap-1 text-[11px]">'
           + '<span class="' + (s.done ? 'text-emerald-600' : 'text-slate-300') + '"><i class="fa-solid ' + (s.done ? 'fa-circle-check' : 'fa-circle') + '"></i></span>'
           + '<span class="' + (s.done ? 'text-slate-700 font-semibold' : 'text-slate-400') + '">' + label + '</span>'
           + (s.date ? '<span class="text-slate-400">' + s.date.slice(5) + '</span>' : '') + '</div>';
-      }).join('');
+      }).join('') + attach;
     }
 
     function payItemChipHtml(r) {
@@ -6661,6 +6697,52 @@
     }
 
     /* ---- 입금 모달 ---- */
+
+    /* ==================== 계약서 파일 첨부 ==================== */
+    const CONTRACT_FILE_MAX = 1.2 * 1024 * 1024;
+    let payContractFiles = [];
+
+    function renderContractFiles() {
+      const box = document.getElementById('payContractFileList');
+      if (!box) return;
+      box.innerHTML = payContractFiles.length
+        ? payContractFiles.map((f, i) => '<div class="flex items-center justify-between gap-2 bg-violet-50/50 px-3 py-2 rounded-xl border border-violet-200">'
+            + '<div class="min-w-0 flex items-center gap-2"><i class="fa-solid ' + fileIconOf(f.name) + '"></i>'
+            + '<span class="text-[11px] font-semibold text-slate-800 truncate">' + tEsc(f.name) + '</span>'
+            + '<span class="text-[10px] text-slate-400 whitespace-nowrap">' + fmtBytes(f.size || 0) + '</span></div>'
+            + '<div class="flex items-center gap-1 whitespace-nowrap">'
+            + '<button type="button" onclick="downloadContractFile(' + i + ')" class="px-2 py-1 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-download"></i> 열기</button>'
+            + '<button type="button" onclick="removeContractFile(' + i + ')" class="text-slate-400 hover:text-rose-600 px-1.5"><i class="fa-solid fa-trash text-[11px]"></i></button>'
+            + '</div></div>').join('')
+        : '<p class="text-[11px] text-slate-400 text-center py-3">첨부된 계약서가 없습니다.</p>';
+    }
+    function downloadContractFile(i) {
+      const f = payContractFiles[i];
+      if (f) downloadDataUrl(f.data, f.name);
+    }
+    function removeContractFile(i) { payContractFiles.splice(i, 1); renderContractFiles(); }
+    function addContractFiles(files) {
+      Array.from(files || []).forEach(f => {
+        if (f.size > CONTRACT_FILE_MAX) {
+          alert('"' + f.name + '" 은 ' + fmtBytes(f.size) + ' 로 너무 큽니다.\n\n· PDF를 압축하거나 (스캔본이면 해상도를 낮춰 보세요)\n· 구글드라이브에 올린 뒤 위쪽 "계약서 링크" 칸에 주소를 넣어 주세요.');
+          return;
+        }
+        const fr = new FileReader();
+        fr.onload = e => {
+          payContractFiles.push({ name: f.name, type: f.type, size: f.size, data: e.target.result, addedAt: todayStr() });
+          renderContractFiles();
+        };
+        fr.readAsDataURL(f);
+      });
+    }
+    function pickContractFiles(input) { addContractFiles(input.files); input.value = ''; }
+
+    function openContractFileDirect(kind, id, i) {
+      const rec = payRecOf(kind, id);
+      const f = rec && rec.payment && (rec.payment.contractFiles || [])[i];
+      if (f) downloadDataUrl(f.data, f.name);
+    }
+
     function payRecOf(kind, id) {
       return kind === 'trial' ? trialList.find(x => x.id === id) : pplList.find(x => x.id === id);
     }
@@ -6744,6 +6826,9 @@
       modeSel.innerHTML = PAY_MODES.map(m => '<option value="' + m + '"' + (pay.mode === m ? ' selected' : '') + '>' + m + '</option>').join('');
       document.getElementById('payTotal').value = pay.total || '';
       document.getElementById('payMemo').value = pay.memo || '';
+      document.getElementById('payContractUrl').value = pay.contractUrl || '';
+      payContractFiles = (pay.contractFiles || []).slice();
+      renderContractFiles();
       const ctx = payCtxOf(rec, isTrial);
       document.getElementById('payUploadDate').value = ctx.uploadDate || '';
 
@@ -6767,6 +6852,8 @@
       pay.mode = document.getElementById('payMode').value;
       pay.total = Number(document.getElementById('payTotal').value) || 0;
       pay.memo = document.getElementById('payMemo').value;
+      pay.contractUrl = document.getElementById('payContractUrl').value.trim();
+      pay.contractFiles = payContractFiles.slice();
       CONTRACT_STEPS.forEach(([k]) => {
         const box = document.querySelector('#payContractRows [data-ck="' + k + '"]');
         pay.contract[k] = { done: box.querySelector('input[type=checkbox]').checked, date: box.querySelector('input[type=date]').value };
@@ -6794,6 +6881,7 @@
         rows.forEach(r => out.push({
           '구분': t.cat, '브랜드': t.brand, '대상': t.who, '제품/채널': t.sub,
           '계약서작성': pay.contract.write.date || '', '계약서수정': pay.contract.revise.date || '', '계약서날인': pay.contract.seal.date || '',
+          '계약서첨부': (pay.contractFiles || []).map(f => f.name).join(', ') || (pay.contractUrl ? '링크' : ''),
           '지급방식': pay.mode, '총금액': pay.total,
           '항목': r.it.label, '금액': r.it.amount,
           '세금계산서발행일': r.it.taxDate || '', '발행여부': r.it.taxDone ? 'O' : '',
