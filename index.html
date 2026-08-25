@@ -691,6 +691,7 @@
             <i class="fa-solid fa-list text-pink-500"></i> 브랜디드 &amp; PPL 진행 목록 테이블
           </h2>
           <p class="text-xs text-slate-500">체크한 인플루언서의 수령인 이름·연락처·우편번호·주소를 엑셀로 받을 수 있어요. (체크 없으면 현재 목록 전체)</p>
+          <p class="text-xs text-pink-600 font-semibold mt-0.5"><i class="fa-solid fa-lightbulb"></i> 인플루언서 <b>이름을 클릭</b>하면 수정 창이 바로 열려요. 목록은 <b>진행중 → 진행예정 → 진행완료</b> 순으로 묶여 있고, 그룹 제목을 누르면 접었다 펼 수 있어요.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -4739,7 +4740,7 @@
         + '<td class="py-3 px-3 align-top"><input type="checkbox" class="' + prefix + '-select accent-' + accent + '-600 w-4 h-4 cursor-pointer" value="' + p.id + '"></td>'
         + '<td class="py-3 px-3 align-top w-[190px] min-w-[190px] max-w-[190px]"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + p.brand + '</span>'
         + productCellHtml(p) + '</td>'
-        + '<td class="py-3 px-3 align-top"><div class="font-bold text-slate-900">' + (p.realName || '무명') + '</div>'
+        + '<td class="py-3 px-3 align-top"><div>' + nameLinkHtml(p, '') + '</div>'
         + '<div class="text-[11px] text-slate-500">' + (p.influencer || '') + '</div>'
         + '<div class="text-[11px] text-slate-400">' + (p.followers ? '팔로워 ' + p.followers : '') + '</div></td>'
         + '<td class="py-3 px-3 align-top min-w-[110px]"><div class="flex flex-wrap">' + typeHtml + '</div>'
@@ -4767,11 +4768,8 @@
       setTxt(prefix + 'HeaderCount', list.length + '명');
       setTxt(prefix + 'Onsal', list.filter(p => p.brand === '온살').length + '명');
       setTxt(prefix + 'Lume', list.filter(p => p.brand === '루메아카이브').length + '명');
-      if (list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-slate-400">' + (tbody.dataset.empty || '등록된 건이 없습니다.') + '</td></tr>';
-        return;
-      }
-      tbody.innerHTML = list.map(p => catRowHtml(p, prefix, accent)).join('');
+      tbody.innerHTML = groupedTbodyHtml(prefix, list, 9, p => catRowHtml(p, prefix, accent),
+        tbody.dataset.empty || '등록된 건이 없습니다.');
     }
 
     function renderAmbTable() { renderCatTable('amb', 'indigo', isAmbPaid); }
@@ -6124,7 +6122,7 @@
         const progressPct = cfg.keywordGoal ? Math.min(100, Math.round(keys.length / cfg.keywordGoal * 100)) : 0;
 
         return '<tr class="hover:bg-cyan-50/30 transition' + (m.bonus ? ' bg-amber-50/30' : '') + '">'
-          + '<td class="py-3 px-3"><div class="font-bold text-slate-900">' + tEsc(p.realName || '무명') + '</div>'
+          + '<td class="py-3 px-3"><div>' + nameLinkHtml(p, '') + '</div>'
           + '<div class="text-[11px] text-slate-500">' + tEsc(p.influencer || '') + '</div></td>'
           + '<td class="py-3 px-3 text-center">' + chk('m1', m.m1) + '</td>'
           + '<td class="py-3 px-3 text-center">' + chk('m2', m.m2) + '</td>'
@@ -7874,6 +7872,88 @@
       return html;
     }
 
+
+    /* ==================== 진행 상태 그룹 (진행중 / 진행예정 / 진행완료) ==================== */
+    const PLANNED_STAGES = ['컨택중', '협의중', '테스트제품전달', '테스트중'];
+    const BUCKET_ORDER = ['active', 'planned', 'done'];
+    const BUCKET_META = {
+      active:  { label: '진행중',   icon: 'fa-circle-play',  row: 'bg-emerald-50/70', text: 'text-emerald-800', dot: 'bg-emerald-500', desc: '지금 굴러가는 건' },
+      planned: { label: '진행예정', icon: 'fa-hourglass-half', row: 'bg-amber-50/70',  text: 'text-amber-800',   dot: 'bg-amber-400',   desc: '컨택 · 협의 단계' },
+      done:    { label: '진행완료', icon: 'fa-circle-check', row: 'bg-slate-100/80',  text: 'text-slate-600',   dot: 'bg-slate-400',   desc: '업로드 끝난 건' }
+    };
+    const collapsedBuckets = new Set(JSON.parse(localStorage.getItem('onsal_collapsedBuckets') || '[]'));
+
+    function progressBucketOf(p) {
+      if (p.isCompleted || p.status === '잔금입금' || uploadsOf(p).length > 0) return 'done';
+      if (PLANNED_STAGES.includes(p.status)) return 'planned';
+      return 'active';
+    }
+    function toggleBucket(key) {
+      if (collapsedBuckets.has(key)) collapsedBuckets.delete(key);
+      else collapsedBuckets.add(key);
+      localStorage.setItem('onsal_collapsedBuckets', JSON.stringify(Array.from(collapsedBuckets)));
+      renderAll();
+    }
+    // 정렬 기준: 아직 안 끝난 단계 중 가장 빠른 일자
+    function nextStepDateOf(p) {
+      let best = '';
+      if (p.stepDates) {
+        Object.entries(p.stepDates).forEach(([, info]) => {
+          const dt = typeof info === 'object' ? info.date : info;
+          const done = typeof info === 'object' ? info.done : false;
+          if (!dt || done) return;
+          if (!best || dt < best) best = dt;
+        });
+      }
+      return best || p.contactDate || '';
+    }
+    function lastUploadDateOf(p) {
+      const ups = uploadsOf(p);
+      if (!ups.length) return '';
+      return ups.map(u => u.date || '').sort().pop() || '';
+    }
+
+    function bucketHeaderHtml(key, meta, count, colspan, collapsed) {
+      return '<tr class="' + meta.row + ' border-y border-slate-200 cursor-pointer select-none" onclick="toggleBucket(\'' + key + '\')">'
+        + '<td colspan="' + colspan + '" class="py-2 px-3">'
+        + '<div class="flex items-center gap-2">'
+        + '<i class="fa-solid ' + (collapsed ? 'fa-chevron-right' : 'fa-chevron-down') + ' text-[10px] ' + meta.text + '"></i>'
+        + '<span class="w-2 h-2 rounded-full ' + meta.dot + '"></span>'
+        + '<span class="text-xs font-black ' + meta.text + '">' + meta.label + '</span>'
+        + '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white ' + meta.text + ' border border-current/20">' + count + '명</span>'
+        + '<span class="text-[10px] text-slate-400 font-semibold">' + meta.desc + '</span>'
+        + (collapsed ? '<span class="text-[10px] text-slate-400 ml-auto">펼치기</span>' : '<span class="text-[10px] text-slate-300 ml-auto">접기</span>')
+        + '</div></td></tr>';
+    }
+
+    function groupedTbodyHtml(tableId, list, colspan, rowFn, emptyMsg) {
+      const buckets = { active: [], planned: [], done: [] };
+      list.forEach(p => buckets[progressBucketOf(p)].push(p));
+
+      buckets.active.sort((a, b) => (nextStepDateOf(a) || '9999').localeCompare(nextStepDateOf(b) || '9999'));
+      buckets.planned.sort((a, b) => (nextStepDateOf(a) || '9999').localeCompare(nextStepDateOf(b) || '9999'));
+      buckets.done.sort((a, b) => (lastUploadDateOf(b) || '').localeCompare(lastUploadDateOf(a) || ''));
+
+      let html = '';
+      BUCKET_ORDER.forEach(b => {
+        const arr = buckets[b];
+        if (!arr.length) return;
+        const key = tableId + ':' + b;
+        const collapsed = collapsedBuckets.has(key);
+        html += bucketHeaderHtml(key, BUCKET_META[b], arr.length, colspan, collapsed);
+        if (!collapsed) html += arr.map(rowFn).join('');
+      });
+      return html || '<tr><td colspan="' + colspan + '" class="py-8 text-center text-slate-400">' + emptyMsg + '</td></tr>';
+    }
+
+    // 인플루언서 이름 → 수정 모달 바로 열기
+    function nameLinkHtml(p, extra) {
+      return '<button onclick="openStepDateModal(' + p.id + ')" title="클릭하면 수정 창이 열려요"'
+        + ' class="text-left font-bold text-slate-900 hover:text-pink-600 hover:underline decoration-dotted underline-offset-2">'
+        + tEsc(p.realName || '무명') + ' <i class="fa-solid fa-pen text-[9px] text-slate-300"></i></button>'
+        + (extra ? '<span class="text-xs font-normal text-slate-500"> ' + extra + '</span>' : '');
+    }
+
     function renderPplTable() {
       const tbody = document.getElementById('pplTableBody');
       let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p) && !isSupporters(p));
@@ -7884,7 +7964,7 @@
         return;
       }
 
-      tbody.innerHTML = filtered.map(p => {
+      const rowFn = p => {
         let totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.microReels||0) + (p.costs.microPpl||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
         const typeBadges = [
           { on: p.types.branded, label: '브랜디드', cost: p.costs.branded, cls: 'bg-violet-100 text-violet-700 border-violet-200' },
@@ -7944,7 +8024,7 @@
               ${productCellHtml(p)}
             </td>
             <td class="py-3 px-3 align-top">
-              <div class="font-bold text-slate-900">${p.realName || '무명'} <span class="text-xs font-normal text-slate-500">(${p.influencer})</span></div>
+              <div>${nameLinkHtml(p, p.influencer ? '(' + tEsc(p.influencer) + ')' : '')}</div>
               <div class="mt-1 flex flex-wrap gap-1">${channelsHtml}</div>
               <div class="text-[11px] text-slate-400 mt-1">${p.followers ? `구독자/팔로워: ${p.followers}` : ''}</div>
             </td>
@@ -7990,7 +8070,8 @@
             </td>
           </tr>
         `;
-      }).join('');
+      };
+      tbody.innerHTML = groupedTbodyHtml('ppl', filtered, 10, rowFn, '등록된 PPL 진행 건이 없습니다.');
     }
 
     function toggleSelectAllMicro(checked) {
@@ -8018,7 +8099,7 @@
         return;
       }
 
-      tbody.innerHTML = list.map(p => {
+      const rowFn = p => {
         const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
         const prodNames = (p.productList && p.productList.length ? p.productList : [p.product]);
         const totalCost = (p.costs.microReels||0) + (p.costs.microPpl||0);
@@ -8052,7 +8133,7 @@
               ${productCellHtml(p)}
             </td>
             <td class="py-3 px-3 align-top">
-              <div class="font-bold text-slate-900">${p.realName || '무명'}</div>
+              <div>${nameLinkHtml(p, '')}</div>
               <div class="text-[11px] text-slate-500">${p.influencer || ''}</div>
               <div class="text-[11px] text-slate-400">${p.followers ? `팔로워 ${p.followers}` : ''}</div>
               ${p.category ? `<span class="text-[10px] font-bold px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded-full">${p.category}</span>` : ''}
@@ -8085,7 +8166,8 @@
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>`;
-      }).join('');
+      };
+      tbody.innerHTML = groupedTbodyHtml('micro', list, 9, rowFn, '마이크로 진행 건이 없습니다.');
     }
 
     function toggleSelectAllFreeAmb(checked) {
@@ -8106,7 +8188,7 @@
         return;
       }
 
-      tbody.innerHTML = list.map(p => {
+      const rowFn = p => {
         const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
         const prodNames = (p.productList && p.productList.length ? p.productList : [p.product]);
 
@@ -8138,7 +8220,7 @@
               ${productCellHtml(p)}
             </td>
             <td class="py-3 px-3 align-top">
-              <div class="font-bold text-slate-900">${p.realName || '무명'}</div>
+              <div>${nameLinkHtml(p, '')}</div>
               <div class="text-[11px] text-slate-500">${p.influencer || ''}</div>
               <div class="text-[11px] text-slate-400">${p.followers ? `팔로워 ${p.followers}` : ''}</div>
             </td>
@@ -8163,7 +8245,8 @@
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>`;
-      }).join('');
+      };
+      tbody.innerHTML = groupedTbodyHtml('freeamb', list, 9, rowFn, '등록된 무상앰버서더가 없습니다.');
     }
 
     function updatePplStatus(id, newStatus) {
