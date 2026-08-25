@@ -1819,6 +1819,92 @@
       </div>
     </section>
 
+    <!-- UTM 명명 규칙 가이드 -->
+    <section class="bg-white rounded-2xl border border-violet-200 shadow-sm overflow-hidden">
+      <div class="px-5 py-4 flex items-center justify-between cursor-pointer select-none" onclick="toggleSection('utmGuideSection')">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i id="utmGuideSection-icon" class="fa-solid fa-chevron-right text-violet-500 text-xs transition-transform"></i>
+          <i class="fa-solid fa-book text-violet-600"></i> UTM 빌더 사용 가이드 · 명명 규칙
+        </h2>
+        <span class="text-xs text-slate-400">클릭해서 열기</span>
+      </div>
+
+      <div id="utmGuideSection" class="hidden px-5 pb-5 space-y-4 text-xs">
+        <div class="bg-rose-50/60 border border-rose-100 rounded-xl p-3.5 text-rose-900">
+          <b>★ 주의 ★</b> 동일한 규칙을 유지해야 GA4에서 매체 · 캠페인별 성과를 깔끔하게 확인할 수 있어요.
+        </div>
+
+        <div>
+          <h3 class="font-black text-slate-800 mb-2">UTM 항목별 작성 기준</h3>
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border border-slate-200 rounded-xl overflow-hidden">
+              <thead class="bg-violet-50 text-slate-600 font-bold">
+                <tr>
+                  <th class="py-2 px-3">항목</th><th class="py-2 px-3">무엇을 쓰나</th>
+                  <th class="py-2 px-3">권장 예시</th><th class="py-2 px-3">GA4에서 보는 기준</th><th class="py-2 px-3 text-center">필수</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr><td class="py-2 px-3 font-mono font-bold text-violet-700">utm_source</td><td class="py-2 px-3">유입 매체명</td><td class="py-2 px-3 font-mono text-slate-500">meta / google / naver / insta</td><td class="py-2 px-3">세션 소스</td><td class="py-2 px-3 text-center"><span class="text-[10px] font-bold px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded">필수</span></td></tr>
+                <tr><td class="py-2 px-3 font-mono font-bold text-violet-700">utm_medium</td><td class="py-2 px-3">광고 / 유입 방식</td><td class="py-2 px-3 font-mono text-slate-500">sa / ssa / da / blog / seeding</td><td class="py-2 px-3">세션 매체</td><td class="py-2 px-3 text-center"><span class="text-[10px] font-bold px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded">필수</span></td></tr>
+                <tr><td class="py-2 px-3 font-mono font-bold text-violet-700">utm_campaign</td><td class="py-2 px-3">캠페인명</td><td class="py-2 px-3 font-mono text-slate-500">260716_con_vita</td><td class="py-2 px-3">세션 캠페인</td><td class="py-2 px-3 text-center"><span class="text-[10px] font-bold px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded">필수</span></td></tr>
+                <tr><td class="py-2 px-3 font-mono font-bold text-violet-700">utm_content</td><td class="py-2 px-3">그룹명</td><td class="py-2 px-3 font-mono text-slate-500">260716_rt_mf2540</td><td class="py-2 px-3">수동 콘텐츠</td><td class="py-2 px-3 text-center"><span class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">선택</span></td></tr>
+                <tr><td class="py-2 px-3 font-mono font-bold text-violet-700">utm_term</td><td class="py-2 px-3">소재명 / 검색 키워드</td><td class="py-2 px-3 font-mono text-slate-500">260716_img_vitac8pct</td><td class="py-2 px-3">수동 검색어</td><td class="py-2 px-3 text-center"><span class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">선택</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div>
+            <h3 class="font-black text-slate-800 mb-2"><i class="fa-solid fa-bullhorn text-violet-500"></i> 광고 매체 캠 / 그 / 소 명명 규칙</h3>
+            <div class="border border-slate-200 rounded-xl overflow-hidden">
+              <table class="w-full text-left">
+                <thead class="bg-slate-50 text-slate-600 font-bold"><tr><th class="py-2 px-3 w-20">분류</th><th class="py-2 px-3">생성 규칙</th><th class="py-2 px-3">권장 예시</th></tr></thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr><td class="py-2 px-3 font-bold">캠페인명</td><td class="py-2 px-3 text-slate-600">생성일자_캠페인목표(유입,전환 등)_상품명/프로모션/파트너광고</td><td class="py-2 px-3 font-mono text-[10px] text-slate-500">260716_con_vita<br>260716_con_promotion</td></tr>
+                  <tr><td class="py-2 px-3 font-bold">그룹명</td><td class="py-2 px-3 text-slate-600">생성일자_전환목표_프로모션명/상품명_오디언스_데모</td><td class="py-2 px-3 font-mono text-[10px] text-slate-500">260716_rt_mf2540<br>260716_newmember_all</td></tr>
+                  <tr><td class="py-2 px-3 font-bold">소재명</td><td class="py-2 px-3 text-slate-600">생성일자_소재유형_메인usp_랜딩_숫자</td><td class="py-2 px-3 font-mono text-[10px] text-slate-500">260716_img_vitac8pct<br>260716_all9900_2</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-black text-slate-800 mb-2"><i class="fa-solid fa-users text-violet-500"></i> 바이럴 / 체험단 / PPL 명명 규칙</h3>
+            <div class="border border-slate-200 rounded-xl overflow-hidden">
+              <table class="w-full text-left">
+                <thead class="bg-slate-50 text-slate-600 font-bold"><tr><th class="py-2 px-3 w-20">분류</th><th class="py-2 px-3">생성 규칙</th></tr></thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr><td class="py-2 px-3 font-bold">캠페인명</td><td class="py-2 px-3 text-slate-600">생성일자_캠페인목표(유입, 전환 등)_ppl명 등</td></tr>
+                  <tr><td class="py-2 px-3 font-bold">그룹명</td><td class="py-2 px-3 text-slate-600">생성일자_프로모션명/상품명_타겟</td></tr>
+                  <tr><td class="py-2 px-3 font-bold">소재명</td><td class="py-2 px-3 text-slate-600">생성일자_인플루언서이름/바이럴명 등</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-black text-slate-800 mb-2">실제 세팅 예시</h3>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2 font-mono text-[11px] text-slate-700 break-all">
+            <div>랜딩 URL : https://onsal-store.com/</div>
+            <div>utm_source=<b class="text-violet-700">meta</b> &nbsp; utm_medium=<b class="text-violet-700">da</b> &nbsp; utm_campaign=<b class="text-violet-700">260716_con_vita</b></div>
+            <div>utm_content=<b class="text-violet-700">260716_rt_mf2540</b> &nbsp; utm_term=<b class="text-violet-700">260716_img_vitac8pct</b></div>
+            <div class="pt-2 border-t border-slate-200 text-slate-900">→ https://onsal-store.com/?utm_source=meta&amp;utm_medium=da&amp;utm_campaign=260716_con_vita&amp;utm_content=260716_rt_mf2540&amp;utm_term=260716_img_vitac8pct</div>
+          </div>
+        </div>
+
+        <div class="bg-violet-50/50 border border-violet-100 rounded-xl p-3.5 space-y-1.5 text-slate-700">
+          <b class="text-violet-900">권장 명명 규칙</b> — 모두 소문자 &amp; 영문 / 공백 금지 / 단어는 하이픈(-) 또는 언더바(_)로 연결 / 같은 매체는 같은 표기만 사용
+          <div>· <b>모두 소문자 통일</b> : Meta, META, meta 처럼 대소문자 차이로 데이터가 쪼개지는 걸 방지 (메타는 항상 <span class="font-mono">meta</span>)</div>
+          <div>· <b>공백 금지</b> : 공백은 %20으로 변환되거나 복사/공유 중 누락될 수 있어요 (summer sale → <span class="font-mono">summer_sale</span>)</div>
+          <div>· <b>단어 연결 규칙 통일</b> : summer-sale / summer_sale / summersale 을 섞으면 같은 캠페인도 따로 집계됩니다</div>
+          <div class="pt-1 text-violet-800 font-semibold">위 규칙대로 해야 나중에 GA에서 데이터 볼 때 불편함이 없습니다.</div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- MODAL 1: 제품 신규 등록 / 수정 -->
@@ -2227,7 +2313,7 @@
 
   <!-- MODAL 5: UTM 링크 생성 -->
   <div id="utmModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
-    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-md w-full space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+    <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-xl max-w-2xl w-full space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar">
       <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
         <i class="fa-solid fa-link text-pink-500"></i> <span id="utmModalTitle">새 UTM 링크 생성 및 등록</span>
       </h3>
@@ -2245,15 +2331,15 @@
             <label class="block text-xs font-semibold text-slate-600 mb-1">파라미터 방식</label>
             <select id="utmModalMode" onchange="updateUtmModeUI()" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold text-slate-700">
               <option value="auto">자동 판별 (권장)</option>
-              <option value="naver">네이버 (nt_)</option>
-              <option value="utm">일반 (utm_)</option>
+              <option value="naver">스마트스토어 (nt_)</option>
+              <option value="utm">자사몰 (utm_)</option>
             </select>
           </div>
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">랜딩 페이지 URL</label>
-          <input type="url" id="utmModalUrl" oninput="updateUtmModeUI()" placeholder="https://smartstore.naver.com/onsal/products/..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          <input type="url" id="utmModalUrl" oninput="updateUtmModeUI()" placeholder="https://onsal-store.com/ 또는 https://smartstore.naver.com/..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
           <p id="utmModeHint" class="text-[10px] text-slate-400 mt-1"></p>
         </div>
 
@@ -2262,25 +2348,89 @@
           <input type="text" id="utmModalName" placeholder="예: 김민지 (@pink_life)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
 
-        <div class="bg-pink-50/40 p-3 rounded-xl border border-pink-100 space-y-2">
+        <!-- 네이버(nt_) 전용 -->
+        <div id="utmNaverBox" class="bg-emerald-50/40 p-3 rounded-xl border border-emerald-100 space-y-2">
+          <p class="text-[11px] font-bold text-emerald-800"><i class="fa-solid fa-store"></i> 스마트스토어 (nt_ 파라미터)</p>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">캠페인 이름 <span id="lblSource" class="text-pink-600 font-mono"></span></label>
-            <input type="text" id="utmModalSource" required placeholder="예: 시카세럼 / 인스타" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold bg-white">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">캠페인 이름 <span class="text-emerald-600 font-mono">(nt_source)</span></label>
+            <input type="text" id="utmModalSource" placeholder="예: 시카세럼 / 인스타" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-bold bg-white">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">광고 세트 이름 <span id="lblMedium" class="text-pink-600 font-mono"></span></label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">광고 세트 이름 <span class="text-emerald-600 font-mono">(nt_medium)</span></label>
             <input type="text" id="utmModalMedium" placeholder="예: 리뷰 / ppl" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">광고 소재 이름 <span id="lblDetail" class="text-pink-600 font-mono"></span></label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">광고 소재 이름 <span class="text-emerald-600 font-mono">(nt_detail)</span></label>
             <input type="text" id="utmModalDetail" placeholder="예: 블로그 / 릴스" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">상품명 / 키워드 <span id="lblKeyword" class="text-pink-600 font-mono"></span></label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">상품명 / 키워드 <span class="text-emerald-600 font-mono">(nt_keyword)</span></label>
             <input type="text" id="utmModalKeyword" placeholder="예: 비타앰플" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white">
           </div>
-          <p class="text-[10px] text-slate-500">* 캠페인·광고세트는 자동으로 소문자 변환됩니다. 한글은 자동 인코딩돼요.</p>
+          <p class="text-[10px] text-slate-500">* 스마트스토어는 기존 방식 그대로입니다.</p>
         </div>
+
+        <!-- 자사몰(utm_) 전용 -->
+        <div id="utmStdBox" class="bg-violet-50/40 p-3 rounded-xl border border-violet-200 space-y-2.5 hidden">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="text-[11px] font-bold text-violet-900"><i class="fa-solid fa-globe"></i> 자사몰 (utm_ 파라미터 · GA4 기준)</p>
+            <div class="flex p-0.5 bg-white rounded-lg border border-violet-200 text-[10px] font-bold">
+              <button type="button" onclick="setUtmPreset('ad')" id="upreset-ad" class="px-2.5 py-1 rounded-md bg-violet-600 text-white">광고 매체</button>
+              <button type="button" onclick="setUtmPreset('viral')" id="upreset-viral" class="px-2.5 py-1 rounded-md text-slate-500">바이럴/체험단/PPL</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+                utm_source <span class="text-rose-500">*</span>
+                <span class="block text-[10px] font-normal text-slate-400">유입 매체명</span>
+              </label>
+              <input type="text" id="utmStdSource" list="utmSourceList" placeholder="meta" class="w-full px-3 py-2 text-xs border border-violet-200 rounded-xl font-bold bg-white font-mono">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+                utm_medium <span class="text-rose-500">*</span>
+                <span class="block text-[10px] font-normal text-slate-400">광고 / 유입 방식</span>
+              </label>
+              <input type="text" id="utmStdMedium" list="utmMediumList" placeholder="da" class="w-full px-3 py-2 text-xs border border-violet-200 rounded-xl font-bold bg-white font-mono">
+            </div>
+          </div>
+          <div id="utmSourceChips" class="flex flex-wrap gap-1"></div>
+          <div id="utmMediumChips" class="flex flex-wrap gap-1"></div>
+
+          <div class="bg-white p-2.5 rounded-xl border border-violet-100 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-bold text-violet-800">utm_campaign <span class="text-rose-500">*</span> <span class="font-normal text-slate-400">캠페인명</span></label>
+              <button type="button" onclick="buildUtmName('campaign')" class="px-2 py-1 bg-violet-100 hover:bg-violet-200 text-violet-800 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-wand-magic-sparkles"></i> 규칙대로 만들기</button>
+            </div>
+            <input type="text" id="utmStdCampaign" class="w-full px-3 py-2 text-xs border border-violet-200 rounded-xl font-mono font-bold">
+            <p id="utmCampaignRule" class="text-[10px] text-slate-500"></p>
+          </div>
+
+          <div class="bg-white p-2.5 rounded-xl border border-violet-100 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-bold text-violet-800">utm_content <span class="font-normal text-slate-400">그룹명 (선택)</span></label>
+              <button type="button" onclick="buildUtmName('content')" class="px-2 py-1 bg-violet-100 hover:bg-violet-200 text-violet-800 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-wand-magic-sparkles"></i> 규칙대로 만들기</button>
+            </div>
+            <input type="text" id="utmStdContent" class="w-full px-3 py-2 text-xs border border-violet-200 rounded-xl font-mono">
+            <p id="utmContentRule" class="text-[10px] text-slate-500"></p>
+          </div>
+
+          <div class="bg-white p-2.5 rounded-xl border border-violet-100 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-bold text-violet-800">utm_term <span class="font-normal text-slate-400">소재명 / 검색 키워드 (선택)</span></label>
+              <button type="button" onclick="buildUtmName('term')" class="px-2 py-1 bg-violet-100 hover:bg-violet-200 text-violet-800 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-wand-magic-sparkles"></i> 규칙대로 만들기</button>
+            </div>
+            <input type="text" id="utmStdTerm" class="w-full px-3 py-2 text-xs border border-violet-200 rounded-xl font-mono">
+            <p id="utmTermRule" class="text-[10px] text-slate-500"></p>
+          </div>
+
+          <div id="utmRuleCheck" class="text-[11px]"></div>
+        </div>
+
+        <datalist id="utmSourceList"></datalist>
+        <datalist id="utmMediumList"></datalist>
 
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">미리보기</label>
@@ -8823,7 +8973,7 @@
       document.getElementById('utmStatTotal').innerText = utmList.length + '개';
       document.getElementById('utmStatOnsal').innerText = utmList.filter(u => u.brand === '온살').length + '개';
       document.getElementById('utmStatLume').innerText = utmList.filter(u => u.brand === '루메아카이브').length + '개';
-      document.getElementById('utmStatCampaign').innerText = new Set(utmList.map(u => u.source || u.campaign)).size + '개';
+      document.getElementById('utmStatCampaign').innerText = new Set(utmList.map(u => u.utmCampaign || u.source || u.campaign)).size + '개';
 
       const filtered = utmList.filter(item => {
         const matchBrand = brandFilter === '전체' || item.brand === brandFilter;
@@ -8832,6 +8982,10 @@
           (item.campaign || '').toLowerCase().includes(search) ||
           (item.detail || '').toLowerCase().includes(search) ||
           (item.keyword || '').toLowerCase().includes(search) ||
+          (item.utmCampaign || '').toLowerCase().includes(search) ||
+          (item.utmContent || '').toLowerCase().includes(search) ||
+          (item.utmTerm || '').toLowerCase().includes(search) ||
+          (item.utmMedium || '').toLowerCase().includes(search) ||
           (item.note || '').toLowerCase().includes(search) ||
           (item.source || '').toLowerCase().includes(search);
         return matchBrand && matchSearch;
@@ -8851,13 +9005,11 @@
               <div class="font-bold text-slate-900 mt-1">${item.name || '미지정'}</div>
             </td>
             <td class="py-3 px-3 align-top">
-              <div class="font-bold text-purple-700">${item.source || item.campaign || '-'}</div>
-              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${item.mode === 'naver' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${item.mode === 'naver' ? 'nt_' : 'utm_'}</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${item.mode === 'naver' ? 'bg-emerald-100 text-emerald-700' : 'bg-violet-100 text-violet-700'}">${item.mode === 'naver' ? '스마트스토어 nt_' : '자사몰 utm_'}</span>
+              <div class="font-bold text-purple-700 mt-1 break-all">${item.mode === 'naver' ? (item.source || '-') : (item.utmCampaign || item.keyword || '-')}</div>
             </td>
-            <td class="py-3 px-3 align-top text-[11px] text-slate-600 leading-relaxed">
-              <div>세트: <b>${item.medium || '-'}</b></div>
-              <div>소재: <b>${item.detail || '-'}</b></div>
-              <div>상품: <b>${item.keyword || item.campaign || '-'}</b></div>
+            <td class="py-3 px-3 align-top text-[11px] text-slate-600 leading-relaxed min-w-[190px]">
+              ${utmParamSummary(item).map(([k, v]) => `<div class="truncate" title="${tEsc(v || '')}"><span class="font-mono text-[10px] text-slate-400">${k}</span> <b class="text-slate-700">${tEsc(v || '-')}</b></div>`).join('')}
             </td>
             <td class="py-3 px-3 align-top min-w-[260px] space-y-1">
               <input type="text" readonly value="${item.url}" onclick="this.select()" class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-600 select-all font-mono">
@@ -8937,6 +9089,155 @@
     }
     function closeUtmModal() { document.getElementById('utmModal').classList.add('hidden'); }
 
+
+    /* ==================== 자사몰 UTM 빌더 ==================== */
+    const UTM_SOURCES = ['meta', 'google', 'naver', 'insta', 'kakao', 'youtube', 'tiktok', 'daum', 'blog', 'cafe', 'thread'];
+    const UTM_MEDIUMS = ['sa', 'ssa', 'da', 'blog', 'seeding', 'ppl', 'sns', 'reels', 'dm', 'email', 'banner', 'affiliate'];
+    let utmPreset = 'ad';
+
+    const UTM_RULES = {
+      ad: {
+        campaign: { rule: '생성일자_캠페인목표(유입·전환 등)_상품명/프로모션/파트너광고', ex: '260716_con_vita · 260716_con_promotion',
+                    parts: ['캠페인 목표 (con / traffic / awareness)', '상품명 · 프로모션명 (vita / promotion)'] },
+        content:  { rule: '생성일자_전환목표_프로모션명/상품명_오디언스_데모', ex: '260716_rt_mf2540 · 260716_newmember_all',
+                    parts: ['전환 목표 (rt / newmember / purchase)', '오디언스 · 데모 (mf2540 / all)'] },
+        term:     { rule: '생성일자_소재유형_메인usp_랜딩_숫자', ex: '260716_img_vitac8pct · 260716_all9900_2',
+                    parts: ['소재 유형 (img / video / carousel)', '메인 USP · 랜딩 (vitac8pct / all9900)'] }
+      },
+      viral: {
+        campaign: { rule: '생성일자_캠페인목표(유입·전환 등)_ppl명 등', ex: '260716_con_ppl-vita',
+                    parts: ['캠페인 목표 (con / traffic)', 'PPL · 바이럴명 (ppl-vita)'] },
+        content:  { rule: '생성일자_프로모션명/상품명_타겟', ex: '260716_vita_mf2540',
+                    parts: ['프로모션 · 상품명 (vita)', '타겟 (mf2540 / all)'] },
+        term:     { rule: '생성일자_인플루언서이름/바이럴명 등', ex: '260716_moonjihae',
+                    parts: ['인플루언서명 · 바이럴명 (moonjihae)', ''] }
+      }
+    };
+
+    function utmToday() {
+      const d = new Date();
+      return String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+    }
+    // 소문자 · 공백 제거 · 허용문자만
+    function normalizeUtm(v) {
+      return String(v || '').trim().toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z0-9._\-]/g, '')
+        .replace(/_{2,}/g, '_');
+    }
+    function utmRuleIssues(v) {
+      const s = String(v || '');
+      const bad = [];
+      if (!s) return bad;
+      if (/[A-Z]/.test(s)) bad.push('대문자');
+      if (/\s/.test(s)) bad.push('공백');
+      if (/[가-힣]/.test(s)) bad.push('한글');
+      if (/[^A-Za-z0-9._\-\s가-힣]/.test(s)) bad.push('특수문자');
+      return bad;
+    }
+
+    function setUtmPreset(p) {
+      utmPreset = p;
+      ['ad', 'viral'].forEach(x => {
+        const el = document.getElementById('upreset-' + x);
+        if (el) el.className = (x === p) ? 'px-2.5 py-1 rounded-md bg-violet-600 text-white' : 'px-2.5 py-1 rounded-md text-slate-500';
+      });
+      ['campaign', 'content', 'term'].forEach(k => {
+        const r = UTM_RULES[p][k];
+        const el = document.getElementById('utm' + k.charAt(0).toUpperCase() + k.slice(1) + 'Rule');
+        if (el) el.innerHTML = '<b class="text-slate-600">규칙</b> ' + r.rule + ' <span class="text-violet-600 font-mono">→ ' + r.ex + '</span>';
+        const inp = document.getElementById('utmStd' + k.charAt(0).toUpperCase() + k.slice(1));
+        if (inp) inp.placeholder = r.ex.split(' · ')[0];
+      });
+      updateUtmModeUI();
+    }
+
+    function buildUtmName(kind) {
+      const r = UTM_RULES[utmPreset][kind];
+      const date = window.prompt('생성일자 (YYMMDD)', utmToday());
+      if (date === null) return;
+      const p1 = window.prompt(r.parts[0], '');
+      if (p1 === null) return;
+      let p2 = '';
+      if (r.parts[1]) {
+        p2 = window.prompt(r.parts[1], '');
+        if (p2 === null) return;
+      }
+      const val = [date, p1, p2].map(normalizeUtm).filter(Boolean).join('_');
+      const inp = document.getElementById('utmStd' + kind.charAt(0).toUpperCase() + kind.slice(1));
+      if (inp) inp.value = val;
+      updateUtmModeUI();
+    }
+
+    function renderUtmChips() {
+      const mk = (listId, chipId, arr, targetId) => {
+        const dl = document.getElementById(listId);
+        if (dl) dl.innerHTML = arr.map(v => '<option value="' + v + '">').join('');
+        const box = document.getElementById(chipId);
+        if (box) box.innerHTML = arr.map(v =>
+          '<button type="button" onclick="document.getElementById(\'' + targetId + '\').value=\'' + v + '\'; updateUtmModeUI();" '
+          + 'class="px-2 py-0.5 text-[10px] font-mono font-bold bg-white border border-violet-200 text-violet-700 rounded-md hover:bg-violet-100">' + v + '</button>').join('');
+      };
+      mk('utmSourceList', 'utmSourceChips', UTM_SOURCES, 'utmStdSource');
+      mk('utmMediumList', 'utmMediumChips', UTM_MEDIUMS, 'utmStdMedium');
+    }
+
+    function readStdUtm() {
+      return {
+        source: normalizeUtm(document.getElementById('utmStdSource').value),
+        medium: normalizeUtm(document.getElementById('utmStdMedium').value),
+        campaign: normalizeUtm(document.getElementById('utmStdCampaign').value),
+        content: normalizeUtm(document.getElementById('utmStdContent').value),
+        term: normalizeUtm(document.getElementById('utmStdTerm').value)
+      };
+    }
+
+    function buildStdUtmUrl(base, u) {
+      if (!base || !u.source || !u.medium || !u.campaign) return '';
+      const parts = [
+        'utm_source=' + encodeURIComponent(u.source),
+        'utm_medium=' + encodeURIComponent(u.medium),
+        'utm_campaign=' + encodeURIComponent(u.campaign)
+      ];
+      if (u.content) parts.push('utm_content=' + encodeURIComponent(u.content));
+      if (u.term) parts.push('utm_term=' + encodeURIComponent(u.term));
+      return base + (base.includes('?') ? '&' : '?') + parts.join('&');
+    }
+
+    function renderUtmRuleCheck() {
+      const box = document.getElementById('utmRuleCheck');
+      if (!box) return;
+      const fields = [
+        ['utm_source', 'utmStdSource', true], ['utm_medium', 'utmStdMedium', true],
+        ['utm_campaign', 'utmStdCampaign', true], ['utm_content', 'utmStdContent', false], ['utm_term', 'utmStdTerm', false]
+      ];
+      const msgs = [];
+      fields.forEach(([label, id, required]) => {
+        const raw = (document.getElementById(id) || {}).value || '';
+        if (!raw) {
+          if (required) msgs.push('<div class="text-rose-600 font-bold">· ' + label + ' 는 필수입니다.</div>');
+          return;
+        }
+        const issues = utmRuleIssues(raw);
+        if (issues.length) {
+          msgs.push('<div class="text-amber-700">· ' + label + ' 에 <b>' + issues.join(' · ') + '</b> 가 있어요 → <span class="font-mono text-violet-700">'
+            + tEsc(normalizeUtm(raw)) + '</span> 로 자동 정리됩니다.</div>');
+        }
+      });
+      box.innerHTML = msgs.length
+        ? '<div class="bg-white border border-amber-200 rounded-xl p-2.5 space-y-0.5">' + msgs.join('') + '</div>'
+        : '<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 text-emerald-800 font-bold">규칙에 맞습니다. 그대로 쓰셔도 좋아요.</div>';
+    }
+
+    function utmParamSummary(item) {
+      if (item.mode === 'naver') {
+        return [['nt_source', item.source], ['nt_medium', item.medium], ['nt_detail', item.detail], ['nt_keyword', item.keyword]];
+      }
+      return [['utm_source', item.utmSource || item.source], ['utm_medium', item.utmMedium || item.medium],
+              ['utm_campaign', item.utmCampaign || item.keyword], ['utm_content', item.utmContent || item.detail],
+              ['utm_term', item.utmTerm || '']];
+    }
+
     function detectUtmMode() {
       const mode = document.getElementById('utmModalMode').value;
       if (mode !== 'auto') return mode;
@@ -8968,35 +9269,43 @@
       const mode = detectUtmMode();
       const isNaver = mode === 'naver';
 
-      document.getElementById('lblSource').innerText = isNaver ? '(nt_source)' : '(utm_source)';
-      document.getElementById('lblMedium').innerText = isNaver ? '(nt_medium)' : '(utm_medium)';
-      document.getElementById('lblDetail').innerText = isNaver ? '(nt_detail)' : '(utm_content)';
-      document.getElementById('lblKeyword').innerText = isNaver ? '(nt_keyword)' : '(utm_campaign)';
+      document.getElementById('utmNaverBox').classList.toggle('hidden', !isNaver);
+      document.getElementById('utmStdBox').classList.toggle('hidden', isNaver);
 
       const hint = document.getElementById('utmModeHint');
       const selected = document.getElementById('utmModalMode').value;
       if (selected === 'auto') {
         hint.innerHTML = isNaver
-          ? '네이버 주소로 인식 → <b class="text-pink-600">nt_ 파라미터</b>로 생성됩니다.'
-          : '일반 사이트로 인식 → <b class="text-pink-600">utm_ 파라미터</b>로 생성됩니다.';
+          ? '네이버 주소로 인식 → <b class="text-emerald-600">스마트스토어 nt_ 파라미터</b>로 생성됩니다.'
+          : '자사몰로 인식 → <b class="text-violet-600">GA4용 utm_ 파라미터</b>로 생성됩니다.';
       } else {
-        hint.innerHTML = isNaver ? '네이버(nt_) 방식 고정' : '일반(utm_) 방식 고정';
+        hint.innerHTML = isNaver ? '스마트스토어(nt_) 방식 고정' : '자사몰(utm_) 방식 고정';
       }
 
-      const preview = buildTrackingUrl(
-        document.getElementById('utmModalUrl').value.trim(),
-        mode,
-        document.getElementById('utmModalSource').value.trim(),
-        document.getElementById('utmModalMedium').value.trim(),
-        document.getElementById('utmModalDetail').value.trim(),
-        document.getElementById('utmModalKeyword').value.trim()
-      );
-      document.getElementById('utmPreview').innerText = preview || 'URL과 캠페인 이름을 입력하면 미리보기가 표시됩니다.';
+      const base = document.getElementById('utmModalUrl').value.trim();
+      let preview = '';
+      if (isNaver) {
+        preview = buildTrackingUrl(base, mode,
+          document.getElementById('utmModalSource').value.trim(),
+          document.getElementById('utmModalMedium').value.trim(),
+          document.getElementById('utmModalDetail').value.trim(),
+          document.getElementById('utmModalKeyword').value.trim());
+      } else {
+        preview = buildStdUtmUrl(base, readStdUtm());
+        renderUtmRuleCheck();
+      }
+      document.getElementById('utmPreview').innerText = preview
+        || (isNaver ? 'URL과 캠페인 이름을 입력하면 미리보기가 표시됩니다.'
+                    : 'URL · utm_source · utm_medium · utm_campaign 을 넣으면 최종 URL이 만들어집니다.');
     }
 
-    ['utmModalSource', 'utmModalMedium', 'utmModalDetail', 'utmModalKeyword'].forEach(id => {
-      document.getElementById(id).addEventListener('input', updateUtmModeUI);
+    ['utmModalSource', 'utmModalMedium', 'utmModalDetail', 'utmModalKeyword',
+     'utmStdSource', 'utmStdMedium', 'utmStdCampaign', 'utmStdContent', 'utmStdTerm'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', updateUtmModeUI);
     });
+    renderUtmChips();
+    setUtmPreset('ad');
 
     // 1순위: 구글 Apps Script 중계 (가장 안정적)
     async function shortenViaProxy(longUrl) {
@@ -9058,17 +9367,35 @@
       const brand = document.getElementById('utmModalBrand').value;
       const name = document.getElementById('utmModalName').value;
       const baseUrl = document.getElementById('utmModalUrl').value.trim();
-      const source = document.getElementById('utmModalSource').value.trim();
-      const medium = document.getElementById('utmModalMedium').value.trim();
-      const detail = document.getElementById('utmModalDetail').value.trim();
-      const keyword = document.getElementById('utmModalKeyword').value.trim();
       const note = document.getElementById('utmModalNote').value.trim();
       const mode = detectUtmMode();
 
       if (!baseUrl) { alert("랜딩 페이지 URL을 입력해 주세요."); return; }
-      if (!source) { alert("캠페인 이름을 입력해 주세요."); return; }
 
-      const finalUrl = buildTrackingUrl(baseUrl, mode, source, medium, detail, keyword);
+      let source = '', medium = '', detail = '', keyword = '', finalUrl = '';
+      let std = { source: '', medium: '', campaign: '', content: '', term: '' };
+
+      if (mode === 'naver') {
+        source = document.getElementById('utmModalSource').value.trim();
+        medium = document.getElementById('utmModalMedium').value.trim();
+        detail = document.getElementById('utmModalDetail').value.trim();
+        keyword = document.getElementById('utmModalKeyword').value.trim();
+        if (!source) { alert("캠페인 이름을 입력해 주세요."); return; }
+        finalUrl = buildTrackingUrl(baseUrl, mode, source, medium, detail, keyword);
+      } else {
+        std = readStdUtm();
+        if (!std.source) { alert("utm_source (유입 매체명) 는 필수입니다."); return; }
+        if (!std.medium) { alert("utm_medium (광고/유입 방식) 는 필수입니다."); return; }
+        if (!std.campaign) { alert("utm_campaign (캠페인명) 는 필수입니다."); return; }
+        // 규칙에 맞게 정리된 값을 입력칸에도 반영
+        document.getElementById('utmStdSource').value = std.source;
+        document.getElementById('utmStdMedium').value = std.medium;
+        document.getElementById('utmStdCampaign').value = std.campaign;
+        document.getElementById('utmStdContent').value = std.content;
+        document.getElementById('utmStdTerm').value = std.term;
+        source = std.source; medium = std.medium; detail = std.content; keyword = std.campaign;
+        finalUrl = buildStdUtmUrl(baseUrl, std);
+      }
       const wantShort = document.getElementById('utmMakeShort').checked;
 
       const editId = document.getElementById('utmEditId').value;
@@ -9082,6 +9409,8 @@
         Object.assign(target, {
           brand, name: name || '미지정 인플루언서', mode,
           source, medium, detail, keyword,
+          utmSource: std.source, utmMedium: std.medium, utmCampaign: std.campaign,
+          utmContent: std.content, utmTerm: std.term,
           base: baseUrl, url: finalUrl, note
         });
         // 링크가 바뀌면 기존 단축 URL은 더 이상 유효하지 않음
@@ -9093,6 +9422,8 @@
           name: name || '미지정 인플루언서',
           mode,
           source, medium, detail, keyword,
+          utmSource: std.source, utmMedium: std.medium, utmCampaign: std.campaign,
+          utmContent: std.content, utmTerm: std.term,
           base: baseUrl,
           url: finalUrl,
           shortUrl: '',
