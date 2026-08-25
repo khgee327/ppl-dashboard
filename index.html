@@ -638,17 +638,18 @@
           <div class="bg-pink-50/40 p-3 rounded-xl border border-pink-100 space-y-2">
             <span class="text-[11px] font-bold text-pink-700 uppercase tracking-wider flex items-center gap-1">
               <i class="fa-solid fa-gift text-pink-500"></i> 시딩 샘플 발송 수량 및 배송지
+              <span class="text-[10px] font-semibold text-slate-400 normal-case tracking-normal">· 선택 항목 (나중에 수정 창에서 넣어도 돼요)</span>
             </span>
             <div class="grid grid-cols-2 gap-2">
               <div>
                 <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">발송 수량 (개)</label>
-                <input type="number" id="seedingCount" value="1" min="1" required class="w-full px-2.5 py-1.5 text-xs border border-pink-200 rounded-xl font-bold text-pink-600 bg-white">
+                <input type="number" id="seedingCount" value="1" min="0" class="w-full px-2.5 py-1.5 text-xs border border-pink-200 rounded-xl font-bold text-pink-600 bg-white">
               </div>
               <div>
                 <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">수령인 성함 / 연락처</label>
                 <div class="flex gap-1">
-                  <input type="text" id="receiverName" required placeholder="성함" class="w-1/2 px-2 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
-                  <input type="tel" id="receiverPhone" required placeholder="연락처" class="w-1/2 px-2 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+                  <input type="text" id="receiverName" placeholder="성함 (선택)" class="w-1/2 px-2 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+                  <input type="tel" id="receiverPhone" placeholder="연락처 (선택)" class="w-1/2 px-2 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
                 </div>
               </div>
             </div>
@@ -659,7 +660,7 @@
                 <button type="button" onclick="searchAddress('postalCode','address')" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-800 text-white text-[11px] font-bold rounded-xl whitespace-nowrap">
                   <i class="fa-solid fa-magnifying-glass"></i> 주소 검색
                 </button>
-                <input type="text" id="address" required placeholder="검색 버튼을 눌러주세요" class="flex-1 px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
+                <input type="text" id="address" placeholder="나중에 받아도 돼요 (선택)" class="flex-1 px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
               </div>
               <input type="text" id="addressDetail" placeholder="상세 주소 (동/호수 등)" class="w-full mt-1 px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white">
             </div>
@@ -4567,7 +4568,8 @@
       const realName = document.getElementById('formRealName').value;
       const influencer = document.getElementById('influencer').value;
       const category = addCategoryIfNew(document.getElementById('formCategory').value);
-      const seedingCount = Number(document.getElementById('seedingCount').value) || 1;
+      const seedingRaw = document.getElementById('seedingCount').value;
+      const seedingCount = seedingRaw === '' ? 0 : (Number(seedingRaw) || 0);
 
       let channels = [];
       document.querySelectorAll('#formChannelContainer .form-channel-row').forEach(r => {
@@ -4638,27 +4640,31 @@
         guideUrl: document.getElementById('guideUrl').value,
         notes: document.getElementById('notes').value,
         seedingCount,
-        stockDeducted: true
+        stockDeducted: seedingCount > 0
       };
 
-      productList.forEach((pn, idx) => {
-        stockLogs.push({
-          id: Date.now() + 1 + idx,
-          date: new Date().toISOString().slice(0, 10),
-          type: "시딩발송소진",
-          brand,
-          productName: pn,
-          quantity: seedingCount,
-          reason: `인플루언서 [${influencer}] PPL/시딩 발송`
+      if (seedingCount > 0) {
+        productList.forEach((pn, idx) => {
+          stockLogs.push({
+            id: Date.now() + 1 + idx,
+            date: new Date().toISOString().slice(0, 10),
+            type: "시딩발송소진",
+            brand,
+            productName: pn,
+            quantity: seedingCount,
+            reason: `인플루언서 [${influencer}] PPL/시딩 발송`
+          });
         });
-      });
+      }
 
       pplList.unshift(newPpl);
       saveAll();
       renderAll();
       this.reset();
       document.getElementById('contactDate').valueAsDate = new Date();
-      alert("신규 PPL 진행이 등록되었습니다.");
+      alert(seedingCount > 0
+        ? "신규 PPL 진행이 등록되었습니다."
+        : "신규 PPL 진행이 등록되었습니다.\n(시딩 수량 0 · 배송지 미입력 — 나중에 이름을 클릭해 수정 창에서 넣으실 수 있어요)");
     });
 
     function filterBrand(brand) {
@@ -8859,7 +8865,7 @@
       document.getElementById('editSnsIcon').style.transform = 'rotate(0deg)';
       updateEditSnsCount();
 
-      document.getElementById('editModalSeedingCount').value = ppl.seedingCount || 1;
+      document.getElementById('editModalSeedingCount').value = (ppl.seedingCount != null ? ppl.seedingCount : 1);
       document.getElementById('editModalReceiverName').value = ppl.receiverName || '';
       document.getElementById('editModalReceiverPhone').value = ppl.receiverPhone || '';
       document.getElementById('editModalPostalCode').value = ppl.postalCode || '';
@@ -8967,7 +8973,7 @@
         url: r.querySelector('.ec-url').value
       }));
 
-      ppl.seedingCount = Number(document.getElementById('editModalSeedingCount').value) || 1;
+      ppl.seedingCount = Number(document.getElementById('editModalSeedingCount').value) || 0;
       ppl.receiverName = document.getElementById('editModalReceiverName').value;
       ppl.receiverPhone = document.getElementById('editModalReceiverPhone').value;
       ppl.postalCode = document.getElementById('editModalPostalCode').value;
