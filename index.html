@@ -2559,6 +2559,25 @@
       <b>인플루언서 전용 페이지</b> · PPL 등록 시 <b>인플루언서</b>를 체크하면 이 페이지로 분리됩니다. 아래에서 인플루언서 풀(리스트)과 MCN 소개서도 함께 관리해요.
     </div>
 
+    <!-- 유튜브 채널 분석기 -->
+    <section class="bg-white p-5 rounded-2xl border border-rose-200 shadow-sm space-y-3">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-rose-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-brands fa-youtube text-rose-600"></i> 유튜브 채널 분석
+          </h2>
+          <p class="text-xs text-slate-500">채널 주소를 넣으면 <b>구독자 수 · 최근 영상 평균 조회수 · 좋아요 · 댓글 · 참여율</b>을 자동으로 가져옵니다.</p>
+        </div>
+        <button onclick="setYoutubeKey()" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl">API 키 설정</button>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <input id="ytAnalyzeUrl" placeholder="https://www.youtube.com/@channelname  ·  /channel/UC...  ·  영상 주소도 가능" class="flex-1 min-w-[240px] px-3 py-2 text-xs border border-rose-200 rounded-xl">
+        <button onclick="analyzeYoutubeInput()" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-xl whitespace-nowrap">
+          <i class="fa-solid fa-magnifying-glass-chart"></i> 분석하기
+        </button>
+      </div>
+    </section>
+
     <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-violet-100 pb-3">
         <div>
@@ -3145,6 +3164,20 @@
           <button onclick="savePkgAssign()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl">저장하기</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================== 유튜브 채널 분석 결과 ==================== -->
+  <div id="ytStatsModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between z-10">
+        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-brands fa-youtube text-rose-600"></i> 유튜브 채널 분석
+        </h3>
+        <button onclick="closeYtStats()" class="text-slate-400 hover:text-slate-700 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div id="ytStatsBody" class="p-6"></div>
+      <div id="ytStatsFooter" class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-end gap-2"></div>
     </div>
   </div>
 
@@ -5407,6 +5440,9 @@
           + '<td class="py-3 px-3 align-top">'
           + (c.category ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">' + tEsc(c.category) + '</span>' : '')
           + '<div class="text-[11px] text-slate-500 mt-1">' + (c.followers ? '팔로워 ' + tEsc(c.followers) : '-') + '</div>'
+          + (isYoutubeUrl(c.channelUrl)
+              ? '<button onclick="analyzeYtForContact(' + c.id + ')" class="mt-1 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-md px-1.5 py-0.5 hover:bg-rose-100"><i class="fa-brands fa-youtube"></i> 채널 분석</button>' : '')
+          + ytStatsBadge(c)
           + (c.expectedCost ? '<div class="text-[11px] text-slate-500 font-semibold">예상 ' + Number(c.expectedCost).toLocaleString() + '원</div>' : '') + '</td>'
           + '<td class="py-3 px-3 align-top min-w-[170px]">'
           + (c.email
@@ -6741,6 +6777,254 @@
       const rec = payRecOf(kind, id);
       const f = rec && rec.payment && (rec.payment.contractFiles || [])[i];
       if (f) downloadDataUrl(f.data, f.name);
+    }
+
+
+    /* ==================== 유튜브 채널 분석 ==================== */
+    let ytStatsTarget = null;   // { kind:'ppl'|'contact', id }
+    let ytStatsCache = null;
+
+    function isYoutubeUrl(u) {
+      return /youtube\.com|youtu\.be/i.test(String(u || ''));
+    }
+    function ytChannelQuery(url) {
+      const u = String(url || '').trim();
+      let m = u.match(/youtube\.com\/channel\/(UC[\w-]{10,})/i);
+      if (m) return { id: m[1] };
+      m = u.match(/youtube\.com\/@([^/?&#\s]+)/i);
+      if (m) return { handle: '@' + decodeURIComponent(m[1]) };
+      m = u.match(/^@([^/?&#\s]+)$/);
+      if (m) return { handle: u };
+      m = u.match(/youtube\.com\/user\/([\w-]+)/i);
+      if (m) return { username: m[1] };
+      m = u.match(/youtube\.com\/c\/([^/?&#\s]+)/i);
+      if (m) return { search: decodeURIComponent(m[1]) };
+      const vid = youtubeIdOf(u);
+      if (vid) return { videoId: vid };
+      if (/^UC[\w-]{10,}$/.test(u)) return { id: u };
+      return null;
+    }
+    async function ytApi(path) {
+      const key = ytKey();
+      if (!key) throw new Error('NOKEY');
+      const res = await fetch('https://www.googleapis.com/youtube/v3/' + path + '&key=' + encodeURIComponent(key));
+      const json = await res.json();
+      if (json.error) throw new Error(json.error.message || 'API 오류');
+      return json;
+    }
+
+    async function fetchYoutubeChannel(url) {
+      const q = ytChannelQuery(url);
+      if (!q) throw new Error('유튜브 채널 주소를 인식하지 못했습니다.\n예) https://www.youtube.com/@채널명');
+
+      const FIELDS = 'part=snippet,statistics,contentDetails';
+      let ch = null, channelId = q.id || '';
+
+      if (q.videoId) {
+        const v = await ytApi('videos?part=snippet&id=' + q.videoId);
+        channelId = ((v.items || [])[0] || {}).snippet ? v.items[0].snippet.channelId : '';
+      }
+      if (q.search && !channelId) {
+        const s = await ytApi('search?part=snippet&type=channel&maxResults=1&q=' + encodeURIComponent(q.search));
+        const it = (s.items || [])[0];
+        channelId = it ? (it.id.channelId || (it.snippet && it.snippet.channelId)) : '';
+      }
+
+      if (channelId) ch = await ytApi('channels?' + FIELDS + '&id=' + channelId);
+      else if (q.handle) ch = await ytApi('channels?' + FIELDS + '&forHandle=' + encodeURIComponent(q.handle));
+      else if (q.username) ch = await ytApi('channels?' + FIELDS + '&forUsername=' + encodeURIComponent(q.username));
+
+      const item = (ch && ch.items || [])[0];
+      if (!item) throw new Error('채널을 찾지 못했습니다. 주소를 다시 확인해 주세요.');
+
+      const st = item.statistics || {};
+      const subs = st.hiddenSubscriberCount ? null : Number(st.subscriberCount || 0);
+
+      // 최근 업로드 20개로 평균 계산
+      let vids = [];
+      const uploads = ((item.contentDetails || {}).relatedPlaylists || {}).uploads;
+      if (uploads) {
+        const pl = await ytApi('playlistItems?part=contentDetails&maxResults=20&playlistId=' + uploads);
+        const ids = (pl.items || []).map(x => x.contentDetails.videoId).filter(Boolean);
+        if (ids.length) {
+          const v = await ytApi('videos?part=statistics,snippet,contentDetails&id=' + ids.join(','));
+          vids = v.items || [];
+        }
+      }
+
+      const nums = vids.map(v => ({
+        title: (v.snippet || {}).title || '',
+        date: ((v.snippet || {}).publishedAt || '').slice(0, 10),
+        id: v.id,
+        short: /^PT(\d+S|\d+M\d*S?)$/.test(((v.contentDetails || {}).duration) || '') && durSec(v.contentDetails.duration) <= 60,
+        views: Number((v.statistics || {}).viewCount || 0),
+        likes: Number((v.statistics || {}).likeCount || 0),
+        comments: Number((v.statistics || {}).commentCount || 0)
+      }));
+
+      const avg = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+      const med = arr => {
+        if (!arr.length) return 0;
+        const s = arr.slice().sort((a, b) => a - b);
+        const m = Math.floor(s.length / 2);
+        return s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2);
+      };
+      const views = nums.map(n => n.views);
+      const avgViews = avg(views), medViews = med(views);
+      const avgLikes = avg(nums.map(n => n.likes)), avgComments = avg(nums.map(n => n.comments));
+      const engagement = avgViews ? ((avgLikes + avgComments) / avgViews * 100) : 0;
+      const viewRate = subs ? (avgViews / subs * 100) : 0;
+
+      return {
+        channelId: item.id,
+        title: (item.snippet || {}).title || '',
+        handle: (item.snippet || {}).customUrl || '',
+        thumb: (((item.snippet || {}).thumbnails || {}).default || {}).url || '',
+        country: (item.snippet || {}).country || '',
+        publishedAt: ((item.snippet || {}).publishedAt || '').slice(0, 10),
+        subscribers: subs,
+        totalViews: Number(st.viewCount || 0),
+        videoCount: Number(st.videoCount || 0),
+        sample: nums.length,
+        avgViews, medViews, avgLikes, avgComments,
+        engagement: Math.round(engagement * 100) / 100,
+        viewRate: Math.round(viewRate * 10) / 10,
+        recent: nums.slice(0, 5),
+        fetchedAt: todayStr()
+      };
+    }
+    function durSec(iso) {
+      const m = String(iso || '').match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+      if (!m) return 0;
+      return (Number(m[1] || 0) * 3600) + (Number(m[2] || 0) * 60) + Number(m[3] || 0);
+    }
+
+    function fmtCount(n) {
+      if (n == null) return '비공개';
+      if (n >= 100000000) return (n / 100000000).toFixed(1) + '억';
+      if (n >= 10000) return (n / 10000).toFixed(n >= 100000 ? 0 : 1) + '만';
+      return n.toLocaleString();
+    }
+
+    function closeYtStats() {
+      document.getElementById('ytStatsModal').classList.add('hidden');
+      ytStatsTarget = null;
+      ytStatsCache = null;
+    }
+    function openYtStatsLoading() {
+      document.getElementById('ytStatsBody').innerHTML =
+        '<div class="py-14 text-center text-slate-400 text-sm"><i class="fa-solid fa-spinner fa-spin text-2xl"></i><div class="mt-3 font-semibold">유튜브에서 데이터를 가져오는 중...</div></div>';
+      document.getElementById('ytStatsFooter').innerHTML = '';
+      document.getElementById('ytStatsModal').classList.remove('hidden');
+    }
+
+    function renderYtStats(s) {
+      ytStatsCache = s;
+      const card = (label, val, sub, color) => '<div class="bg-' + color + '-50/60 p-3.5 rounded-2xl border border-' + color + '-100">'
+        + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
+        + '<div class="text-xl font-black text-' + color + '-600 mt-0.5">' + val + '</div>'
+        + (sub ? '<div class="text-[10px] text-slate-500 font-semibold">' + sub + '</div>' : '') + '</div>';
+
+      const grade = s.engagement >= 5 ? ['매우 좋음', 'emerald'] : (s.engagement >= 2 ? ['양호', 'sky'] : (s.engagement >= 1 ? ['보통', 'amber'] : ['낮음', 'slate']));
+
+      document.getElementById('ytStatsBody').innerHTML =
+        '<div class="flex items-center gap-3 pb-4 border-b border-slate-100">'
+        + (s.thumb ? '<img src="' + s.thumb + '" class="w-12 h-12 rounded-full border border-slate-200">' : '')
+        + '<div class="min-w-0"><div class="font-black text-slate-900 text-base truncate">' + tEsc(s.title) + '</div>'
+        + '<div class="text-[11px] text-slate-500">' + tEsc(s.handle || '') + (s.publishedAt ? ' · ' + s.publishedAt + ' 개설' : '') + '</div></div>'
+        + '<a href="https://www.youtube.com/channel/' + s.channelId + '" target="_blank" rel="noopener" class="ml-auto px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-bold rounded-xl whitespace-nowrap"><i class="fa-brands fa-youtube"></i> 채널 열기</a>'
+        + '</div>'
+
+        + '<div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-4">'
+        + card('구독자', fmtCount(s.subscribers), s.subscribers == null ? '채널이 숨김 처리' : '', 'rose')
+        + card('평균 조회수', fmtCount(s.avgViews), '최근 ' + s.sample + '개 기준', 'violet')
+        + card('중앙값 조회수', fmtCount(s.medViews), '이상치 제외 참고용', 'slate')
+        + card('총 영상 수', fmtCount(s.videoCount), '누적 ' + fmtCount(s.totalViews) + '회', 'sky')
+        + '</div>'
+
+        + '<div class="grid grid-cols-2 md:grid-cols-3 gap-2.5 mt-2.5">'
+        + card('평균 좋아요', fmtCount(s.avgLikes), '', 'pink')
+        + card('평균 댓글', fmtCount(s.avgComments), '', 'amber')
+        + card('참여율', s.engagement + '%', '(좋아요+댓글) ÷ 조회수 · ' + grade[0], grade[1])
+        + '</div>'
+
+        + (s.subscribers ? '<div class="mt-2.5 bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-xs text-slate-600">'
+            + '<b class="text-slate-800">구독자 대비 조회율 ' + s.viewRate + '%</b> — 구독자 수 대비 영상이 실제로 얼마나 도달하는지 보는 지표예요. '
+            + '15% 이상이면 활성 채널, 5% 미만이면 구독자 수에 비해 반응이 약한 편입니다.</div>' : '')
+
+        + (s.recent.length ? '<div class="mt-4"><h4 class="text-xs font-black text-slate-700 mb-2">최근 영상 ' + s.recent.length + '개</h4>'
+            + '<div class="overflow-x-auto custom-scrollbar"><table class="w-full text-left text-[11px]">'
+            + '<thead class="text-slate-500 font-bold border-b border-slate-200"><tr>'
+            + '<th class="py-1.5 pr-2">업로드일</th><th class="py-1.5 pr-2">제목</th>'
+            + '<th class="py-1.5 pr-2 text-right">조회</th><th class="py-1.5 pr-2 text-right">좋아요</th><th class="py-1.5 text-right">댓글</th></tr></thead>'
+            + '<tbody class="divide-y divide-slate-100">'
+            + s.recent.map(v => '<tr><td class="py-1.5 pr-2 whitespace-nowrap text-slate-500">' + v.date + '</td>'
+                + '<td class="py-1.5 pr-2 max-w-[220px] truncate"><a href="https://youtu.be/' + v.id + '" target="_blank" rel="noopener" class="text-slate-800 hover:underline">' + tEsc(v.title) + '</a></td>'
+                + '<td class="py-1.5 pr-2 text-right font-bold">' + v.views.toLocaleString() + '</td>'
+                + '<td class="py-1.5 pr-2 text-right">' + v.likes.toLocaleString() + '</td>'
+                + '<td class="py-1.5 text-right">' + v.comments.toLocaleString() + '</td></tr>').join('')
+            + '</tbody></table></div></div>' : '')
+
+        + '<p class="text-[10px] text-slate-400 mt-3">* 조회수·좋아요·댓글은 유튜브가 공개하는 값이며, 비공개 설정된 항목은 0으로 표시됩니다.</p>';
+
+      const foot = document.getElementById('ytStatsFooter');
+      foot.innerHTML = (ytStatsTarget
+          ? '<button onclick="applyYtStats()" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-xl"><i class="fa-solid fa-check"></i> 구독자 수 · 지표 저장</button>'
+          : '')
+        + '<button onclick="closeYtStats()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">닫기</button>';
+    }
+
+    async function runYtAnalyze(url, target) {
+      ytStatsTarget = target || null;
+      openYtStatsLoading();
+      try {
+        const s = await fetchYoutubeChannel(url);
+        renderYtStats(s);
+      } catch (e) {
+        closeYtStats();
+        if (e.message === 'NOKEY') { alert('먼저 YouTube API 키를 설정해 주세요.'); setYoutubeKey(); }
+        else alert('가져오지 못했습니다.\n\n' + e.message);
+      }
+    }
+    function analyzeYoutubeInput() {
+      const url = (document.getElementById('ytAnalyzeUrl').value || '').trim();
+      if (!url) { alert('유튜브 채널 주소를 넣어 주세요.'); return; }
+      runYtAnalyze(url, null);
+    }
+    function analyzeYtForPpl(id) {
+      const p = pplList.find(x => x.id === id);
+      if (!p) return;
+      const ch = (p.channels || []).find(c => isYoutubeUrl(c.url)) || {};
+      const url = ch.url || (p.channels || [])[0] && (p.channels || [])[0].url;
+      if (!url) { alert('이 인플루언서에게 등록된 유튜브 채널 주소가 없습니다.'); return; }
+      runYtAnalyze(url, { kind: 'ppl', id });
+    }
+    function analyzeYtForContact(id) {
+      const c = contactList.find(x => x.id === id);
+      if (!c || !c.channelUrl) { alert('등록된 채널 주소가 없습니다.'); return; }
+      runYtAnalyze(c.channelUrl, { kind: 'contact', id });
+    }
+    function applyYtStats() {
+      const s = ytStatsCache;
+      if (!s || !ytStatsTarget) return;
+      const subsTxt = s.subscribers == null ? '' : fmtCount(s.subscribers);
+      if (ytStatsTarget.kind === 'ppl') {
+        const p = pplList.find(x => x.id === ytStatsTarget.id);
+        if (p) { if (subsTxt) p.followers = subsTxt; p.ytStats = s; }
+      } else {
+        const c = contactList.find(x => x.id === ytStatsTarget.id);
+        if (c) { if (subsTxt) c.followers = subsTxt; c.ytStats = s; }
+      }
+      saveAll();
+      closeYtStats();
+      renderAll();
+      alert('저장했습니다. 구독자 ' + (subsTxt || '비공개') + ' · 평균 조회수 ' + fmtCount(s.avgViews));
+    }
+    function ytStatsBadge(rec) {
+      const s = rec && rec.ytStats;
+      if (!s) return '';
+      return '<div class="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-100 rounded-md px-1.5 py-0.5 mt-1 inline-block">'
+        + '<i class="fa-brands fa-youtube"></i> 평균 ' + fmtCount(s.avgViews) + '뷰 · 참여율 ' + s.engagement + '%</div>';
     }
 
     function payRecOf(kind, id) {
@@ -8753,11 +9037,14 @@
                   ${doneCount > 0
                     ? `<span class="text-xs font-bold text-pink-600">진행횟수: ${doneCount}회</span>`
                     : `<span class="text-[11px] font-semibold text-slate-400">아직 진행 전</span>`}
+                  ${(p.channels || []).some(c => isYoutubeUrl(c.url))
+                    ? `<button onclick="analyzeYtForPpl(${p.id})" class="text-rose-500 hover:text-rose-700 text-xs" title="유튜브 채널 분석 (구독자·평균 조회수)"><i class="fa-brands fa-youtube"></i></button>` : ''}
                   <button onclick="openStepDateModal(${p.id})" class="text-slate-400 hover:text-pink-600 text-xs" title="전체 수정"><i class="fa-solid fa-pen"></i></button>
                   <button onclick="openInfluencerEdit(${p.id})" class="text-slate-400 hover:text-amber-600 text-xs" title="협업 콘텐츠/메모"><i class="fa-solid fa-link"></i></button>
                 </div>
               </div>
               <h3 class="text-base font-black text-slate-900">${p.realName || '무명'} <span class="text-xs font-normal text-slate-500">(${p.influencer})</span></h3>
+              ${ytStatsBadge(p)}
               <div class="text-xs text-slate-500 space-y-0.5 pt-1">
                 <div>구독자: <b>${p.followers || '-'}</b></div>
                 <div>이메일: <b>${p.email || '-'}</b></div>
