@@ -691,7 +691,7 @@
             <i class="fa-solid fa-list text-pink-500"></i> 브랜디드 &amp; PPL 진행 목록 테이블
           </h2>
           <p class="text-xs text-slate-500">체크한 인플루언서의 수령인 이름·연락처·우편번호·주소를 엑셀로 받을 수 있어요. (체크 없으면 현재 목록 전체)</p>
-          <p class="text-xs text-pink-600 font-semibold mt-0.5"><i class="fa-solid fa-lightbulb"></i> 인플루언서 <b>이름을 클릭</b>하면 수정 창이 바로 열려요. 목록은 <b>진행중 → 진행예정 → 진행완료</b> 순으로 묶여 있고, 그룹 제목을 누르면 접었다 펼 수 있어요.</p>
+          <p class="text-xs text-pink-600 font-semibold mt-0.5"><i class="fa-solid fa-lightbulb"></i> 인플루언서 <b>이름을 클릭</b>하면 수정 창이 바로 열려요. 목록은 <b>진행중 → 진행예정 → 진행완료</b> 순으로 묶여 있어요. <b>단계별 일자 관리에서 '업로드'에 완료 체크</b>를 해야 진행완료로 내려갑니다.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -7879,12 +7879,18 @@
     const BUCKET_META = {
       active:  { label: '진행중',   icon: 'fa-circle-play',  row: 'bg-emerald-50/70', text: 'text-emerald-800', dot: 'bg-emerald-500', desc: '지금 굴러가는 건' },
       planned: { label: '진행예정', icon: 'fa-hourglass-half', row: 'bg-amber-50/70',  text: 'text-amber-800',   dot: 'bg-amber-400',   desc: '컨택 · 협의 단계' },
-      done:    { label: '진행완료', icon: 'fa-circle-check', row: 'bg-slate-100/80',  text: 'text-slate-600',   dot: 'bg-slate-400',   desc: '업로드 끝난 건' }
+      done:    { label: '진행완료', icon: 'fa-circle-check', row: 'bg-slate-100/80',  text: 'text-slate-600',   dot: 'bg-slate-400',   desc: "단계별 일자에서 '업로드' 완료 체크한 건" }
     };
     const collapsedBuckets = new Set(JSON.parse(localStorage.getItem('onsal_collapsedBuckets') || '[]'));
 
+    // 단계별 일자 관리에서 '업로드' 완료 체크가 된 건만 진행완료로 봅니다
+    function isUploadStepDone(p) {
+      const info = p.stepDates && p.stepDates['업로드'];
+      if (!info) return false;
+      return (typeof info === 'object') ? !!info.done : false;
+    }
     function progressBucketOf(p) {
-      if (p.isCompleted || p.status === '잔금입금' || uploadsOf(p).length > 0) return 'done';
+      if (isUploadStepDone(p)) return 'done';
       if (PLANNED_STAGES.includes(p.status)) return 'planned';
       return 'active';
     }
