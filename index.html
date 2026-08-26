@@ -85,111 +85,199 @@
     tr.bucket-gap td { background: transparent !important; }
     tr.bucket-head td { background: transparent !important; }
   </style>
+
+  <style>
+    /* ============ 화이트 사이드바 스킨 ============ */
+    :root{
+      --pk-500:#EC4899; --pk-600:#DB2777; --pk-700:#BE185D;
+      --pk-100:#FCE7F3; --pk-50:#FDF2F8;
+      --page-bg:#F7F6F4; --line:#ECEAE6; --line-soft:#F2F0EC;
+    }
+    body{ background:var(--page-bg); }
+
+    /* --- 사이드바 --- */
+    .side-nav{
+      position:fixed; left:0; top:0; bottom:0; width:230px; z-index:40;
+      background:#FFFFFF; border-right:1px solid var(--line);
+      display:flex; flex-direction:column; overflow-y:auto; padding:18px 12px 14px;
+    }
+    .side-nav::-webkit-scrollbar{ width:4px }
+    .side-nav::-webkit-scrollbar-thumb{ background:#E2DFDA; border-radius:4px }
+    .side-brand{ display:flex; align-items:center; gap:10px; padding:2px 6px 16px; }
+    .side-logo{ width:34px; height:34px; flex:none; border-radius:12px; background:var(--pk-500);
+      color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px; }
+    .side-title{ color:#1F1F1E; font-size:13.5px; font-weight:800; line-height:1.25; }
+    .side-sub{ color:#8B8981; font-size:11px; font-weight:600; }
+
+    .side-menu{ flex:1; display:flex; flex-direction:column; gap:2px; }
+    .nav-grp{ display:flex; align-items:center; gap:9px; width:100%; text-align:left;
+      padding:9px 12px; margin-top:8px; border-radius:10px; font-size:11.5px; font-weight:800;
+      letter-spacing:.02em; color:#A5A29A; transition:.15s; }
+    .nav-grp:hover{ color:#1F1F1E }
+    .nav-grp-on{ color:#1F1F1E }
+    .nav-sub{ display:flex; flex-direction:column; gap:1px; padding:1px 0 4px; }
+    .nav-item{ display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+      padding:8px 12px; border-radius:9px; font-size:12.5px; font-weight:600;
+      color:#5F5E5A; transition:.15s; }
+    .nav-item i{ font-size:11px; width:14px; text-align:center; color:#A5A29A }
+    .nav-item:hover{ background:#F5F4F2; color:#1F1F1E }
+    .nav-item-on{ background:var(--pk-50); color:var(--pk-700); font-weight:800 }
+    .nav-item-on i{ color:var(--pk-500) }
+
+    .side-foot{ display:flex; flex-direction:column; gap:4px; padding-top:12px; margin-top:10px;
+      border-top:1px solid var(--line); }
+    .side-util{ display:flex; align-items:center; gap:9px; width:100%; text-align:left;
+      padding:7px 11px; border-radius:9px; font-size:11.5px; font-weight:700;
+      color:#5F5E5A; background:transparent; transition:.15s; }
+    .side-util:hover{ background:#F5F4F2; color:#1F1F1E }
+    .side-util i{ font-size:11px; width:13px; text-align:center; color:#A5A29A }
+
+    .app-main{ padding-left:calc(230px + 1.25rem) !important; padding-right:1.5rem !important; }
+    .side-toggle{ display:none; }
+    .side-scrim{ display:none; }
+
+    @media (max-width:1023px){
+      .side-nav{ transform:translateX(-100%); transition:transform .22s ease; width:250px; }
+      .side-nav.open{ transform:none; box-shadow:0 0 40px rgba(0,0,0,.18) }
+      .app-main{ padding-left:1rem !important; padding-right:1rem !important; padding-top:60px !important; }
+      .side-toggle{ display:flex; position:fixed; top:12px; left:12px; z-index:45;
+        width:42px; height:42px; align-items:center; justify-content:center; border-radius:12px;
+        background:#fff; color:#1F1F1E; border:1px solid var(--line); box-shadow:0 3px 12px rgba(0,0,0,.08) }
+      .side-scrim{ display:block; position:fixed; inset:0; background:rgba(0,0,0,.32); z-index:39 }
+      .side-scrim.hidden{ display:none }
+    }
+
+    /* --- 카드: 흰 바탕 + 얇은 선 --- */
+    .app-main > section, .app-main > div > section{
+      border-radius:16px !important; border-color:var(--line) !important;
+      box-shadow:0 1px 2px rgba(20,18,14,.04) !important;
+    }
+  </style>
+
+  <style>
+    /* ============ 색 통일 · 표 안정화 ============ */
+    /* 넓은 표는 줄어들지 않고 가로 스크롤 */
+    .custom-scrollbar > table[data-cols="wide"]{ min-width:1180px }
+    .custom-scrollbar > table[data-cols="micro"]{ min-width:1080px }
+    .custom-scrollbar > table[data-cols="std"]{ min-width:1020px }
+    .app-main table th, .app-main table td{ vertical-align:top }
+    .app-main .overflow-x-auto{ -webkit-overflow-scrolling:touch }
+
+    /* 카드 안의 색 배경 → 한 톤 (연회색) */
+    .app-main [class*="bg-violet-50"], .app-main [class*="bg-indigo-50"],
+    .app-main [class*="bg-sky-50"], .app-main [class*="bg-cyan-50"],
+    .app-main [class*="bg-teal-50"], .app-main [class*="bg-emerald-50"],
+    .app-main [class*="bg-amber-50"], .app-main [class*="bg-orange-50"],
+    .app-main [class*="bg-rose-50"], .app-main [class*="bg-blue-50"],
+    .app-main [class*="bg-fuchsia-50"], .app-main [class*="bg-slate-50"]{
+      background-color:#FAFAF9 !important;
+    }
+    /* 색 테두리 → 공통 회색선 */
+    .app-main [class*="border-violet-1"], .app-main [class*="border-violet-2"],
+    .app-main [class*="border-indigo-1"], .app-main [class*="border-indigo-2"],
+    .app-main [class*="border-sky-1"], .app-main [class*="border-sky-2"],
+    .app-main [class*="border-cyan-1"], .app-main [class*="border-cyan-2"],
+    .app-main [class*="border-teal-1"], .app-main [class*="border-teal-2"],
+    .app-main [class*="border-emerald-1"], .app-main [class*="border-emerald-2"],
+    .app-main [class*="border-amber-1"], .app-main [class*="border-amber-2"],
+    .app-main [class*="border-orange-1"], .app-main [class*="border-orange-2"],
+    .app-main [class*="border-rose-1"], .app-main [class*="border-rose-2"],
+    .app-main [class*="border-pink-1"], .app-main [class*="border-pink-2"]{
+      border-color:#ECEAE6 !important;
+    }
+    /* 색 채운 버튼 → 검정 계열 하나로 (주요 버튼만 핑크 유지) */
+    .app-main .bg-emerald-500, .app-main .bg-emerald-600, .app-main .bg-violet-500,
+    .app-main .bg-violet-600, .app-main .bg-sky-500, .app-main .bg-sky-600,
+    .app-main .bg-cyan-500, .app-main .bg-cyan-600, .app-main .bg-indigo-500,
+    .app-main .bg-indigo-600, .app-main .bg-teal-500, .app-main .bg-teal-600,
+    .app-main .bg-amber-500, .app-main .bg-orange-500, .app-main .bg-slate-700,
+    .app-main .bg-slate-800{ background-color:#262624 !important; color:#fff !important }
+    .app-main .hover\:bg-emerald-600:hover, .app-main .hover\:bg-emerald-700:hover,
+    .app-main .hover\:bg-violet-700:hover, .app-main .hover\:bg-sky-700:hover,
+    .app-main .hover\:bg-cyan-700:hover, .app-main .hover\:bg-indigo-700:hover,
+    .app-main .hover\:bg-teal-700:hover, .app-main .hover\:bg-amber-600:hover,
+    .app-main .hover\:bg-orange-600:hover, .app-main .hover\:bg-slate-800:hover{
+      background-color:#454541 !important;
+    }
+    /* 큰 숫자·제목 글자색 통일 (상태 색은 그대로 둠) */
+    .app-main .text-violet-600, .app-main .text-violet-700, .app-main .text-violet-800,
+    .app-main .text-indigo-600, .app-main .text-indigo-700,
+    .app-main .text-cyan-600, .app-main .text-cyan-700,
+    .app-main .text-sky-600, .app-main .text-sky-700,
+    .app-main .text-teal-600, .app-main .text-teal-700,
+    .app-main .text-fuchsia-600, .app-main .text-fuchsia-700{ color:#262624 !important }
+    /* 섹션 헤더 아이콘도 회색으로 */
+    .app-main h2 > i, .app-main h3 > i{ color:#A5A29A !important }
+  </style>
+
+  <style>
+    /* 표 머리글 · 섹션 옅은 핑크 배경 → 회색 한 톤 */
+    .app-main thead[class*="bg-pink-50"], .app-main [class*="bg-pink-50"]{ background-color:#FAFAF9 !important }
+    .app-main [class*="bg-rose-50"], .app-main [class*="bg-amber-50"]{ background-color:#FAFAF9 !important }
+    /* 그룹 행 강조는 왼쪽 세로선으로만 */
+    tr[data-bucket="planned"], tr[data-bucket="active"]{ background:transparent !important }
+    tr[data-bucket="done"]{ background:#FBFBFA !important }
+    /* 표 안 작은 배지 폰트 톤 */
+    .app-main table .text-amber-800, .app-main table .text-orange-800,
+    .app-main table .text-blue-800, .app-main table .text-cyan-800{ color:#454541 !important }
+  </style>
 </head>
-<body class="bg-pink-50/40 text-slate-800 min-h-screen pb-16">
+<body class="text-slate-800 min-h-screen pb-16">
 
-  <header class="bg-white/90 backdrop-blur-md border-b border-pink-100 sticky top-0 z-30 shadow-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="bg-pink-500 text-white p-2.5 rounded-2xl shadow-sm shadow-pink-200">
-          <i class="fa-solid fa-heart text-lg"></i>
-        </div>
-        <div>
-          <h1 class="text-lg font-bold text-slate-900 leading-tight">온살 & 루메아카이브 마케팅 대시보드</h1>
-          <p class="text-xs text-slate-500">PPL 진행 · 체험단 일정 · 성과 리포트 · UTM 트래킹 통합 관리</p>
-        </div>
-      </div>
+  <button id="sideToggle" onclick="toggleSideNav()" class="side-toggle" aria-label="메뉴 열기"><i class="fa-solid fa-bars"></i></button>
+  <div id="sideScrim" onclick="toggleSideNav()" class="side-scrim hidden"></div>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="space-y-1.5">
-          <div class="flex flex-wrap p-1 bg-slate-100 rounded-2xl border border-slate-200 text-xs font-bold">
-            <button onclick="setNavGroup('run')" id="navgrp-run" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-              <i class="fa-solid fa-bolt"></i> 진행 관리
-            </button>
-            <button onclick="setNavGroup('report')" id="navgrp-report" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-              <i class="fa-solid fa-chart-column"></i> 리포트
-            </button>
-            <button onclick="setNavGroup('money')" id="navgrp-money" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-              <i class="fa-solid fa-won-sign"></i> 정산 · 예산
-            </button>
-            <button onclick="setNavGroup('ops')" id="navgrp-ops" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-              <i class="fa-solid fa-boxes-stacked"></i> 운영
-            </button>
-          </div>
-        <div id="navsub-run" class="flex flex-wrap p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold hidden">
-          <button onclick="switchMainPage('contact')" id="nav-contact" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-address-book text-[10px]"></i> 컨택 리스트
-          </button>
-          <button onclick="switchMainPage('ppl')" id="nav-ppl" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-bullhorn text-[10px]"></i> PPL &amp; 협찬
-          </button>
-          <button onclick="switchMainPage('micro')" id="nav-micro" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-users-rays text-[10px]"></i> 마이크로
-          </button>
-          <button onclick="switchMainPage('amb')" id="nav-amb" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-crown text-[10px]"></i> 앰버서더
-          </button>
-          <button onclick="switchMainPage('sup')" id="nav-sup" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-hand-holding-heart text-[10px]"></i> 크리에이터
-          </button>
-          <button onclick="switchMainPage('trial')" id="nav-trial" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-users-rectangle text-[10px]"></i> 체험단
-          </button>
-          <button onclick="switchMainPage('creator')" id="nav-creator" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-video text-[10px]"></i> 인플루언서 관리
-          </button>
-        </div>
-        <div id="navsub-report" class="flex flex-wrap p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold hidden">
-          <button onclick="switchMainPage('monthly')" id="nav-monthly" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-chart-column text-[10px]"></i> 월간 통합 현황
-          </button>
-          <button onclick="switchMainPage('perf')" id="nav-perf" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-chart-pie text-[10px]"></i> 성과 리포트
-          </button>
-          <button onclick="switchMainPage('report')" id="nav-report" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-file-lines text-[10px]"></i> PPL 보고
-          </button>
-        </div>
-        <div id="navsub-money" class="flex flex-wrap p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold hidden">
-          <button onclick="switchMainPage('pay')" id="nav-pay" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-won-sign text-[10px]"></i> 입금 관리
-          </button>
-          <button onclick="openBudget('온살')" id="nav-budget-온살" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-calculator text-[10px]"></i> 온살 예산
-          </button>
-          <button onclick="openBudget('루메아카이브')" id="nav-budget-루메아카이브" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-calculator text-[10px]"></i> 루메 예산
-          </button>
-        </div>
-        <div id="navsub-ops" class="flex flex-wrap p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold hidden">
-          <button onclick="switchMainPage('utm')" id="nav-utm" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-link text-[10px]"></i> UTM
-          </button>
-        </div>
-        </div>
-        <span id="appModeBadge" class="px-3 py-1.5 bg-pink-100 text-pink-700 border border-pink-200 text-xs font-black rounded-xl flex items-center gap-1.5"></span>
-        <a id="appModeLink" href="./report.html" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5"></a>
-        <button onclick="openBackupModal()" class="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-          <i class="fa-solid fa-shield-halved"></i> 백업
-        </button>
-        <button onclick="toggleCompactTable()" id="compactTableBtn" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-          <i class="fa-solid fa-table-columns"></i> <span id="compactTableLabel">표 간단히 보기</span>
-        </button>
-        <button onclick="exportToCSV()" class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-xl transition flex items-center gap-1 shadow-xs">
-          <i class="fa-solid fa-file-excel"></i> CSV 내보내기
-        </button>
-        <button id="schedSyncBtn" onclick="syncToScheduler()" title="📅 체크한 일정이 자동으로 스케줄러에 반영됩니다 (클릭 시 즉시 동기화)" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
-          <i class="fa-solid fa-calendar-check"></i> <span id="schedSyncText">스케줄러 자동연동</span>
-        </button>
-        <button id="syncStatus" onclick="syncNow()" title="눌러서 다시 동기화" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
-          <i class="fa-solid fa-cloud"></i> <span id="syncStatusText">연결 확인 중...</span>
-        </button>
+  <aside id="sideNav" class="side-nav">
+    <div class="side-brand">
+      <div class="side-logo"><i class="fa-solid fa-heart"></i></div>
+      <div class="min-w-0">
+        <h1 class="side-title">온살 &amp; 루메아카이브</h1>
+        <p class="side-sub">마케팅 대시보드</p>
       </div>
     </div>
-  </header>
+
+    <nav class="side-menu">
+        <button onclick="setNavGroup('run')" id="navgrp-run" class="nav-grp"><i class="fa-solid fa-bolt"></i> 진행 관리</button>
+        <div id="navsub-run" class="nav-sub hidden">
+          <button onclick="switchMainPage('contact')" id="nav-contact" class="nav-item"><i class="fa-solid fa-address-book"></i> 컨택 리스트</button>
+          <button onclick="switchMainPage('ppl')" id="nav-ppl" class="nav-item"><i class="fa-solid fa-bullhorn"></i> PPL &amp; 협찬</button>
+          <button onclick="switchMainPage('micro')" id="nav-micro" class="nav-item"><i class="fa-solid fa-users-rays"></i> 마이크로</button>
+          <button onclick="switchMainPage('amb')" id="nav-amb" class="nav-item"><i class="fa-solid fa-crown"></i> 앰버서더</button>
+          <button onclick="switchMainPage('sup')" id="nav-sup" class="nav-item"><i class="fa-solid fa-hand-holding-heart"></i> 크리에이터</button>
+          <button onclick="switchMainPage('trial')" id="nav-trial" class="nav-item"><i class="fa-solid fa-users-rectangle"></i> 체험단</button>
+          <button onclick="switchMainPage('creator')" id="nav-creator" class="nav-item"><i class="fa-solid fa-video"></i> LIST</button>
+        </div>
+        <button onclick="setNavGroup('report')" id="navgrp-report" class="nav-grp"><i class="fa-solid fa-chart-column"></i> 리포트</button>
+        <div id="navsub-report" class="nav-sub hidden">
+          <button onclick="switchMainPage('monthly')" id="nav-monthly" class="nav-item"><i class="fa-solid fa-chart-column"></i> 월간 통합 현황</button>
+          <button onclick="switchMainPage('perf')" id="nav-perf" class="nav-item"><i class="fa-solid fa-chart-pie"></i> 성과 리포트</button>
+          <button onclick="switchMainPage('report')" id="nav-report" class="nav-item"><i class="fa-solid fa-file-lines"></i> PPL 보고</button>
+        </div>
+        <button onclick="setNavGroup('money')" id="navgrp-money" class="nav-grp"><i class="fa-solid fa-won-sign"></i> 정산 · 예산</button>
+        <div id="navsub-money" class="nav-sub hidden">
+          <button onclick="switchMainPage('pay')" id="nav-pay" class="nav-item"><i class="fa-solid fa-won-sign"></i> 입금 관리</button>
+          <button onclick="openBudget('온살')" id="nav-budget-온살" class="nav-item"><i class="fa-solid fa-calculator"></i> 온살 예산</button>
+          <button onclick="openBudget('루메아카이브')" id="nav-budget-루메아카이브" class="nav-item"><i class="fa-solid fa-calculator"></i> 루메 예산</button>
+        </div>
+        <button onclick="setNavGroup('ops')" id="navgrp-ops" class="nav-grp"><i class="fa-solid fa-boxes-stacked"></i> 운영</button>
+        <div id="navsub-ops" class="nav-sub hidden">
+          <button onclick="switchMainPage('utm')" id="nav-utm" class="nav-item"><i class="fa-solid fa-link"></i> UTM</button>
+        </div>
+    </nav>
+
+    <div class="side-foot">
+      <span id="appModeBadge" class="hidden"></span>
+      <a id="appModeLink" href="./report.html" class="hidden"></a>
+      <button onclick="openBackupModal()" class="side-util"><i class="fa-solid fa-shield-halved"></i> 백업</button>
+      <button onclick="toggleCompactTable()" id="compactTableBtn" class="side-util"><i class="fa-solid fa-table-columns"></i> <span id="compactTableLabel">표 간단히 보기</span></button>
+      <button onclick="exportToCSV()" class="side-util"><i class="fa-solid fa-file-excel"></i> CSV 내보내기</button>
+      <button id="schedSyncBtn" onclick="syncToScheduler()" title="체크한 일정이 자동으로 스케줄러에 반영됩니다" class="side-util"><i class="fa-solid fa-calendar-check"></i> <span id="schedSyncText">스케줄러 자동연동</span></button>
+      <button id="syncStatus" onclick="syncNow()" title="눌러서 다시 동기화" class="side-util"><i class="fa-solid fa-cloud"></i> <span id="syncStatusText">연결 확인 중...</span></button>
+    </div>
+  </aside>
 
   <!-- ==================== PAGE: 월간 통합 현황 ==================== -->
-  <main id="page-monthly" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+  <main data-page="1" id="page-monthly" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <div id="readOnlyNote" class="hidden bg-indigo-50/70 border border-indigo-200 rounded-2xl px-5 py-3 text-xs text-indigo-900">
       <b><i class="fa-solid fa-lock"></i> 읽기 전용 화면</b> · PPL · 체험단 · 입금 등 <b>진행 데이터는 여기서 수정되지 않습니다.</b>
@@ -372,7 +460,7 @@
   </main>
 
   <!-- ==================== PAGE: 컨택 리스트 ==================== -->
-  <main id="page-contact" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+  <main data-page="1" id="page-contact" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl px-5 py-3.5 text-xs text-emerald-900">
       <b>컨택 대기 인플루언서 풀</b> · 나중에 연락할 인플루언서를 미리 모아 두는 곳이에요. 컨택하면 체크하고, <b>진행이 확정된 사람만</b> PPL·앰버서더·크리에이터·마이크로 카테고리로 넘길 수 있습니다.
@@ -410,6 +498,13 @@
           <div>
             <label class="block text-[11px] font-bold text-slate-600 mb-1">팔로워 / 구독자</label>
             <input id="ctFollowers" placeholder="4.5만" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+            <div class="flex flex-wrap items-center gap-1.5 mt-1">
+              <button type="button" onclick="ytFillForm('contact')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold rounded-lg whitespace-nowrap">
+                <i class="fa-brands fa-youtube"></i> 유튜브에서 자동 채우기
+              </button>
+              <span class="text-[10px] text-slate-400">채널 주소를 넣고 누르면 구독자 · 평균 조회수 · 좋아요 · 댓글이 들어옵니다</span>
+            </div>
+            <div id="ytBadge_contact" class="mt-1"></div>
           </div>
           <div>
             <label class="block text-[11px] font-bold text-slate-600 mb-1">채널</label>
@@ -482,7 +577,7 @@
           <button onclick="openContactFormModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
             <i class="fa-solid fa-user-plus"></i> 인플루언서 추가
           </button>
-          <button onclick="copyContactEmails()" class="px-3 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+          <button onclick="copyContactEmails()" class="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
             <i class="fa-solid fa-copy"></i> 이메일 일괄 복사
           </button>
           <button onclick="exportContactExcel()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
@@ -515,7 +610,7 @@
   </main>
 
   <!-- ==================== PAGE 1: PPL & 협찬 진행 대시보드 ==================== -->
-  <main id="page-ppl" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
+  <main data-page="1" id="page-ppl" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
 
     <!-- 신규 PPL 등록은 목록 위 "인플루언서 추가" 버튼에서 모달로 엽니다 (아래 pplFormModal) -->
     <div id="pplFormModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs items-center justify-center z-50 hidden p-4">
@@ -585,6 +680,13 @@
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-1">팔로워 / 구독자 수 (합산 또는 대표)</label>
             <input type="text" id="followers" placeholder="예: 5.2만 / 10K" class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl">
+            <div class="flex flex-wrap items-center gap-1.5 mt-1">
+              <button type="button" onclick="ytFillForm('ppl')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold rounded-lg whitespace-nowrap">
+                <i class="fa-brands fa-youtube"></i> 유튜브에서 자동 채우기
+              </button>
+              <span class="text-[10px] text-slate-400">채널 주소를 넣고 누르면 구독자 · 평균 조회수 · 좋아요 · 댓글이 들어옵니다</span>
+            </div>
+            <div id="ytBadge_ppl" class="mt-1"></div>
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-1">인플루언서 이메일</label>
@@ -776,7 +878,7 @@
           <i class="fa-solid fa-file-arrow-down"></i> 배송정보 엑셀 다운로드
         </button>
         <div class="flex gap-1.5 p-1 bg-slate-50 rounded-xl border border-slate-100">
-          <button onclick="filterBrand('전체')" class="brand-filter active px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-pink-500 text-white shadow-xs">전체</button>
+          <button onclick="filterBrand('전체')" class="brand-filter active px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-white shadow-xs">전체</button>
           <button onclick="filterBrand('온살')" class="brand-filter px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-200">온살</button>
           <button onclick="filterBrand('루메아카이브')" class="brand-filter px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-200">루메아카이브</button>
         </div>
@@ -894,7 +996,7 @@
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-          <a href="https://khgee327.github.io/reuse-dashboard/" target="_blank" rel="noopener" class="px-3 py-2 bg-orange-100 hover:bg-orange-200 text-orange-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+          <a href="https://khgee327.github.io/reuse-dashboard/" target="_blank" rel="noopener" class="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
             <i class="fa-solid fa-arrow-up-right-from-square"></i> 2차활용 대시보드 열기
           </a>
           <button id="reuseSyncBtn" onclick="pullReuseRecords(true)" class="px-3.5 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
@@ -924,7 +1026,7 @@
   </main>
 
   <!-- ==================== PAGE: 마이크로 관리 ==================== -->
-  <main id="page-micro" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+  <main data-page="1" id="page-micro" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <div class="bg-sky-50/60 border border-sky-100 rounded-2xl px-5 py-3.5 text-xs text-sky-900">
       <b>마이크로 전용 페이지</b> · PPL 등록 시 <b>마이크로 릴스</b> 또는 <b>마이크로 PPL</b>을 체크하면 이 페이지로 분리됩니다.
@@ -938,7 +1040,7 @@
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
             <i class="fa-solid fa-users-rays text-sky-600"></i> 마이크로 진행 목록 테이블
-            <span id="microHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full">0건</span>
+            <span id="microHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">0건</span>
           </h2>
           <p class="text-xs text-slate-500">마이크로 릴스 / 마이크로 PPL 건만 모아서 관리합니다.</p>
         </div>
@@ -1016,7 +1118,7 @@
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
             <i class="fa-solid fa-box-open text-sky-600"></i> 마이크로 패키지 (인원 · 금액 묶음)
-            <span id="pkgHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full">0개</span>
+            <span id="pkgHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">0개</span>
           </h2>
           <p class="text-xs text-slate-500">"10인에 300만원" 처럼 묶음으로 계약한 건을 등록하고 인플루언서를 배정하세요. <b>1인당 단가 = 총 계약금액 ÷ 계약 인원</b> 으로 고정 계산되고, 배정한 인원 수만큼 "지금까지 잡힌 금액"이 올라갑니다. 월간 비용에는 <b>패키지 금액만</b> 한 번 잡혀요.</p>
         </div>
@@ -1078,7 +1180,7 @@
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
             <i class="fa-solid fa-arrow-up-right-from-square text-sky-600"></i> 마이크로 업로드 일자 &amp; 링크
-            <span id="microUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full">0건</span>
+            <span id="microUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">0건</span>
           </h2>
           <p class="text-xs text-slate-500">마이크로 릴스 / 마이크로 PPL 업로드 일자와 링크를 모아서 봅니다.</p>
         </div>
@@ -1106,7 +1208,7 @@
   </main>
 
   <!-- ==================== PAGE: 앰버서더 관리 ==================== -->
-  <main id="page-amb" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+  <main data-page="1" id="page-amb" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl px-5 py-3.5 text-xs text-indigo-900">
       <b>앰버서더 전용 페이지</b> · PPL 등록 시 <b>앰버서더</b> 또는 <b>무상앰버서더</b>를 체크하면 이 페이지로 분리됩니다. (PPL 목록에서는 빠져요)
@@ -1260,7 +1362,7 @@
   </main>
 
   <!-- ==================== PAGE: 크리에이터 ==================== -->
-  <main id="page-sup" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+  <main data-page="1" id="page-sup" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <div class="bg-cyan-50/60 border border-cyan-100 rounded-2xl px-5 py-3.5 text-xs text-cyan-900">
       <b>크리에이터 전용 페이지</b> · PPL 등록 시 <b>크리에이터</b>를 체크하면 이 페이지로 분리됩니다. 아래에서 <b>월간 미션 · 활동비</b>와 <b>상위노출 키워드 · 순위 · 캡쳐</b>를 함께 관리해요.
@@ -1271,7 +1373,7 @@
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
             <i class="fa-solid fa-hand-holding-heart text-cyan-600"></i> 크리에이터 진행 관리
-            <span id="supHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full">0명</span>
+            <span id="supHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">0명</span>
           </h2>
           <p class="text-xs text-slate-500">크리에이터로 진행하는 협업 건입니다.</p>
         </div>
@@ -1502,7 +1604,7 @@
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
             <i class="fa-solid fa-arrow-up-right-from-square text-cyan-600"></i> 크리에이터 업로드 일자 &amp; 링크
-            <span id="supUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full">0건</span>
+            <span id="supUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">0건</span>
           </h2>
           <p class="text-xs text-slate-500">크리에이터 업로드 일자와 링크를 모아서 봅니다.</p>
         </div>
@@ -1530,7 +1632,7 @@
   </main>
 
   <!-- ==================== PAGE: 입금 관리 ==================== -->
-  <main id="page-pay" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+  <main data-page="1" id="page-pay" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl px-5 py-3.5 text-xs text-emerald-900">
       <b>계약 · 입금 통합 관리</b> · PPL · 마이크로 · 앰버서더 · 크리에이터 · 인플루언서 · 체험단의 계약서 진행 상황과 선금/잔금 입금 일정을 한 곳에서 봅니다.
@@ -1607,7 +1709,7 @@
   </main>
 
   <!-- ==================== PAGE: 체험단 관리 ==================== -->
-  <main id="page-trial" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+  <main data-page="1" id="page-trial" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="trialSummary"></div>
 
@@ -1769,7 +1871,7 @@
   </main>
 
   <!-- ==================== PAGE 3: UTM 트래킹 ==================== -->
-  <main id="page-utm" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+  <main data-page="1" id="page-utm" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <section class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
       <div class="flex flex-wrap justify-between items-center gap-3 border-b border-pink-50 pb-3">
@@ -1964,7 +2066,7 @@
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2">
-        <button onclick="closeProductModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+        <button onclick="closeProductModal()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold rounded-xl">취소</button>
         <button onclick="saveProductModal()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">저장하기</button>
       </div>
     </div>
@@ -2012,6 +2114,13 @@
           <div>
             <label class="block font-semibold text-slate-600 mb-1">구독자 / 팔로워</label>
             <input type="text" id="editModalFollowers" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white">
+            <div class="flex flex-wrap items-center gap-1.5 mt-1">
+              <button type="button" onclick="ytFillForm('edit')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold rounded-lg whitespace-nowrap">
+                <i class="fa-brands fa-youtube"></i> 유튜브에서 자동 채우기
+              </button>
+              <span class="text-[10px] text-slate-400">채널 주소를 넣고 누르면 구독자 · 평균 조회수 · 좋아요 · 댓글이 들어옵니다</span>
+            </div>
+            <div id="ytBadge_edit" class="mt-1"></div>
           </div>
           <div>
             <label class="block font-semibold text-slate-600 mb-1">이메일</label>
@@ -2190,7 +2299,7 @@
       </div>
 
       <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 sticky bottom-0 bg-white">
-        <button onclick="closeStepDateModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+        <button onclick="closeStepDateModal()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold rounded-xl">취소</button>
         <button onclick="saveStepDates()" class="px-5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl shadow-xs">수정 내용 저장</button>
       </div>
     </div>
@@ -2268,7 +2377,7 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeProposalModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+          <button type="button" onclick="closeProposalModal()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold rounded-xl">취소</button>
           <button type="submit" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">등록하기</button>
         </div>
       </form>
@@ -2322,7 +2431,7 @@
           <input type="text" id="logReason" placeholder="예: 3차 정기 입고 등" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeStockLogModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+          <button type="button" onclick="closeStockLogModal()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold rounded-xl">취소</button>
           <button type="submit" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">기록 저장</button>
         </div>
       </form>
@@ -2420,7 +2529,7 @@
           <div class="bg-white p-2.5 rounded-xl border border-violet-100 space-y-2">
             <div class="flex items-center justify-between">
               <label class="text-[11px] font-bold text-violet-800">utm_campaign <span class="text-rose-500">*</span> <span class="font-normal text-slate-400">캠페인명</span></label>
-              <button type="button" onclick="buildUtmName('campaign')" class="px-2 py-1 bg-violet-100 hover:bg-violet-200 text-violet-800 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-wand-magic-sparkles"></i> 규칙대로 만들기</button>
+              <button type="button" onclick="buildUtmName('campaign')" class="px-2 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-wand-magic-sparkles"></i> 규칙대로 만들기</button>
             </div>
             <input type="text" id="utmStdCampaign" class="w-full px-3 py-2 text-xs border border-violet-200 rounded-xl font-mono font-bold">
             <p id="utmCampaignRule" class="text-[10px] text-slate-500"></p>
@@ -2429,7 +2538,7 @@
           <div class="bg-white p-2.5 rounded-xl border border-violet-100 space-y-2">
             <div class="flex items-center justify-between">
               <label class="text-[11px] font-bold text-violet-800">utm_content <span class="font-normal text-slate-400">그룹명 (선택)</span></label>
-              <button type="button" onclick="buildUtmName('content')" class="px-2 py-1 bg-violet-100 hover:bg-violet-200 text-violet-800 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-wand-magic-sparkles"></i> 규칙대로 만들기</button>
+              <button type="button" onclick="buildUtmName('content')" class="px-2 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-wand-magic-sparkles"></i> 규칙대로 만들기</button>
             </div>
             <input type="text" id="utmStdContent" class="w-full px-3 py-2 text-xs border border-violet-200 rounded-xl font-mono">
             <p id="utmContentRule" class="text-[10px] text-slate-500"></p>
@@ -2438,7 +2547,7 @@
           <div class="bg-white p-2.5 rounded-xl border border-violet-100 space-y-2">
             <div class="flex items-center justify-between">
               <label class="text-[11px] font-bold text-violet-800">utm_term <span class="font-normal text-slate-400">소재명 / 검색 키워드 (선택)</span></label>
-              <button type="button" onclick="buildUtmName('term')" class="px-2 py-1 bg-violet-100 hover:bg-violet-200 text-violet-800 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-wand-magic-sparkles"></i> 규칙대로 만들기</button>
+              <button type="button" onclick="buildUtmName('term')" class="px-2 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-wand-magic-sparkles"></i> 규칙대로 만들기</button>
             </div>
             <input type="text" id="utmStdTerm" class="w-full px-3 py-2 text-xs border border-violet-200 rounded-xl font-mono">
             <p id="utmTermRule" class="text-[10px] text-slate-500"></p>
@@ -2469,7 +2578,7 @@
         </label>
 
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeUtmModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+          <button type="button" onclick="closeUtmModal()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold rounded-xl">취소</button>
           <button type="submit" id="utmSubmitBtn" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">생성 및 저장</button>
         </div>
       </form>
@@ -2506,6 +2615,13 @@
           <div>
             <label class="block font-semibold text-slate-600 mb-1">구독자/팔로워</label>
             <input type="text" id="infEditFollowers" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg">
+            <div class="flex flex-wrap items-center gap-1.5 mt-1">
+              <button type="button" onclick="ytFillForm('inf')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold rounded-lg whitespace-nowrap">
+                <i class="fa-brands fa-youtube"></i> 유튜브에서 자동 채우기
+              </button>
+              <span class="text-[10px] text-slate-400">채널 주소를 넣고 누르면 구독자 · 평균 조회수 · 좋아요 · 댓글이 들어옵니다</span>
+            </div>
+            <div id="ytBadge_inf" class="mt-1"></div>
           </div>
           <div>
             <label class="block font-semibold text-slate-600 mb-1">이메일</label>
@@ -2563,14 +2679,14 @@
       </div>
 
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-        <button onclick="closeInfluencerEdit()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">취소</button>
+        <button onclick="closeInfluencerEdit()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold rounded-xl">취소</button>
         <button onclick="saveInfluencerEdit()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl shadow-xs">수정 내용 저장</button>
       </div>
     </div>
   </div>
 
   <!-- ==================== PAGE: 인플루언서 관리 ==================== -->
-  <main id="page-creator" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+  <main data-page="1" id="page-creator" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <div class="bg-violet-50/60 border border-violet-100 rounded-2xl px-5 py-3.5 text-xs text-violet-900">
       <b>인플루언서 전용 페이지</b> · PPL 등록 시 <b>인플루언서</b>를 체크하면 이 페이지로 분리됩니다. 아래에서 인플루언서 풀(리스트)과 MCN 소개서도 함께 관리해요.
@@ -2600,7 +2716,7 @@
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
             <i class="fa-solid fa-video text-violet-600"></i> 인플루언서 협업 관리
-            <span id="creatorHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">0명</span>
+            <span id="creatorHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">0명</span>
           </h2>
           <p class="text-xs text-slate-500">인플루언서 형태로 진행하는 협업 건입니다.</p>
         </div>
@@ -2650,7 +2766,7 @@
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
             <i class="fa-solid fa-arrow-up-right-from-square text-violet-600"></i> 인플루언서 업로드 일자 &amp; 링크
-            <span id="creatorUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">0건</span>
+            <span id="creatorUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">0건</span>
           </h2>
           <p class="text-xs text-slate-500">인플루언서 업로드 일자와 링크를 모아서 봅니다.</p>
         </div>
@@ -2724,7 +2840,7 @@
   </main>
 
   <!-- ==================== PAGE: 성과 리포트 ==================== -->
-  <main id="page-perf" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+  <main data-page="1" id="page-perf" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-2 rounded-2xl border border-indigo-100 shadow-xs">
       <div class="flex flex-wrap gap-1 p-1 bg-indigo-50 rounded-xl border border-indigo-100 text-sm font-bold">
@@ -2857,7 +2973,7 @@
   </main>
 
   <!-- ==================== PAGE: 예산 관리 ==================== -->
-  <main id="page-budget" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+  <main data-page="1" id="page-budget" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <!-- ===== 월 예산 ===== -->
     <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
@@ -2877,7 +2993,7 @@
           <button onclick="autofillBudgetPlan()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5">
             <i class="fa-solid fa-wand-magic-sparkles"></i> 계획칸 자동 채우기
           </button>
-          <button onclick="copyLastMonthBudget()" class="px-3 py-2 bg-violet-100 hover:bg-violet-200 text-violet-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+          <button onclick="copyLastMonthBudget()" class="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
             <i class="fa-regular fa-copy"></i> 지난달 예산 복사
           </button>
           <button onclick="exportBudgetExcel()" class="px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
@@ -3057,7 +3173,7 @@
       </div>
 
       <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
-        <button onclick="closeUploadModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+        <button onclick="closeUploadModal()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl">취소</button>
         <button onclick="saveUploads()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl">저장하기</button>
       </div>
     </div>
@@ -3109,7 +3225,7 @@
       </div>
 
       <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
-        <button onclick="closeConvertModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+        <button onclick="closeConvertModal()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl">취소</button>
         <button onclick="confirmConvert()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl">등록하기</button>
       </div>
     </div>
@@ -3140,7 +3256,7 @@
       </div>
 
       <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
-        <button onclick="closeRankModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+        <button onclick="closeRankModal()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl">취소</button>
         <button onclick="saveRankChecks()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl">저장하기</button>
       </div>
     </div>
@@ -3179,7 +3295,7 @@
         </label>
       </div>
       <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
-        <button onclick="closeGuideModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+        <button onclick="closeGuideModal()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl">취소</button>
         <button onclick="saveGuide()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl">저장하기</button>
       </div>
     </div>
@@ -3221,7 +3337,7 @@
         </div>
       </div>
       <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
-        <button onclick="closeTrialGuideModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+        <button onclick="closeTrialGuideModal()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl">취소</button>
         <button onclick="saveTrialGuide()" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl">저장하기</button>
       </div>
     </div>
@@ -3298,7 +3414,7 @@
       <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-between items-center gap-2">
         <div class="text-xs font-bold text-slate-600">미지급 잔액 <span id="payRemain" class="text-rose-600">0원</span></div>
         <div class="flex gap-2">
-          <button onclick="closePayModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+          <button onclick="closePayModal()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl">취소</button>
           <button onclick="savePayment()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl">저장하기</button>
         </div>
       </div>
@@ -3322,7 +3438,7 @@
       <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-between items-center">
         <div class="text-xs font-bold text-slate-600">선택 <span id="pkgAssignCount" class="text-sky-700">0</span>명</div>
         <div class="flex gap-2">
-          <button onclick="closePkgAssign()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+          <button onclick="closePkgAssign()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl">취소</button>
           <button onclick="savePkgAssign()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl">저장하기</button>
         </div>
       </div>
@@ -4561,8 +4677,8 @@
     // 페이지 전환 (PPL / 시딩재고 / UTM)
     function switchMainPage(pageId) {
       const pages = ['monthly', 'perf', 'report', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'pay', 'utm', 'budget'];
-      const activeClass = "px-3 py-1.5 rounded-lg bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
-      const idleClass = "px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
+      const activeClass = "nav-item nav-item-on";
+      const idleClass = "nav-item";
 
       pages.forEach(id => {
         const page = document.getElementById('page-' + id);
@@ -4581,6 +4697,7 @@
         if (el) el.className = (pageId === 'budget' && budgetBrand === bn) ? activeClass : idleClass;
       });
       syncNavGroup(pageId);
+      closeSideNavOnMobile();
 
       if (pageId === 'monthly') setMonthlyBrand(monthlyBrandFilter);
       if (pageId === 'perf') renderPerf();
@@ -4986,7 +5103,8 @@
         guideUrl: document.getElementById('guideUrl').value,
         notes: document.getElementById('notes').value,
         seedingCount,
-        stockDeducted: seedingCount > 0
+        stockDeducted: seedingCount > 0,
+        ytStats: ytFormStats['ppl'] || null
       };
 
       if (seedingCount > 0) {
@@ -5018,7 +5136,7 @@
       currentTableBrandFilter = brand;
       document.querySelectorAll('.brand-filter').forEach(btn => {
         if (btn.innerText.trim() === brand) {
-          btn.className = "brand-filter active px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-pink-500 text-white shadow-xs";
+          btn.className = "brand-filter active px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-white shadow-xs";
         } else {
           btn.className = "brand-filter px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-200";
         }
@@ -5167,7 +5285,7 @@
         + '<td class="py-3 px-3 align-top min-w-[170px]">' + addrLine + '</td>'
         + '<td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">'
         + guideBtnHtml(p)
-        + '<button onclick="openStepDateModal(' + p.id + ')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>'
+        + '<button onclick="openStepDateModal(' + p.id + ')" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]">수정</button>'
         + '<button onclick="deletePpl(' + p.id + ')" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button></td>'
         + '</tr>';
     }
@@ -5694,7 +5812,8 @@
         reply: '대기',
         confirmed: false,
         movedId: null,
-        createdAt: new Date().toISOString().slice(0, 10)
+        createdAt: new Date().toISOString().slice(0, 10),
+        ytStats: ytFormStats['contact'] || null
       });
 
       ['ctRealName', 'ctInfluencer', 'ctFollowers', 'ctChannelUrl', 'ctCategory', 'ctEmail', 'ctExpectedCost', 'ctSource', 'ctProductEtc', 'ctMemo']
@@ -5792,7 +5911,7 @@
               : '<div class="text-[11px] text-slate-500">' + tEsc(c.channelType || '') + ' ' + tEsc(c.influencer || '') + '</div>')
           + (c.source ? '<div class="text-[10px] text-slate-400 mt-0.5">경로: ' + tEsc(c.source) + '</div>' : '') + '</td>'
           + '<td class="py-3 px-3 align-top">'
-          + (c.category ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">' + tEsc(c.category) + '</span>' : '')
+          + (c.category ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">' + tEsc(c.category) + '</span>' : '')
           + '<div class="text-[11px] text-slate-500 mt-1">' + (c.followers ? '팔로워 ' + tEsc(c.followers) : '-') + '</div>'
           + (isYoutubeUrl(c.channelUrl)
               ? '<button onclick="analyzeYtForContact(' + c.id + ')" class="mt-1 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-md px-1.5 py-0.5 hover:bg-rose-100"><i class="fa-brands fa-youtube"></i> 채널 분석</button>' : '')
@@ -6427,7 +6546,7 @@
           + '<td class="py-2.5 px-3 max-w-[200px]">' + (r.url
               ? '<a href="' + tEsc(r.url) + '" target="_blank" rel="noopener" class="text-amber-700 hover:underline break-all">확인 링크</a>' : '')
           + (r.memo ? '<div class="text-slate-500">' + tEsc(r.memo) + '</div>' : '') + '</td>'
-          + '<td class="py-2.5 px-3 text-right"><button onclick="openRankModal(' + p.id + ')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]">수정</button></td>'
+          + '<td class="py-2.5 px-3 text-right"><button onclick="openRankModal(' + p.id + ')" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]">수정</button></td>'
           + '</tr>';
       }).join('');
     }
@@ -6634,7 +6753,7 @@
     function guideBtnHtml(p) {
       const on = !!(p.guideUrl || '').trim();
       return '<button onclick="openGuideModal(' + p.id + ')" title="가이드라인 링크" class="px-2.5 py-1 '
-        + (on ? 'bg-blue-100 hover:bg-blue-200 text-blue-800' : 'bg-slate-100 hover:bg-slate-200 text-slate-500')
+        + (on ? 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200' : 'bg-slate-100 hover:bg-slate-200 text-slate-500')
         + ' font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-file-lines"></i> 가이드'
         + (p.guideSent ? ' <i class="fa-solid fa-check text-[9px]"></i>' : '') + '</button>';
     }
@@ -6702,7 +6821,7 @@
             + '<span class="text-[11px] font-semibold text-slate-800 truncate">' + tEsc(f.name) + '</span>'
             + '<span class="text-[10px] text-slate-400 whitespace-nowrap">' + fmtBytes(f.size || 0) + '</span></div>'
             + '<div class="flex items-center gap-1 whitespace-nowrap">'
-            + '<button onclick="downloadTrialGuideFile(' + i + ')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-download"></i> 받기</button>'
+            + '<button onclick="downloadTrialGuideFile(' + i + ')" class="px-2 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[10px] font-bold rounded-lg"><i class="fa-solid fa-download"></i> 받기</button>'
             + '<button onclick="removeTrialGuideFile(' + i + ')" class="text-slate-400 hover:text-rose-600 px-1.5"><i class="fa-solid fa-trash text-[11px]"></i></button>'
             + '</div></div>').join('')
         : '<p class="text-[11px] text-slate-400 text-center py-3">첨부된 파일이 없습니다.</p>';
@@ -7081,7 +7200,7 @@
           + '<td class="py-3 px-3 align-top text-right font-black text-slate-900">' + (Number(pay.total) || 0).toLocaleString() + '원</td>'
           + '<td class="py-3 px-3 align-top min-w-[380px]">' + (rows.length ? rows.map(payItemChipHtml).join('') : '<span class="text-[11px] text-slate-400">항목 없음</span>') + '</td>'
           + '<td class="py-3 px-3 align-top text-right font-black ' + (remain ? 'text-rose-600' : 'text-emerald-600') + '">' + remain.toLocaleString() + '원</td>'
-          + '<td class="py-3 px-3 align-top text-right"><button onclick="openPayModal(\'' + (t.isTrial ? 'trial' : 'ppl') + '\', ' + t.rec.id + ')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-won-sign"></i> 입금 관리</button></td>'
+          + '<td class="py-3 px-3 align-top text-right"><button onclick="openPayModal(\'' + (t.isTrial ? 'trial' : 'ppl') + '\', ' + t.rec.id + ')" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-won-sign"></i> 입금 관리</button></td>'
           + '</tr>';
       }).join('');
     }
@@ -7360,7 +7479,7 @@
       foot.innerHTML = (ytStatsTarget
           ? '<button onclick="applyYtStats()" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-xl"><i class="fa-solid fa-check"></i> 구독자 수 · 지표 저장</button>'
           : '')
-        + '<button onclick="closeYtStats()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">닫기</button>';
+        + '<button onclick="closeYtStats()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl">닫기</button>';
     }
 
     async function runYtAnalyze(url, target) {
@@ -8680,9 +8799,9 @@
     const PLANNED_STAGES = ['컨택중', '협의중', '테스트제품전달', '테스트중'];
     const BUCKET_ORDER = ['active', 'planned', 'done'];
     const BUCKET_META = {
-      active:  { label: '진행중',   icon: 'fa-circle-play',    bar: 'bg-emerald-500', chip: 'bg-emerald-500 text-white',  row: 'bg-emerald-50',  text: 'text-emerald-800', dot: 'bg-emerald-500', desc: '지금 굴러가는 건' },
-      planned: { label: '진행예정', icon: 'fa-hourglass-half', bar: 'bg-amber-400',   chip: 'bg-amber-400 text-slate-900', row: 'bg-amber-50',   text: 'text-amber-800',   dot: 'bg-amber-400',   desc: '컨택 · 협의 단계' },
-      done:    { label: '진행완료', icon: 'fa-circle-check',   bar: 'bg-slate-400',   chip: 'bg-slate-500 text-white',    row: 'bg-slate-100',  text: 'text-slate-600',   dot: 'bg-slate-400',   desc: "단계별 일자에서 '업로드' 완료 체크한 건" }
+      active:  { label: '진행중',   icon: 'fa-circle-play',    bar: 'bg-emerald-500', chip: 'bg-white text-slate-800 border border-slate-200',  row: 'bg-slate-50',  text: 'text-slate-700', dot: 'bg-emerald-500', desc: '지금 굴러가는 건' },
+      planned: { label: '진행예정', icon: 'fa-hourglass-half', bar: 'bg-amber-400',   chip: 'bg-white text-slate-800 border border-slate-200', row: 'bg-slate-50',   text: 'text-slate-700',   dot: 'bg-amber-400',   desc: '컨택 · 협의 단계' },
+      done:    { label: '진행완료', icon: 'fa-circle-check',   bar: 'bg-slate-300',   chip: 'bg-white text-slate-500 border border-slate-200',    row: 'bg-slate-50',  text: 'text-slate-500',   dot: 'bg-slate-300',   desc: "단계별 일자에서 '업로드' 완료 체크한 건" }
     };
     const collapsedBuckets = new Set(JSON.parse(localStorage.getItem('onsal_collapsedBuckets') || '[]'));
 
@@ -8731,7 +8850,7 @@
         + '<div class="flex items-center gap-2.5 px-3 py-3 border-l-[7px] ' + meta.bar.replace('bg-', 'border-') + ' ' + meta.row + ' rounded-r-xl shadow-inner">'
         + '<i class="fa-solid ' + (collapsed ? 'fa-chevron-right' : 'fa-chevron-down') + ' text-[11px] ' + meta.text + '"></i>'
         + '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-black ' + meta.chip + '">'
-        + '<i class="fa-solid ' + meta.icon + ' text-[10px]"></i>' + meta.label + '</span>'
+        + '<span class="w-1.5 h-1.5 rounded-full ' + meta.dot + '"></span>' + meta.label + '</span>'
         + '<span class="text-[12px] font-black ' + meta.text + '">' + count + '명</span>'
         + '<span class="text-[11px] text-slate-500 font-semibold">' + meta.desc + '</span>'
         + '<span class="text-[10px] text-slate-400 ml-auto font-bold">' + (collapsed ? '펼치기 ▾' : '접기 ▴') + '</span>'
@@ -8775,8 +8894,8 @@
       money: ['pay', 'budget'],
       ops: ['utm']
     };
-    const GROUP_ACTIVE = 'px-4 py-2 rounded-xl bg-white text-slate-900 shadow-xs transition flex items-center gap-1.5';
-    const GROUP_IDLE = 'px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
+    const GROUP_ACTIVE = 'nav-grp nav-grp-on';
+    const GROUP_IDLE = 'nav-grp';
 
     function groupOfPage(pageId) {
       return Object.keys(NAV_GROUPS).find(g => NAV_GROUPS[g].includes(pageId)) || 'run';
@@ -8977,7 +9096,7 @@
         ? snaps.map((s, i) => '<div class="flex flex-wrap items-center justify-between gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200">'
             + '<div class="text-[11px]"><b class="text-slate-800">' + s.at.slice(0, 16).replace('T', ' ') + '</b>'
             + '<span class="text-slate-500"> · PPL ' + s.ppl + ' · 체험단 ' + s.trial + ' · 컨택 ' + s.contact + '</span></div>'
-            + '<button onclick="restoreSnapshot(' + i + ')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold rounded-lg">이 시점으로 되돌리기</button>'
+            + '<button onclick="restoreSnapshot(' + i + ')" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[10px] font-bold rounded-lg">이 시점으로 되돌리기</button>'
             + '</div>').join('')
         : '<p class="text-[11px] text-slate-400 text-center py-3">아직 스냅샷이 없습니다. 데이터를 한 번 저장하면 자동으로 생겨요.</p>';
     }
@@ -9412,17 +9531,17 @@
       const rowFn = p => {
         let totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.microReels||0) + (p.costs.microPpl||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
         const typeBadges = [
-          { on: p.types.branded, label: '브랜디드', cost: p.costs.branded, cls: 'bg-violet-100 text-violet-700 border-violet-200' },
-          { on: p.types.ppl, label: 'PPL', cost: p.costs.ppl, cls: 'bg-pink-100 text-pink-700 border-pink-200' },
-          { on: p.types.reuse, label: '2차활용', cost: p.costs.reuse, cls: 'bg-amber-100 text-amber-800 border-amber-200' },
-          { on: p.types.microReels, label: '마이크로 릴스', cost: p.costs.microReels, cls: 'bg-sky-100 text-sky-700 border-sky-200' },
-          { on: p.types.microPpl, label: '마이크로 PPL', cost: p.costs.microPpl, cls: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
-          { on: p.types.reels, label: '릴스', cost: p.costs.reels, cls: 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200' },
-          { on: p.types.shorts, label: '숏츠', cost: p.costs.shorts, cls: 'bg-red-100 text-red-700 border-red-200' },
-          { on: p.types.supporters, label: '크리에이터', cost: p.costs.supporters, cls: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
-          { on: p.types.creator, label: '인플루언서', cost: p.costs.creator, cls: 'bg-violet-100 text-violet-700 border-violet-200' },
-          { on: p.types.ambassador || p.types.sample, label: '앰버서더', cost: p.costs.ambassador || p.costs.sample, cls: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
-          { on: p.types.freeAmb, label: '무상앰버서더', cost: 0, cls: 'bg-teal-100 text-teal-700 border-teal-200' }
+          { on: p.types.branded, label: '브랜디드', cost: p.costs.branded, cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+          { on: p.types.ppl, label: 'PPL', cost: p.costs.ppl, cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+          { on: p.types.reuse, label: '2차활용', cost: p.costs.reuse, cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+          { on: p.types.microReels, label: '마이크로 릴스', cost: p.costs.microReels, cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+          { on: p.types.microPpl, label: '마이크로 PPL', cost: p.costs.microPpl, cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+          { on: p.types.reels, label: '릴스', cost: p.costs.reels, cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+          { on: p.types.shorts, label: '숏츠', cost: p.costs.shorts, cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+          { on: p.types.supporters, label: '크리에이터', cost: p.costs.supporters, cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+          { on: p.types.creator, label: '인플루언서', cost: p.costs.creator, cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+          { on: p.types.ambassador || p.types.sample, label: '앰버서더', cost: p.costs.ambassador || p.costs.sample, cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+          { on: p.types.freeAmb, label: '무상앰버서더', cost: 0, cls: 'bg-slate-50 text-slate-700 border-slate-200' }
         ].filter(t => t.on);
 
         const typeHtml = typeBadges.length
@@ -9438,7 +9557,7 @@
         let channelsHtml = '';
         if (p.channels && p.channels.length > 0) {
           channelsHtml = p.channels.map(c => `
-            <a href="${c.url || '#'}" target="_blank" rel="noopener" class="text-[11px] text-pink-600 hover:underline inline-flex items-center gap-0.5 bg-pink-50 px-1.5 py-0.5 rounded mr-1">
+            <a href="${c.url || '#'}" target="_blank" rel="noopener" class="text-[11px] text-slate-600 hover:text-pink-600 hover:underline inline-flex items-center gap-0.5 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded mr-1">
               <i class="fa-solid fa-link text-[9px]"></i> ${c.type} (${c.account || '계정'})
             </a>
           `).join('');
@@ -9507,10 +9626,10 @@
               <div class="text-[11px] text-slate-500 font-bold">합계: ${totalCost.toLocaleString()}원</div>
             </td>
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
-              <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
-              <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
+              <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
+              <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
               ${guideBtnHtml(p)}
-              <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
+              <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]">수정</button>
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>
@@ -9550,8 +9669,8 @@
         const totalCost = (p.costs.microReels||0) + (p.costs.microPpl||0);
 
         const typeChips = [
-          p.types.microReels ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full">마이크로 릴스</span>' : '',
-          p.types.microPpl ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full">마이크로 PPL</span>' : ''
+          p.types.microReels ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">마이크로 릴스</span>' : '',
+          p.types.microPpl ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">마이크로 PPL</span>' : ''
         ].filter(Boolean).join(' ');
 
         const stepHtml = sortedStepEntries(p.stepDates).map(([st, info]) => {
@@ -9584,7 +9703,7 @@
               <div>${nameLinkHtml(p, '')}</div>
               <div class="text-[11px] text-slate-500">${p.influencer || ''}</div>
               <div class="text-[11px] text-slate-400">${p.followers ? `팔로워 ${p.followers}` : ''}</div>
-              ${p.category ? `<span class="text-[10px] font-bold px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded-full">${p.category}</span>` : ''}
+              ${p.category ? `<span class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded-full">${p.category}</span>` : ''}
             </td>
             <td class="py-3 px-3 align-top"><div class="flex flex-col gap-1 items-start">${typeChips}</div></td>
             <td class="py-3 px-3 align-top whitespace-nowrap">
@@ -9594,7 +9713,7 @@
               </label>
             </td>
             <td class="py-3 px-3 align-top max-w-[230px] min-w-[210px]">
-              <select onchange="updatePplStatus(${p.id}, this.value)" class="w-full mb-1.5 px-2 py-1 text-xs border border-sky-200 rounded-lg font-bold text-sky-700 bg-sky-50/40">
+              <select onchange="updatePplStatus(${p.id}, this.value)" class="w-full mb-1.5 px-2 py-1 text-xs border border-slate-200 rounded-lg font-bold text-slate-700 bg-white">
                 ${STAGES.map(st => `<option value="${st}" ${p.status === st ? 'selected' : ''}>${st}</option>`).join('')}
               </select>
               <div class="max-h-[110px] overflow-y-auto custom-scrollbar pr-1">${stepHtml || '<span class="text-slate-400 text-[11px]">일정 없음</span>'}</div>
@@ -9614,10 +9733,10 @@
                 : `<div class="text-[11px] text-slate-500 font-bold">${totalCost.toLocaleString()}원</div>`; })()}
             </td>
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
-              <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
-              <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
+              <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
+              <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
               ${guideBtnHtml(p)}
-              <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
+              <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]">수정</button>
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>`;
@@ -9681,10 +9800,10 @@
               <div class="text-[11px] text-slate-400">${p.followers ? `팔로워 ${p.followers}` : ''}</div>
             </td>
             <td class="py-3 px-3 align-top">
-              ${p.category ? `<span class="text-[10px] font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">${p.category}</span>` : '<span class="text-[11px] text-slate-400">-</span>'}
+              ${p.category ? `<span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">${p.category}</span>` : '<span class="text-[11px] text-slate-400">-</span>'}
             </td>
             <td class="py-3 px-3 align-top">
-              <select onchange="updatePplStatus(${p.id}, this.value)" class="px-2 py-1 text-xs border border-teal-200 rounded-lg font-bold text-teal-700 bg-teal-50/40">
+              <select onchange="updatePplStatus(${p.id}, this.value)" class="px-2 py-1 text-xs border border-slate-200 rounded-lg font-bold text-slate-700 bg-white">
                 ${STAGES.map(st => `<option value="${st}" ${p.status === st ? 'selected' : ''}>${st}</option>`).join('')}
               </select>
             </td>
@@ -9694,10 +9813,10 @@
             <td class="py-3 px-3 align-top min-w-[170px]">${addrLine}</td>
             <td class="py-3 px-3 align-top font-bold text-teal-700">${p.seedingCount || 0}개</td>
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
-              <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
-              <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
+              <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
+              <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
               ${guideBtnHtml(p)}
-              <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px]">수정</button>
+              <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]">수정</button>
               <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>`;
@@ -9953,6 +10072,8 @@
       }
       container.innerHTML = stepsHtml;
 
+      ytFormReset('edit');
+      ytFormShow('edit', ppl);
       document.getElementById('stepDateModal').classList.remove('hidden');
     }
 
@@ -10044,6 +10165,7 @@
       ppl.mcnAgentPhone = document.getElementById('editModalMcnAgentPhone').value;
       ppl.mcnAgentEmail = document.getElementById('editModalMcnAgentEmail').value;
 
+      if (ytFormStats['edit']) ppl.ytStats = ytFormStats['edit'];
       ppl.guideUrl = document.getElementById('editModalGuideUrl').value;
       ppl.guideName = document.getElementById('editModalGuideName').value;
       ppl.notes = document.getElementById('editModalNotes').value;
@@ -10150,7 +10272,7 @@
           + '<td class="py-2.5 px-3 text-slate-500">' + tEsc(p.influencer || '-') + '</td>'
           + '<td class="py-2.5 px-3"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + tEsc(p.brand) + '</span> '
           + '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + (CAT_STYLE[cat] || 'bg-slate-100 text-slate-700') + '">' + cat + '</span></td>'
-          + '<td class="py-2.5 px-3">' + (p.category ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">' + tEsc(p.category) + '</span>' : '<span class="text-slate-300">-</span>') + '</td>'
+          + '<td class="py-2.5 px-3">' + (p.category ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">' + tEsc(p.category) + '</span>' : '<span class="text-slate-300">-</span>') + '</td>'
           + '<td class="py-2.5 px-3 text-slate-600">' + tEsc(p.followers || '-') + ytStatsBadge(p) + '</td>'
           + '<td class="py-2.5 px-3">' + (chLinks || '<span class="text-slate-300">-</span>') + '</td>'
           + '<td class="py-2.5 px-3 text-center font-bold ' + (doneCount ? 'text-pink-600' : 'text-slate-300') + '">' + (doneCount ? doneCount + '회' : '-') + '</td>'
@@ -10222,6 +10344,8 @@
       document.getElementById('infEditChannelContainer').innerHTML = (p.channels || []).map(c => infChannelRowHtml(c)).join('');
       document.getElementById('infEditCollabContainer').innerHTML = (p.collabLinks || []).map(c => infCollabRowHtml(c)).join('');
 
+      ytFormReset('inf');
+      ytFormShow('inf', p);
       document.getElementById('influencerEditModal').classList.remove('hidden');
     }
 
@@ -10242,6 +10366,7 @@
       p.postalCode = document.getElementById('infEditPostalCode').value;
       p.address = document.getElementById('infEditAddress').value;
       p.notes = document.getElementById('infEditNotes').value;
+      if (ytFormStats['inf']) p.ytStats = ytFormStats['inf'];
 
       const newCost = Number(document.getElementById('infEditCost').value) || 0;
       p.costs.branded = newCost;
@@ -11117,6 +11242,21 @@
 
 
     /* ==================== 등록 모달 (인플루언서 추가 · 제품 관리) ==================== */
+    function toggleSideNav() {
+      const nav = document.getElementById('sideNav');
+      const scrim = document.getElementById('sideScrim');
+      if (!nav) return;
+      const open = nav.classList.toggle('open');
+      if (scrim) scrim.classList.toggle('hidden', !open);
+    }
+    function closeSideNavOnMobile() {
+      if (window.innerWidth > 1023) return;
+      const nav = document.getElementById('sideNav');
+      const scrim = document.getElementById('sideScrim');
+      if (nav) nav.classList.remove('open');
+      if (scrim) scrim.classList.add('hidden');
+    }
+
     function openModalEl(id) {
       const m = document.getElementById(id);
       if (!m) return;
@@ -11130,13 +11270,14 @@
       m.classList.remove('flex');
     }
     function openPplFormModal() {
+      ytFormReset('ppl');
       updateProductSelect();
       const d = document.getElementById('contactDate');
       if (d && !d.value) d.valueAsDate = new Date();
       openModalEl('pplFormModal');
     }
     function closePplFormModal() { closeModalEl('pplFormModal'); }
-    function openContactFormModal() { updateContactProductList(); openModalEl('contactFormModal'); }
+    function openContactFormModal() { ytFormReset('contact'); updateContactProductList(); openModalEl('contactFormModal'); }
     function closeContactFormModal() { closeModalEl('contactFormModal'); }
     function openProductListModal() { renderProducts(); openModalEl('productListModal'); }
     function closeProductListModal() { closeModalEl('productListModal'); }
@@ -11788,6 +11929,69 @@
         + '\n\n용량이 크면 대부분 캡쳐 이미지·첨부파일 때문입니다.\n지난 캠페인 캡쳐는 PDF로 뽑아 두고 지워 주세요.');
     }
 
+
+    /* ==================== 등록/수정 폼 유튜브 자동 채우기 ==================== */
+    const YT_FORMS = {
+      ppl:     { followers: 'followers',          badge: 'ytBadge_ppl',     container: '#formChannelContainer .f-channel-url' },
+      contact: { followers: 'ctFollowers',        badge: 'ytBadge_contact', single: 'ctChannelUrl' },
+      edit:    { followers: 'editModalFollowers', badge: 'ytBadge_edit',    container: '#editModalChannelContainer .ec-url' },
+      inf:     { followers: 'infEditFollowers',   badge: 'ytBadge_inf',     container: '#infEditChannelContainer .inf-ch-url' }
+    };
+    const ytFormStats = {};
+
+    function ytFormUrl(cfg) {
+      if (cfg.single) {
+        const v = (document.getElementById(cfg.single) || {}).value || '';
+        return isYoutubeUrl(v) ? v.trim() : '';
+      }
+      const list = Array.from(document.querySelectorAll(cfg.container)).map(el => (el.value || '').trim());
+      return list.find(isYoutubeUrl) || '';
+    }
+
+    function ytFormBadgeHtml(s) {
+      if (!s) return '';
+      return '<div class="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-100 rounded-lg px-2 py-1 leading-relaxed">'
+        + '<i class="fa-brands fa-youtube"></i> ' + tEsc(s.title || '') + '<br>'
+        + '구독자 ' + fmtCount(s.subscribers) + ' · 평균 조회 ' + fmtCount(s.avgViews)
+        + ' · 좋아요 ' + fmtCount(s.avgLikes) + ' · 댓글 ' + fmtCount(s.avgComments)
+        + '<br>인터랙션율 ' + s.engagement + '% <span class="font-semibold text-slate-400">(최근 ' + s.sample + '개 기준 · 저장 시 함께 기록됩니다)</span></div>';
+    }
+
+    async function ytFillForm(key) {
+      const cfg = YT_FORMS[key];
+      if (!cfg) return;
+      const url = ytFormUrl(cfg);
+      if (!url) {
+        alert('먼저 유튜브 채널 주소를 넣어 주세요.\n예) https://www.youtube.com/@채널명\n(영상 주소를 넣어도 채널을 찾아 줍니다)');
+        return;
+      }
+      const badge = document.getElementById(cfg.badge);
+      if (badge) badge.innerHTML = '<span class="text-[10px] font-bold text-slate-400"><i class="fa-solid fa-spinner fa-spin"></i> 유튜브에서 가져오는 중...</span>';
+      try {
+        const st = await fetchYoutubeChannel(url);
+        ytFormStats[key] = st;
+        const f = document.getElementById(cfg.followers);
+        if (f && st.subscribers != null) f.value = fmtCount(st.subscribers);
+        if (badge) badge.innerHTML = ytFormBadgeHtml(st);
+      } catch (e) {
+        if (badge) badge.innerHTML = '';
+        if (e.message === 'NOKEY') { alert('먼저 YouTube API 키를 설정해 주세요.'); setYoutubeKey(); }
+        else alert('가져오지 못했습니다.\n\n' + e.message);
+      }
+    }
+
+    function ytFormReset(key) {
+      delete ytFormStats[key];
+      const cfg = YT_FORMS[key];
+      const badge = cfg && document.getElementById(cfg.badge);
+      if (badge) badge.innerHTML = '';
+    }
+    function ytFormShow(key, rec) {
+      const cfg = YT_FORMS[key];
+      const badge = cfg && document.getElementById(cfg.badge);
+      if (badge) badge.innerHTML = (rec && rec.ytStats) ? ytFormBadgeHtml(rec.ytStats) : '';
+    }
+
     function exportToCSV() {
       let csv = '\uFEFF브랜드,제품명,인플루언서본명,계정,진행상태,컨택일자,시딩수량\n';
       pplList.forEach(p => {
@@ -11830,7 +12034,7 @@
   </div>
 
   <!-- ==================== PAGE: PPL 보고 ==================== -->
-  <main id="page-report" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-5 hidden">
+  <main data-page="1" id="page-report" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-5 hidden">
 
     <!-- 리포트 선택 바 -->
     <section class="bg-white p-3 rounded-2xl border border-pink-100 shadow-xs flex flex-wrap items-center gap-2">
@@ -11973,4 +12177,3 @@
 
 </body>
 </html>
-Commit changes
