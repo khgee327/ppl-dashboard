@@ -132,7 +132,12 @@
     .side-util:hover{ background:#F5F4F2; color:#1F1F1E }
     .side-util i{ font-size:11px; width:13px; text-align:center; color:#A5A29A }
 
-    .app-main{ padding-left:calc(230px + 1.25rem) !important; padding-right:1.5rem !important; }
+    .app-main{
+      max-width:none !important; margin-left:0 !important; margin-right:0 !important;
+      padding-left:calc(230px + 1.25rem) !important; padding-right:1.25rem !important;
+    }
+    /* 화면을 꽉 채우도록 카드 안쪽 여백도 약간 축소 */
+    .app-main > section{ padding:1.15rem 1.35rem !important; }
     .side-toggle{ display:none; }
     .side-scrim{ display:none; }
 
