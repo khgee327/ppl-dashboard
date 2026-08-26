@@ -27,39 +27,16 @@
     .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #fdf2f8; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #fbcfe8; border-radius: 4px; }
-
-    /* ===== PPL 성과 리포트 ===== */
-    .perf-tb { padding: 5px 9px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; color: #475569; }
-    .perf-tb:hover { border-color: #f9a8d4; color: #db2777; background: #fff5f9; }
-    .perf-doc { font-size: 13px; line-height: 1.75; color: #1e293b; outline: none; }
-    .perf-doc:empty:before { content: attr(data-ph); color: #94a3b8; }
-    .perf-doc table { border-collapse: collapse; width: 100%; margin: 10px 0; }
-    .perf-doc th, .perf-doc td { border: 1px solid #f7b8d3; padding: 7px 9px; font-size: 12px; vertical-align: top; word-break: break-word; }
-    .perf-doc th { background: #fde7f1; font-weight: 700; text-align: left; }
-    .perf-doc img { max-width: 100%; height: auto; border-radius: 8px; }
-    .perf-doc a { color: #db2777; text-decoration: underline; }
-    .perf-scroll { overflow-x: auto; max-width: 100%; margin: 10px 0; }
-    .perf-scroll > table { margin: 0; }
-    .perf-scroll::-webkit-scrollbar { height: 6px; }
-    .perf-scroll::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 4px; }
-    .perf-doc p { margin: 2px 0; }
-    .perf-yt { display: flex; gap: 12px; align-items: flex-start; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 12px; padding: 10px; margin: 8px 0; max-width: 640px; }
-    .perf-yt .perf-yt-thumb { width: 96px; flex: none; border-radius: 8px; }
-    .perf-yt-title { font-weight: 700; font-size: 12.5px; }
-    .perf-yt-meta { font-size: 11px; color: #64748b; margin-top: 3px; }
-    .perf-yt-stats { font-size: 12px; font-weight: 700; color: #db2777; margin-top: 5px; }
-    .perf-yt-asof { font-size: 10.5px; color: #94a3b8; margin-top: 2px; }
-    @media print {
-      body * { visibility: hidden !important; }
-      #perfPrintArea, #perfPrintArea * { visibility: visible !important; }
-      #perfPrintArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
-      #perfPrintArea .perf-print-tab { page-break-inside: avoid; }
-      #perfPrintArea .perf-scroll { overflow: visible !important; }
-      #perfPrintArea table { table-layout: auto !important; width: 100% !important; font-size: 9px !important; }
-      #perfPrintArea th, #perfPrintArea td { width: auto !important; padding: 4px 5px !important; }
-      #perfPrintArea img { max-width: 100% !important; }
-      @page { margin: 12mm; }
-    }
+  </style>
+  <style>
+    body.hide-steps table[data-cols="wide"] th:nth-child(7),
+    body.hide-steps table[data-cols="wide"] td:nth-child(7),
+    body.hide-steps table[data-cols="std"] th:nth-child(6),
+    body.hide-steps table[data-cols="std"] td:nth-child(6) { display: none; }
+    body.hide-ship table[data-cols="wide"] th:nth-child(8),
+    body.hide-ship table[data-cols="wide"] td:nth-child(8),
+    body.hide-ship table[data-cols="std"] th:nth-child(7),
+    body.hide-ship table[data-cols="std"] td:nth-child(7) { display: none; }
   </style>
 </head>
 <body class="bg-pink-50/40 text-slate-800 min-h-screen pb-16">
@@ -77,57 +54,92 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <div class="flex flex-wrap p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold">
-          <button onclick="switchMainPage('monthly')" id="nav-monthly" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-chart-column"></i> 월간 통합 현황
+        <div class="space-y-1.5">
+          <div class="flex flex-wrap p-1 bg-slate-100 rounded-2xl border border-slate-200 text-xs font-bold">
+            <button onclick="setNavGroup('run')" id="navgrp-run" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-bolt"></i> 진행 관리
+            </button>
+            <button onclick="setNavGroup('inf')" id="navgrp-inf" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-user-group"></i> 인플루언서
+            </button>
+            <button onclick="setNavGroup('report')" id="navgrp-report" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-column"></i> 리포트
+            </button>
+            <button onclick="setNavGroup('money')" id="navgrp-money" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-won-sign"></i> 정산 · 예산
+            </button>
+            <button onclick="setNavGroup('ops')" id="navgrp-ops" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-boxes-stacked"></i> 운영
+            </button>
+          </div>
+        <div id="navsub-run" class="flex flex-wrap p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold hidden">
+          <button onclick="switchMainPage('contact')" id="nav-contact" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-address-book text-[10px]"></i> 컨택 리스트
           </button>
-          <button onclick="switchMainPage('contact')" id="nav-contact" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-address-book"></i> 컨택 리스트
+          <button onclick="switchMainPage('ppl')" id="nav-ppl" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-bullhorn text-[10px]"></i> PPL &amp; 협찬
           </button>
-          <button onclick="switchMainPage('ppl')" id="nav-ppl" class="px-3 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5">
-            <i class="fa-solid fa-bullhorn"></i> PPL &amp; 협찬 관리
+          <button onclick="switchMainPage('micro')" id="nav-micro" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-users-rays text-[10px]"></i> 마이크로
           </button>
-          <button onclick="switchMainPage('micro')" id="nav-micro" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-users-rays"></i> 마이크로 관리
+          <button onclick="switchMainPage('amb')" id="nav-amb" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-crown text-[10px]"></i> 앰버서더
           </button>
-          <button onclick="switchMainPage('amb')" id="nav-amb" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-crown"></i> 앰버서더 관리
+          <button onclick="switchMainPage('sup')" id="nav-sup" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-hand-holding-heart text-[10px]"></i> 크리에이터
           </button>
-          <button onclick="switchMainPage('sup')" id="nav-sup" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-hand-holding-heart"></i> 크리에이터
-          </button>
-          <button onclick="switchMainPage('trial')" id="nav-trial" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-users-rectangle"></i> 체험단 관리
-          </button>
-          <button onclick="switchMainPage('pay')" id="nav-pay" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-won-sign"></i> 입금 관리
-          </button>
-          <button onclick="switchMainPage('seeding')" id="nav-seeding" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-boxes-stacked"></i> 시딩 샘플 &amp; 재고
-          </button>
-          <button onclick="switchMainPage('utm')" id="nav-utm" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-link"></i> UTM
-          </button>
-          <button onclick="switchMainPage('creator')" id="nav-creator" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-video"></i> 인플루언서 관리
-          </button>
-          <button onclick="openBudget('온살')" id="nav-budget-온살" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-calculator"></i> 온살 예산관리
-          </button>
-          <button onclick="openBudget('루메아카이브')" id="nav-budget-루메아카이브" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-calculator"></i> 루메 예산관리
-          </button>
-          <button onclick="switchMainPage('perf')" id="nav-perf" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-chart-line"></i> PPL 성과 리포트
+          <button onclick="switchMainPage('trial')" id="nav-trial" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-users-rectangle text-[10px]"></i> 체험단
           </button>
         </div>
+        <div id="navsub-inf" class="flex flex-wrap p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold hidden">
+          <button onclick="switchMainPage('creator')" id="nav-creator" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-video text-[10px]"></i> 인플루언서 관리
+          </button>
+        </div>
+        <div id="navsub-report" class="flex flex-wrap p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold hidden">
+          <button onclick="switchMainPage('monthly')" id="nav-monthly" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-column text-[10px]"></i> 월간 통합 현황
+          </button>
+          <button onclick="switchMainPage('perf')" id="nav-perf" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-pie text-[10px]"></i> 성과 리포트
+          </button>
+        </div>
+        <div id="navsub-money" class="flex flex-wrap p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold hidden">
+          <button onclick="switchMainPage('pay')" id="nav-pay" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-won-sign text-[10px]"></i> 입금 관리
+          </button>
+          <button onclick="openBudget('온살')" id="nav-budget-온살" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-calculator text-[10px]"></i> 온살 예산
+          </button>
+          <button onclick="openBudget('루메아카이브')" id="nav-budget-루메아카이브" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-calculator text-[10px]"></i> 루메 예산
+          </button>
+        </div>
+        <div id="navsub-ops" class="flex flex-wrap p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold hidden">
+          <button onclick="switchMainPage('seeding')" id="nav-seeding" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-boxes-stacked text-[10px]"></i> 시딩 샘플 &amp; 재고
+          </button>
+          <button onclick="switchMainPage('utm')" id="nav-utm" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-link text-[10px]"></i> UTM
+          </button>
+        </div>
+        </div>
+        <span id="appModeBadge" class="px-3 py-1.5 bg-pink-100 text-pink-700 border border-pink-200 text-xs font-black rounded-xl flex items-center gap-1.5"></span>
+        <a id="appModeLink" href="./report.html" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5"></a>
+        <button onclick="openBackupModal()" class="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved"></i> 백업
+        </button>
+        <button onclick="toggleCompactTable()" id="compactTableBtn" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+          <i class="fa-solid fa-table-columns"></i> <span id="compactTableLabel">표 간단히 보기</span>
+        </button>
         <button onclick="exportToCSV()" class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-xl transition flex items-center gap-1 shadow-xs">
           <i class="fa-solid fa-file-excel"></i> CSV 내보내기
         </button>
         <button id="schedSyncBtn" onclick="syncToScheduler()" title="📅 체크한 일정이 자동으로 스케줄러에 반영됩니다 (클릭 시 즉시 동기화)" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
           <i class="fa-solid fa-calendar-check"></i> <span id="schedSyncText">스케줄러 자동연동</span>
         </button>
-        <button id="syncStatus" onclick="syncStatusClick()" title="눌러서 다시 동기화 (저장 실패 시 원인 표시)" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
+        <button id="syncStatus" onclick="syncNow()" title="눌러서 다시 동기화" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
           <i class="fa-solid fa-cloud"></i> <span id="syncStatusText">연결 확인 중...</span>
         </button>
       </div>
@@ -136,6 +148,12 @@
 
   <!-- ==================== PAGE: 월간 통합 현황 ==================== -->
   <main id="page-monthly" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <div id="readOnlyNote" class="hidden bg-indigo-50/70 border border-indigo-200 rounded-2xl px-5 py-3 text-xs text-indigo-900">
+      <b><i class="fa-solid fa-lock"></i> 읽기 전용 화면</b> · PPL · 체험단 · 입금 등 <b>진행 데이터는 여기서 수정되지 않습니다.</b>
+      진행 관리 화면의 내용을 그대로 불러와 보여줄 뿐이라, 이 화면 때문에 데이터가 바뀔 일은 없어요.
+      <b>예산과 월간 메모만</b> 이 화면에서 저장됩니다.
+    </div>
 
     <!-- 브랜드 선택 -->
     <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-2 rounded-2xl border border-pink-100 shadow-xs">
@@ -744,7 +762,7 @@
       </div>
 
       <div class="overflow-x-auto custom-scrollbar">
-        <table class="w-full text-left text-xs">
+        <table data-cols="wide" class="w-full text-left text-xs">
           <thead class="bg-pink-50/50 text-slate-600 font-semibold border-y border-pink-100">
             <tr>
               <th class="py-3 px-3 w-8">
@@ -885,8 +903,11 @@
   <main id="page-micro" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <div class="bg-sky-50/60 border border-sky-100 rounded-2xl px-5 py-3.5 text-xs text-sky-900">
-      <b>마이크로 전용 페이지</b> · PPL 등록 시 <b>마이크로 릴스</b> 또는 <b>마이크로 PPL</b>을 체크하면 이 페이지로 분리됩니다. (PPL 목록에서는 빠져요)
+      <b>마이크로 전용 페이지</b> · PPL 등록 시 <b>마이크로 릴스</b> 또는 <b>마이크로 PPL</b>을 체크하면 이 페이지로 분리됩니다.
+      금액은 <b>패키지에 배정된 사람은 패키지 금액</b>, 나머지는 개별 단가로 잡혀요. 아래 요약에서 합계를 확인하세요.
     </div>
+
+    <div id="microCostSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
     <!-- SECTION 4-2: 마이크로 진행 목록 -->
     <section class="bg-white p-5 rounded-2xl border border-sky-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-sky-100 pb-3">
@@ -941,7 +962,7 @@
       </div>
 
       <div class="overflow-x-auto custom-scrollbar">
-        <table class="w-full text-left text-xs">
+        <table data-cols="std" class="w-full text-left text-xs">
           <thead class="bg-sky-50/60 text-slate-600 font-semibold border-y border-sky-100">
             <tr>
               <th class="py-3 px-3 w-8">
@@ -1086,7 +1107,7 @@
       </div>
 
       <div class="overflow-x-auto custom-scrollbar">
-        <table class="w-full text-left text-xs">
+        <table data-cols="std" class="w-full text-left text-xs">
           <thead class="bg-indigo-50/60 text-slate-600 font-semibold border-y border-indigo-100">
             <tr>
               <th class="py-3 px-3 w-8"><input type="checkbox" onchange="toggleSelectAllBy('amb-select', this.checked)" class="accent-indigo-600 w-4 h-4 cursor-pointer"></th>
@@ -1142,7 +1163,7 @@
       </div>
 
       <div class="overflow-x-auto custom-scrollbar">
-        <table class="w-full text-left text-xs">
+        <table data-cols="std" class="w-full text-left text-xs">
           <thead class="bg-teal-50/60 text-slate-600 font-semibold border-y border-teal-100">
             <tr>
               <th class="py-3 px-3 w-8">
@@ -1235,7 +1256,7 @@
       </div>
 
       <div class="overflow-x-auto custom-scrollbar">
-        <table class="w-full text-left text-xs">
+        <table data-cols="std" class="w-full text-left text-xs">
           <thead class="bg-cyan-50/60 text-slate-600 font-semibold border-y border-cyan-100">
             <tr>
               <th class="py-3 px-3 w-8"><input type="checkbox" onchange="toggleSelectAllBy('sup-select', this.checked)" class="accent-cyan-600 w-4 h-4 cursor-pointer"></th>
@@ -2645,7 +2666,7 @@
       </div>
 
       <div class="overflow-x-auto custom-scrollbar">
-        <table class="w-full text-left text-xs">
+        <table data-cols="std" class="w-full text-left text-xs">
           <thead class="bg-violet-50/60 text-slate-600 font-semibold border-y border-violet-100">
             <tr>
               <th class="py-3 px-3 w-8"><input type="checkbox" onchange="toggleSelectAllBy('creator-select', this.checked)" class="accent-violet-600 w-4 h-4 cursor-pointer"></th>
@@ -2728,6 +2749,139 @@
       </div>
     </section>
 
+
+  </main>
+
+  <!-- ==================== PAGE: 성과 리포트 ==================== -->
+  <main id="page-perf" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-2 rounded-2xl border border-indigo-100 shadow-xs">
+      <div class="flex flex-wrap gap-1 p-1 bg-indigo-50 rounded-xl border border-indigo-100 text-sm font-bold">
+        <button onclick="setPerfBrand('전체')" id="ptab-전체" class="px-4 py-2 rounded-lg bg-white text-indigo-700 shadow-xs transition">전체</button>
+        <button onclick="setPerfBrand('온살')" id="ptab-온살" class="px-4 py-2 rounded-lg text-slate-500 hover:text-slate-800 transition">온살</button>
+        <button onclick="setPerfBrand('루메아카이브')" id="ptab-루메아카이브" class="px-4 py-2 rounded-lg text-slate-500 hover:text-slate-800 transition">루메아카이브</button>
+      </div>
+      <div class="flex flex-wrap gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold">
+        <button onclick="setPerfRange(1)" id="prange-1" class="px-3 py-1.5 rounded-lg bg-white text-slate-800 shadow-xs">이번 달</button>
+        <button onclick="setPerfRange(3)" id="prange-3" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">최근 3개월</button>
+        <button onclick="setPerfRange(6)" id="prange-6" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">최근 6개월</button>
+        <button onclick="setPerfRange(0)" id="prange-0" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">전체 기간</button>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <section class="bg-white p-5 rounded-2xl border border-indigo-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-indigo-50 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-indigo-600"></i> 성과 요약
+            <span id="perfPeriodLabel" class="text-xs font-bold px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full"></span>
+          </h2>
+          <p class="text-xs text-slate-500">업로드 기록 · UTM 성과 · 집행 비용을 합쳐서 계산합니다.</p>
+        </div>
+        <button onclick="exportPerfExcel()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 성과표 다운로드
+        </button>
+      </div>
+      <div id="perfCards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      <div id="perfEffCards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+    </section>
+
+    <!-- 인플루언서별 -->
+    <section class="bg-white p-5 rounded-2xl border border-indigo-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-indigo-50 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-ranking-star text-indigo-600"></i> 인플루언서별 성과
+            <span id="perfRowCount" class="text-xs font-bold px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full">0명</span>
+          </h2>
+          <p class="text-xs text-slate-500">열 제목을 누르면 그 기준으로 정렬됩니다.</p>
+        </div>
+      </div>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-indigo-50/60 text-slate-600 font-semibold border-y border-indigo-100">
+            <tr>
+              <th class="py-3 px-3 cursor-pointer hover:text-indigo-700" onclick="setPerfSort('who')">인플루언서</th>
+              <th class="py-3 px-3">구분</th>
+              <th class="py-3 px-3 text-center cursor-pointer hover:text-indigo-700" onclick="setPerfSort('uploads')">업로드</th>
+              <th class="py-3 px-3 text-right cursor-pointer hover:text-indigo-700" onclick="setPerfSort('views')">조회수</th>
+              <th class="py-3 px-3 text-right cursor-pointer hover:text-indigo-700" onclick="setPerfSort('interaction')">인터랙션</th>
+              <th class="py-3 px-3 text-right cursor-pointer hover:text-indigo-700" onclick="setPerfSort('clicks')">유입</th>
+              <th class="py-3 px-3 text-right cursor-pointer hover:text-indigo-700" onclick="setPerfSort('orders')">전환</th>
+              <th class="py-3 px-3 text-right cursor-pointer hover:text-indigo-700" onclick="setPerfSort('revenue')">매출</th>
+              <th class="py-3 px-3 text-right cursor-pointer hover:text-indigo-700" onclick="setPerfSort('cost')">비용</th>
+              <th class="py-3 px-3 text-right cursor-pointer hover:text-indigo-700" onclick="setPerfSort('roas')">ROAS</th>
+              <th class="py-3 px-3 text-right cursor-pointer hover:text-indigo-700" onclick="setPerfSort('cpv')">CPV</th>
+            </tr>
+          </thead>
+          <tbody id="perfTableBody" class="divide-y divide-slate-100"></tbody>
+          <tfoot id="perfTableFoot" class="border-t-2 border-indigo-200"></tfoot>
+        </table>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- 구분별 -->
+      <section class="bg-white p-5 rounded-2xl border border-indigo-100 shadow-sm space-y-3">
+        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-indigo-50 pb-3">
+          <i class="fa-solid fa-layer-group text-indigo-600"></i> 구분별 효율
+        </h2>
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-indigo-50/60 text-slate-600 font-semibold border-y border-indigo-100">
+              <tr><th class="py-2.5 px-3">구분</th><th class="py-2.5 px-3 text-center">건수</th>
+                  <th class="py-2.5 px-3 text-right">조회수</th><th class="py-2.5 px-3 text-right">비용</th>
+                  <th class="py-2.5 px-3 text-right">CPV</th><th class="py-2.5 px-3 text-right">ROAS</th></tr>
+            </thead>
+            <tbody id="perfCatBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 채널별 -->
+      <section class="bg-white p-5 rounded-2xl border border-indigo-100 shadow-sm space-y-3">
+        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-indigo-50 pb-3">
+          <i class="fa-solid fa-share-nodes text-indigo-600"></i> 채널별 성과
+        </h2>
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-indigo-50/60 text-slate-600 font-semibold border-y border-indigo-100">
+              <tr><th class="py-2.5 px-3">채널</th><th class="py-2.5 px-3 text-center">업로드</th>
+                  <th class="py-2.5 px-3 text-right">조회수</th><th class="py-2.5 px-3 text-right">평균 조회</th>
+                  <th class="py-2.5 px-3 text-right">인터랙션율</th></tr>
+            </thead>
+            <tbody id="perfChannelBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- 제품별 + 상위노출 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <section class="bg-white p-5 rounded-2xl border border-indigo-100 shadow-sm space-y-3">
+        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-indigo-50 pb-3">
+          <i class="fa-solid fa-box text-indigo-600"></i> 제품별 성과
+        </h2>
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-indigo-50/60 text-slate-600 font-semibold border-y border-indigo-100">
+              <tr><th class="py-2.5 px-3">제품</th><th class="py-2.5 px-3 text-center">협업</th>
+                  <th class="py-2.5 px-3 text-right">조회수</th><th class="py-2.5 px-3 text-right">매출</th>
+                  <th class="py-2.5 px-3 text-right">비용</th></tr>
+            </thead>
+            <tbody id="perfProductBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm space-y-3">
+        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-amber-100 pb-3">
+          <i class="fa-solid fa-ranking-star text-amber-500"></i> 상위노출 성과
+        </h2>
+        <div id="perfRankBox" class="text-xs"></div>
+      </section>
+    </div>
 
   </main>
 
@@ -3218,11 +3372,62 @@
     </div>
   </div>
 
+  <!-- ==================== 백업 · 복원 ==================== -->
+  <div id="backupModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between z-10">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-shield-halved text-emerald-600"></i> 백업 · 복원</h3>
+          <p class="text-xs text-slate-500 mt-0.5">데이터가 날아갈까 걱정될 때 여기서 지켜 두세요.</p>
+        </div>
+        <button onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-700 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div class="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4 space-y-2.5">
+          <h4 class="text-xs font-black text-emerald-900"><i class="fa-solid fa-download"></i> 전체 백업 (권장)</h4>
+          <p class="text-[11px] text-emerald-900/80">모든 데이터를 파일 하나로 내려받습니다. 캡쳐 이미지 · 계약서 · 가이드 파일까지 전부 포함돼요. <b>주 1회만 받아 둬도 안심입니다.</b></p>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="downloadBackup()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl"><i class="fa-solid fa-download"></i> 백업 파일 받기</button>
+            <label class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-bold rounded-xl cursor-pointer">
+              <i class="fa-solid fa-upload"></i> 백업 파일로 복원
+              <input type="file" accept=".json" class="hidden" onchange="restoreBackupFile(this)">
+            </label>
+          </div>
+          <p id="backupLastInfo" class="text-[10px] text-emerald-800/70"></p>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2.5">
+          <h4 class="text-xs font-black text-slate-800"><i class="fa-solid fa-clock-rotate-left"></i> 자동 스냅샷</h4>
+          <p class="text-[11px] text-slate-500">저장할 때마다 이 브라우저에 자동으로 남는 되돌리기 지점이에요. 최근 8개까지 보관됩니다.
+            <b class="text-slate-700">이미지 · 첨부파일은 제외</b>되니, 완전 복구가 필요하면 위 백업 파일을 쓰세요.</p>
+          <div id="snapshotList" class="space-y-1.5"></div>
+        </div>
+
+        <div class="bg-amber-50/60 border border-amber-200 rounded-2xl p-4 text-[11px] text-amber-900 space-y-1">
+          <b><i class="fa-solid fa-lightbulb"></i> 알아두면 좋은 것</b>
+          <div>· 데이터는 <b>구글 시트</b>와 <b>이 브라우저</b> 두 곳에 있어요. 한쪽이 깨져도 다른 쪽이 남습니다.</div>
+          <div>· 시트가 비어 있는 상태로 내려오면 <b>덮어쓰지 않고 로컬을 지키도록</b> 안전장치를 걸어 뒀어요.</div>
+          <div>· 새 기능 반영 전에는 백업 파일을 한 번 받아 두시는 걸 권합니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== SCRIPT ==================== -->
   <script>
     // ===== 구글 시트 동기화 설정 =====
     const SYNC_URL = 'https://script.google.com/macros/s/AKfycbzLKUEHFm36G4wP4Lw2Tw4pFeFufbI0zcTEJ298kDT-gvLRpafpaYGlH24uMD3PDikVqA/exec';
     const SYNC_KEY = 'khj327';
+
+    /* ===== 실행 모드 =====
+       index.html  → 'main'   : 진행 관리 · 인플루언서 · 입금 · 시딩 · UTM  (모든 데이터 저장)
+       report.html → 'report' : 월간 통합 현황 · 성과 리포트 · 예산
+                                본 데이터는 읽기 전용, 예산/월간메모만 자체 키에 저장 → 서로 덮어쓸 일 없음 */
+    const APP_MODE = (typeof window !== 'undefined' && window.__APP_MODE === 'report') ? 'report' : 'main';
+    const IS_REPORT = APP_MODE === 'report';
+    const REPORT_SYNC_KEY = SYNC_KEY + '-report';
+    const REPORT_OWNED = ['onsal_budgets', 'onsal_launchBudgets', 'onsal_monthlyNotes'];
 
     let syncReady = false;
     let syncTimer = null;
@@ -3242,13 +3447,7 @@
       label.innerText = text;
     }
 
-    // 구글 시트는 셀 하나에 50,000자까지만 들어갑니다.
-    // 그보다 큰 값은 자동으로 잘라서 여러 칸(key__c0, key__c1 …)에 나눠 담고,
-    // 불러올 때 다시 합칩니다. (Apps Script 는 손댈 필요 없음)
-    const SYNC_CELL_MAX = 40000;
-    let syncChunkTrack = JSON.parse(localStorage.getItem('onsal_syncChunkTrack') || '{}');
-
-    function collectSyncRaw() {
+    function collectSyncData() {
       return {
         onsal_products: products,
         onsal_pplList: pplList,
@@ -3266,176 +3465,39 @@
         onsal_creatorMissions: creatorMissions,
         onsal_microPackages: microPackages,
         onsal_budgets: budgets,
-        onsal_launchBudgets: launchBudgets,
-        onsal_perfReports: perfReports
+        onsal_launchBudgets: launchBudgets
       };
     }
 
-    function collectSyncData() {
-      const raw = collectSyncRaw();
-      const out = {};
-      const track = {};
-      Object.entries(raw).forEach(([k, v]) => {
-        const str = JSON.stringify(v);
-        if (str.length <= SYNC_CELL_MAX) { out[k] = v; return; }
-        const n = Math.ceil(str.length / SYNC_CELL_MAX);
-        for (let i = 0; i < n; i++) out[k + '__c' + i] = str.slice(i * SYNC_CELL_MAX, (i + 1) * SYNC_CELL_MAX);
-        out[k + '__cn'] = n;
-        out[k] = '';           // 원래 칸은 비워 둡니다 (조각 쪽을 읽어요)
-        track[k] = n;
-      });
-      // 예전에 조각을 더 많이 썼다면 남은 칸을 비워 줍니다
-      Object.entries(syncChunkTrack).forEach(([k, prev]) => {
-        const now = track[k] || 0;
-        for (let i = now; i < prev; i++) out[k + '__c' + i] = '';
-        if (!now) out[k + '__cn'] = 0;
-      });
-      syncChunkTrack = track;
-      try { localStorage.setItem('onsal_syncChunkTrack', JSON.stringify(track)); } catch (e) { }
-      return out;
-    }
-
-    // 불러올 때 조각을 다시 합치기
-    function expandSyncChunks(d) {
-      Object.keys(d).forEach(k => {
-        if (!/__cn$/.test(k)) return;
-        const base = k.slice(0, -4);
-        const n = Number(d[k]) || 0;
-        if (!n) return;
-        let str = '';
-        for (let i = 0; i < n; i++) str += (d[base + '__c' + i] || '');
-        if (!str) return;
-        try { d[base] = JSON.parse(str); } catch (e) { console.warn('조각 합치기 실패:', base); }
-      });
-      return d;
-    }
-
-    // ===== 저장 용량 진단 =====
-    const SYNC_WARN_BYTES = 700000;    // 이 이상이면 경고 (약 700KB)
-    const SYNC_MAX_BYTES  = 1300000;   // 이 이상이면 아예 보내지 않음 (약 1.3MB)
     let sizeWarned = false;
-    let lastSyncError = '';
-    let lastSyncBytes = 0;
-
-    function syncSizeBreakdown() {
-      const d = collectSyncRaw();
-      return Object.entries(d)
-        .map(([k, v]) => { const c = JSON.stringify(v).length; return { k: k.replace('onsal_', ''), kb: Math.round(c / 1024), chars: c }; })
-        .filter(x => x.kb > 0)
-        .sort((a, b) => b.kb - a.kb);
-    }
-
-    // 용량을 많이 잡아먹는 '개별 항목'을 찾아 줍니다 (지울 대상 알려주기)
-    function syncHeavyItems() {
-      const out = [];
-      const add = (kb, where, how) => { if (kb >= 20) out.push({ kb, where, how }); };
-      pplList.forEach(p => {
-        add(Math.round(JSON.stringify(p.resultImages || []).length / 1024),
-            'PPL 결과 캡쳐 · ' + p.brand + ' ' + whoOf(p),
-            "PPL 목록 → 해당 인플루언서 '업로드/결과 입력' → 캡쳐 삭제");
-        const pay = p.payment || {};
-        add(Math.round(JSON.stringify(pay.contractFiles || []).length / 1024),
-            '계약서 첨부 · ' + p.brand + ' ' + whoOf(p),
-            "입금 관리 → 계약 진행 → 첨부 파일 삭제 (구글드라이브 링크로 대체 권장)");
-      });
-      (typeof trialList !== 'undefined' ? trialList : []).forEach(t => {
-        add(Math.round(JSON.stringify(t.guideFiles || []).length / 1024),
-            '체험단 가이드 파일 · ' + (t.name || t.platform || ''),
-            '체험단 관리 → 가이드 → 파일 삭제 (링크로 대체 권장)');
-      });
-      (typeof perfReports !== 'undefined' ? perfReports : []).forEach(r => {
-        (r.tabs || []).forEach(t => {
-          add(Math.round((t.html || '').length / 1024),
-              '성과 리포트 · ' + r.title + ' > ' + t.name,
-              '해당 탭에서 이미지 줄이기 (PDF로 뽑아 두고 이미지 삭제)');
-        });
-      });
-      pplList.forEach(p => {
-        add(Math.round(JSON.stringify((p.ranks || [])).length / 1024),
-            '상위노출 캡쳐 · ' + whoOf(p), '상위노출 기록 창에서 오래된 캡쳐 삭제');
-      });
-      return out.sort((a, b) => b.kb - a.kb).slice(0, 12);
-    }
-
-    function syncSizeText() {
-      const b = syncSizeBreakdown();
-      const total = Math.round(lastSyncBytes / 1024) || b.reduce((a, x) => a + x.kb, 0);
-      let t = '현재 저장 용량 : 약 ' + total + 'KB (한도 약 ' + Math.round(SYNC_MAX_BYTES / 1024) + 'KB)\n'
-        + '※ 50,000자가 넘는 항목은 자동으로 나눠서 저장됩니다.\n\n[항목별]\n'
-        + b.slice(0, 10).map(x => '· ' + x.k + ' : ' + x.kb + 'KB'
-            + (x.chars > SYNC_CELL_MAX ? '  (' + Math.ceil(x.chars / SYNC_CELL_MAX) + '칸으로 분할)' : '')).join('\n');
-      const heavy = syncHeavyItems();
-      if (heavy.length) {
-        t += '\n\n[용량을 많이 쓰는 건 — 여기부터 지우면 됩니다]\n'
-          + heavy.map(h => '· ' + h.kb + 'KB — ' + h.where + '\n   → ' + h.how).join('\n');
-      }
-      return t;
-    }
-    function showSyncSize() { alert(syncSizeText()); }
-
     async function pushToSheet() {
-      if (PERF_READONLY) return;              // 보기 전용 공유 링크에서는 절대 저장하지 않습니다
+      if (IS_REPORT) return pushReportSheet();
       setSyncStatus('saving', '저장 중...');
-      let payload = '';
       try {
-        payload = JSON.stringify({ key: SYNC_KEY, data: collectSyncData() });
-        lastSyncBytes = payload.length;
-
-        if (payload.length > SYNC_MAX_BYTES) {
-          lastSyncError = '⛔ 저장 용량을 넘어서 시트에 보내지 못했습니다.\n\n'
-            + syncSizeText()
-            + '\n\n※ 지금 화면에서 작업한 내용은 이 브라우저에는 남아 있습니다.\n'
-            + '   위 목록에서 큰 항목(대부분 캡쳐 이미지·첨부파일)을 지우면 바로 다시 저장됩니다.';
-          setSyncStatus('error', '용량 초과 — 클릭해서 원인 보기');
-          return;
-        }
-        if (payload.length > SYNC_WARN_BYTES && !sizeWarned) {
+        const payload = JSON.stringify({ key: SYNC_KEY, data: collectSyncData() });
+        if (payload.length > 900000 && !sizeWarned) {
           sizeWarned = true;
-          alert('저장 데이터가 커지고 있습니다 (약 ' + Math.round(payload.length / 1024) + 'KB).\n'
-            + '한도(약 ' + Math.round(SYNC_MAX_BYTES / 1024) + 'KB)에 가까워지면 저장이 막혀요.\n'
-            + '지난 캠페인 캡쳐는 PDF로 뽑아 두고 정리해 주세요.');
+          alert('저장 데이터가 커지고 있습니다 (약 ' + Math.round(payload.length / 1024) + 'KB).\n캡쳐 이미지가 많이 쌓이면 동기화가 느려질 수 있어요. 지난 캠페인의 캡쳐는 정리해 주세요.');
         }
-
         const res = await fetch(SYNC_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: payload
         });
-        const text = await res.text();
-        let json;
-        try { json = JSON.parse(text); }
-        catch (pe) {
-          throw new Error('시트가 정상 응답을 주지 않았습니다 (HTTP ' + res.status + ').\n'
-            + '보낸 용량 약 ' + Math.round(payload.length / 1024) + 'KB.\n'
-            + '응답 앞부분: ' + text.slice(0, 160));
-        }
+        const json = await res.json();
         if (!json.ok) throw new Error(json.error || 'save failed');
 
-        lastSyncError = '';
         const t = new Date();
         setSyncStatus('ok', `저장됨 ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`);
       } catch (e) {
-        lastSyncError = '저장 실패 원인\n\n' + (e && e.message ? e.message : e)
-          + '\n\n' + syncSizeText();
-        setSyncStatus('error', '저장 실패 — 클릭해서 원인 보기');
+        setSyncStatus('error', '저장 실패 (다시 시도하려면 클릭)');
       }
     }
 
     function queueSync() {
-      if (PERF_READONLY) return;
       if (!syncReady) return;
       clearTimeout(syncTimer);
       syncTimer = setTimeout(pushToSheet, 1200);
-    }
-
-    function syncStatusClick() {
-      if (lastSyncError) {
-        alert(lastSyncError);
-        const wasSize = lastSyncError.indexOf('용량') === 1 || lastSyncError.startsWith('⛔');
-        lastSyncError = '';
-        if (wasSize) { pushToSheet(); return; }   // 정리 후 눌렀을 수 있으니 저장만 재시도
-      }
-      syncNow();
     }
 
     async function syncNow() {
@@ -3451,28 +3513,28 @@
         const json = await res.json();
         if (!json.ok) throw new Error(json.error || 'load failed');
 
-        const d = expandSyncChunks(json.data || {});
+        const d = json.data || {};
         const hasRemote = Object.keys(d).length > 0;
+        const pullWarn = [];
 
         if (hasRemote) {
-          if (Array.isArray(d.onsal_products)) products = d.onsal_products;
-          if (Array.isArray(d.onsal_pplList)) pplList = d.onsal_pplList;
-          if (Array.isArray(d.onsal_proposals)) proposals = d.onsal_proposals;
-          if (Array.isArray(d.onsal_stockLogs)) stockLogs = d.onsal_stockLogs;
-          if (Array.isArray(d.onsal_utmList)) utmList = d.onsal_utmList;
-          if (Array.isArray(d.onsal_categories)) categories = d.onsal_categories;
-          if (Array.isArray(d.onsal_trialList)) trialList = d.onsal_trialList;
-          if (Array.isArray(d.onsal_trialPlatforms)) trialPlatforms = d.onsal_trialPlatforms;
-          if (Array.isArray(d.onsal_trialSnsList)) trialSnsList = d.onsal_trialSnsList;
-          if (Array.isArray(d.onsal_trialTypes)) trialTypes = d.onsal_trialTypes;
-          if (Array.isArray(d.onsal_trialStages)) trialStages = d.onsal_trialStages;
-          if (Array.isArray(d.onsal_monthlyNotes)) monthlyNotes = d.onsal_monthlyNotes;
-          if (Array.isArray(d.onsal_contactList)) contactList = d.onsal_contactList;
-          if (Array.isArray(d.onsal_creatorMissions)) creatorMissions = d.onsal_creatorMissions;
-          if (Array.isArray(d.onsal_microPackages)) microPackages = d.onsal_microPackages;
-          if (Array.isArray(d.onsal_budgets)) budgets = d.onsal_budgets;
-          if (Array.isArray(d.onsal_launchBudgets)) launchBudgets = d.onsal_launchBudgets;
-          if (Array.isArray(d.onsal_perfReports)) perfReports = d.onsal_perfReports;
+          products = safeMerge(d.onsal_products, products, '제품', pullWarn);
+          pplList = safeMerge(d.onsal_pplList, pplList, 'PPL·인플루언서 목록', pullWarn);
+          proposals = safeMerge(d.onsal_proposals, proposals, 'MCN 소개서', pullWarn);
+          stockLogs = safeMerge(d.onsal_stockLogs, stockLogs, '재고 이력', pullWarn);
+          utmList = safeMerge(d.onsal_utmList, utmList, 'UTM', pullWarn);
+          categories = safeMerge(d.onsal_categories, categories, '카테고리', pullWarn);
+          trialList = safeMerge(d.onsal_trialList, trialList, '체험단', pullWarn);
+          trialPlatforms = safeMerge(d.onsal_trialPlatforms, trialPlatforms, '체험단 플랫폼', pullWarn);
+          trialSnsList = safeMerge(d.onsal_trialSnsList, trialSnsList, '체험단 SNS', pullWarn);
+          trialTypes = safeMerge(d.onsal_trialTypes, trialTypes, '체험단 유형', pullWarn);
+          trialStages = safeMerge(d.onsal_trialStages, trialStages, '체험단 단계', pullWarn);
+          monthlyNotes = safeMerge(d.onsal_monthlyNotes, monthlyNotes, '월간 기록', pullWarn);
+          contactList = safeMerge(d.onsal_contactList, contactList, '컨택 리스트', pullWarn);
+          creatorMissions = safeMerge(d.onsal_creatorMissions, creatorMissions, '크리에이터 미션', pullWarn);
+          microPackages = safeMerge(d.onsal_microPackages, microPackages, '마이크로 패키지', pullWarn);
+          budgets = safeMerge(d.onsal_budgets, budgets, '월 예산', pullWarn);
+          launchBudgets = safeMerge(d.onsal_launchBudgets, launchBudgets, '출시 예산', pullWarn);
 
           localStorage.setItem('onsal_products', JSON.stringify(products));
           localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
@@ -3491,7 +3553,13 @@
           localStorage.setItem('onsal_microPackages', JSON.stringify(microPackages));
           localStorage.setItem('onsal_budgets', JSON.stringify(budgets));
           localStorage.setItem('onsal_launchBudgets', JSON.stringify(launchBudgets));
-          if (!PERF_READONLY) localStorage.setItem('onsal_perfReports', JSON.stringify(perfReports));
+
+          if (IS_REPORT) await pullReportSheet();
+
+          if (pullWarn.length) {
+            console.warn('[동기화 보호] 시트가 비어 있어 로컬 데이터를 유지했습니다:', pullWarn);
+            setTimeout(() => alert('⚠️ 동기화 보호 작동\n\n시트에서 아래 항목이 비어 있는 상태로 내려와서, 이 기기에 있던 데이터를 그대로 유지했습니다.\n\n· ' + pullWarn.join('\n· ') + '\n\n실수로 지운 게 아니라면 그대로 두셔도 되고, 걱정되면 헤더의 [백업] 에서 백업 파일을 먼저 받아 두세요.'), 800);
+          }
         }
 
         syncReady = true;
@@ -3795,8 +3863,6 @@
     let budgets = JSON.parse(localStorage.getItem('onsal_budgets')) || [];
     // 제품 출시 예산 [{ id, brand, name, date, memo, items:[{label, qty, unit, memo}] }]
     let launchBudgets = JSON.parse(localStorage.getItem('onsal_launchBudgets')) || [];
-    // PPL 성과 리포트 [{ id, title, createdAt, updatedAt, tabs:[{id, name, pplId, html}] }]
-    let perfReports = JSON.parse(localStorage.getItem('onsal_perfReports')) || [];
 
     /* ==================== 체험단 관리 ==================== */
     const TRIAL_RECRUIT_DAYS = 4;   // 총 모집 일수
@@ -4283,11 +4349,13 @@
     let currentMonth = 5; // June
 
     window.addEventListener('DOMContentLoaded', () => {
-      if (PERF_READONLY) { perfEnterViewer(PERF_VIEW_ID); return; }   // 보기 전용 공유 링크
       document.getElementById('contactDate').valueAsDate = new Date();
       document.getElementById('logDate').valueAsDate = new Date();
       renderAll();
 
+      applyAppMode();
+      applyCompactTable();
+      syncNavGroup(IS_REPORT ? 'monthly' : 'ppl');
       document.addEventListener('paste', handleGlobalPaste);
       const cz = document.getElementById('payContractDrop');
       if (cz) {
@@ -4313,12 +4381,14 @@
         });
       }
 
-      perfInitResizers();
+      if (IS_REPORT) switchMainPage('monthly');
+
       pullFromSheet().then(() => {
         renderAll();
-        renderPerfPage();
-        syncToScheduler(true);
-        pullReuseRecords(false);
+        if (!IS_REPORT) {
+          syncToScheduler(true);
+          pullReuseRecords(false);
+        }
       });
     });
 
@@ -4340,7 +4410,7 @@
       localStorage.setItem('onsal_microPackages', JSON.stringify(microPackages));
       localStorage.setItem('onsal_budgets', JSON.stringify(budgets));
       localStorage.setItem('onsal_launchBudgets', JSON.stringify(launchBudgets));
-      localStorage.setItem('onsal_perfReports', JSON.stringify(perfReports));
+      saveSnapshot();
       queueSync();
       queueSchedulerSync();
     }
@@ -4399,15 +4469,17 @@
       renderPayPage();
       renderFormImport();
       renderPackages();
+      renderMicroCostSummary();
+      renderPerf();
       renderBudget();
       renderLaunchBudgets();
     }
 
     // 페이지 전환 (PPL / 시딩재고 / UTM)
     function switchMainPage(pageId) {
-      const pages = ['monthly', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'pay', 'seeding', 'utm', 'budget', 'perf'];
-      const activeClass = "px-3 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
-      const idleClass = "px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
+      const pages = ['monthly', 'perf', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'pay', 'seeding', 'utm', 'budget'];
+      const activeClass = "px-3 py-1.5 rounded-lg bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
+      const idleClass = "px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
 
       pages.forEach(id => {
         const page = document.getElementById('page-' + id);
@@ -4425,10 +4497,12 @@
         const el = document.getElementById('nav-budget-' + bn);
         if (el) el.className = (pageId === 'budget' && budgetBrand === bn) ? activeClass : idleClass;
       });
+      syncNavGroup(pageId);
 
       if (pageId === 'monthly') setMonthlyBrand(monthlyBrandFilter);
+      if (pageId === 'perf') renderPerf();
       if (pageId === 'contact') { updateContactProductList(); renderContactList(); }
-      if (pageId === 'micro') { renderMicroTable(); renderPackages(); renderUploadTables(); }
+      if (pageId === 'micro') { renderMicroTable(); renderPackages(); renderMicroCostSummary(); renderUploadTables(); }
       if (pageId === 'sup') { renderSupTable(); renderRankTable(); renderCreatorMissions(); renderUploadTables(); }
       if (pageId === 'amb') { renderAmbTable(); renderFreeAmbTable(); renderUploadTables(); }
       if (pageId === 'creator') { renderCreatorTable(); renderInfluencerCards(); renderProposals(); renderUploadTables(); }
@@ -4437,7 +4511,6 @@
       if (pageId === 'trial') renderTrialDashboard();
       if (pageId === 'seeding') renderSeedingDashboard();
       if (pageId === 'utm') renderUtmDashboard();
-      if (pageId === 'perf') { renderPerfPage(); perfInitResizers(); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -8562,6 +8635,617 @@
         + (extra ? '<span class="text-xs font-normal text-slate-500"> ' + extra + '</span>' : '');
     }
 
+
+    /* ==================== 네비게이션 그룹 ==================== */
+    const NAV_GROUPS = {
+      run: ['contact', 'ppl', 'micro', 'amb', 'sup', 'trial'],
+      inf: ['creator'],
+      report: ['monthly', 'perf'],
+      money: ['pay', 'budget'],
+      ops: ['seeding', 'utm']
+    };
+    const GROUP_ACTIVE = 'px-4 py-2 rounded-xl bg-white text-slate-900 shadow-xs transition flex items-center gap-1.5';
+    const GROUP_IDLE = 'px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
+
+    function groupOfPage(pageId) {
+      return Object.keys(NAV_GROUPS).find(g => NAV_GROUPS[g].includes(pageId)) || 'run';
+    }
+    function syncNavGroup(pageId) {
+      const g = groupOfPage(pageId);
+      Object.keys(NAV_GROUPS).forEach(x => {
+        const btn = document.getElementById('navgrp-' + x);
+        const bar = document.getElementById('navsub-' + x);
+        if (btn) btn.className = (x === g) ? GROUP_ACTIVE : GROUP_IDLE;
+        if (bar) bar.classList.toggle('hidden', x !== g);
+      });
+      localStorage.setItem('onsal_navGroup', g);
+    }
+    function setNavGroup(g) {
+      const first = NAV_GROUPS[g][0];
+      if (first === 'budget') openBudget(budgetBrand);
+      else switchMainPage(first);
+    }
+
+    /* ==================== 표 항목 접기 ==================== */
+    function applyCompactTable() {
+      const on = localStorage.getItem('onsal_compactTable') === '1';
+      document.body.classList.toggle('hide-steps', on);
+      document.body.classList.toggle('hide-ship', on);
+      const btn = document.getElementById('compactTableBtn');
+      const label = document.getElementById('compactTableLabel');
+      if (label) label.innerText = on ? '표 전체 보기' : '표 간단히 보기';
+      if (btn) btn.className = on
+        ? 'px-3.5 py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5'
+        : 'px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition flex items-center gap-1.5';
+    }
+    function toggleCompactTable() {
+      const on = localStorage.getItem('onsal_compactTable') === '1';
+      localStorage.setItem('onsal_compactTable', on ? '0' : '1');
+      applyCompactTable();
+      if (!on) alert('단계별 일자와 배송 정보 열을 숨겼어요.\n가로 스크롤 없이 볼 수 있고, 자세한 내용은 인플루언서 이름을 클릭하면 수정 창에서 확인·수정할 수 있습니다.');
+    }
+
+    /* ==================== 마이크로 금액 요약 ==================== */
+    function renderMicroCostSummary() {
+      const box = document.getElementById('microCostSummary');
+      if (!box) return;
+      const list = pplList.filter(isMicro);
+      const solo = list.filter(p => !packageOfPpl(p.id));
+      const inPkg = list.filter(p => packageOfPpl(p.id));
+      const soloSum = solo.reduce((a, p) => a + totalCostOf(p), 0);
+      const pkgSum = microPackages.reduce((a, k) => a + (Number(k.amount) || 0), 0);
+      const unassigned = microPackages.reduce((a, k) => a + Math.max(0, (Number(k.headcount) || 0) - (k.memberIds || []).length), 0);
+
+      const card = (label, val, sub, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
+        + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
+        + '<div class="text-xl font-black text-' + color + '-600 mt-0.5">' + val + '</div>'
+        + '<div class="text-[11px] text-slate-500 font-semibold">' + sub + '</div></div>';
+
+      box.innerHTML = card('마이크로 총 비용', (soloSum + pkgSum).toLocaleString() + '원', list.length + '명 진행 중', 'sky')
+        + card('패키지 금액', pkgSum.toLocaleString() + '원', microPackages.length + '개 패키지 · ' + inPkg.length + '명 배정', 'violet')
+        + card('개별 단가 합계', soloSum.toLocaleString() + '원', solo.length + '명 (패키지 미소속)', 'slate')
+        + card('배정 남은 자리', unassigned + '명', unassigned ? '패키지 인원을 채워 주세요' : '모두 배정 완료', unassigned ? 'amber' : 'emerald');
+    }
+
+
+    /* ==================== 백업 · 복원 ==================== */
+    const BACKUP_KEYS = [
+      ['onsal_products', 'products'],  // 제품
+      ['onsal_pplList', 'pplList'],  // PPL·인플루언서 목록
+      ['onsal_proposals', 'proposals'],  // MCN 소개서
+      ['onsal_stockLogs', 'stockLogs'],  // 재고 이력
+      ['onsal_utmList', 'utmList'],  // UTM
+      ['onsal_categories', 'categories'],  // 카테고리
+      ['onsal_trialList', 'trialList'],  // 체험단
+      ['onsal_trialPlatforms', 'trialPlatforms'],  // 체험단 플랫폼
+      ['onsal_trialSnsList', 'trialSnsList'],  // 체험단 SNS
+      ['onsal_trialTypes', 'trialTypes'],  // 체험단 유형
+      ['onsal_trialStages', 'trialStages'],  // 체험단 단계
+      ['onsal_monthlyNotes', 'monthlyNotes'],  // 월간 기록
+      ['onsal_contactList', 'contactList'],  // 컨택 리스트
+      ['onsal_creatorMissions', 'creatorMissions'],  // 크리에이터 미션
+      ['onsal_microPackages', 'microPackages'],  // 마이크로 패키지
+      ['onsal_budgets', 'budgets'],  // 월 예산
+      ['onsal_launchBudgets', 'launchBudgets'],  // 출시 예산
+    ];
+    const SNAPSHOT_MAX = 8;
+
+    // 시트가 비어 있으면 로컬을 지킨다
+    function safeMerge(remote, local, label, warn) {
+      if (!Array.isArray(remote)) return local;
+      if (remote.length === 0 && Array.isArray(local) && local.length > 0) {
+        if (warn) warn.push(label);
+        return local;
+      }
+      return remote;
+    }
+
+    function collectBackup() {
+      const data = {};
+      BACKUP_KEYS.forEach(([key]) => {
+        data[key] = JSON.parse(localStorage.getItem(key) || 'null');
+      });
+      return {
+        _type: 'onsal-dashboard-backup',
+        _version: 1,
+        _savedAt: new Date().toISOString(),
+        data: data
+      };
+    }
+
+    function downloadBackup() {
+      const payload = collectBackup();
+      const txt = JSON.stringify(payload);
+      const blob = new Blob([txt], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '온살대시보드_백업_' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      localStorage.setItem('onsal_lastBackup', payload._savedAt);
+      renderBackupInfo();
+      alert('백업 파일을 받았습니다. (' + Math.round(txt.length / 1024) + 'KB)\n안전한 곳(구글드라이브 등)에 보관해 주세요.');
+    }
+
+    function applyBackupData(data, opts) {
+      BACKUP_KEYS.forEach(([key]) => {
+        if (data[key] === undefined || data[key] === null) return;
+        localStorage.setItem(key, JSON.stringify(data[key]));
+      });
+      if (opts && opts.push) {
+        location.reload();
+      } else {
+        location.reload();
+      }
+    }
+
+    function restoreBackupFile(input) {
+      const f = (input.files || [])[0];
+      input.value = '';
+      if (!f) return;
+      const fr = new FileReader();
+      fr.onload = e => {
+        let payload;
+        try { payload = JSON.parse(e.target.result); }
+        catch (err) { alert('백업 파일을 읽지 못했습니다. 올바른 파일인지 확인해 주세요.'); return; }
+        if (!payload || payload._type !== 'onsal-dashboard-backup' || !payload.data) {
+          alert('이 대시보드의 백업 파일이 아닙니다.'); return;
+        }
+        const cnt = (payload.data.onsal_pplList || []).length;
+        if (!confirm('백업 시점: ' + (payload._savedAt || '').slice(0, 16).replace('T', ' ')
+          + '\nPPL/인플루언서 ' + cnt + '건\n\n지금 데이터를 이 백업으로 되돌립니다. 계속할까요?\n(되돌린 뒤 자동으로 구글 시트에도 반영됩니다)')) return;
+        applyBackupData(payload.data, { push: true });
+      };
+      fr.readAsText(f);
+    }
+
+    /* ---- 자동 스냅샷 (이미지·첨부 제외 경량) ---- */
+    function stripHeavy(v) {
+      if (Array.isArray(v)) return v.map(stripHeavy);
+      if (v && typeof v === 'object') {
+        const o = {};
+        Object.keys(v).forEach(k => {
+          const val = v[k];
+          if (typeof val === 'string' && val.slice(0, 5) === 'data:') { o[k] = ''; return; }
+          o[k] = stripHeavy(val);
+        });
+        return o;
+      }
+      return v;
+    }
+    let lastSnapshotAt = 0;
+    function saveSnapshot(force) {
+      const now = Date.now();
+      if (!force && now - lastSnapshotAt < 3 * 60 * 1000) return;
+      lastSnapshotAt = now;
+      try {
+        const snaps = JSON.parse(localStorage.getItem('onsal_snapshots') || '[]');
+        const data = {};
+        BACKUP_KEYS.forEach(([key]) => {
+          data[key] = stripHeavy(JSON.parse(localStorage.getItem(key) || 'null'));
+        });
+        snaps.unshift({
+          at: new Date().toISOString(),
+          ppl: (data.onsal_pplList || []).length,
+          trial: (data.onsal_trialList || []).length,
+          contact: (data.onsal_contactList || []).length,
+          data: data
+        });
+        localStorage.setItem('onsal_snapshots', JSON.stringify(snaps.slice(0, SNAPSHOT_MAX)));
+      } catch (e) {
+        // 용량 초과 등 — 스냅샷은 실패해도 본 저장에는 영향 없음
+        try { localStorage.removeItem('onsal_snapshots'); } catch (e2) {}
+      }
+    }
+
+    function renderSnapshots() {
+      const box = document.getElementById('snapshotList');
+      if (!box) return;
+      let snaps = [];
+      try { snaps = JSON.parse(localStorage.getItem('onsal_snapshots') || '[]'); } catch (e) {}
+      box.innerHTML = snaps.length
+        ? snaps.map((s, i) => '<div class="flex flex-wrap items-center justify-between gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200">'
+            + '<div class="text-[11px]"><b class="text-slate-800">' + s.at.slice(0, 16).replace('T', ' ') + '</b>'
+            + '<span class="text-slate-500"> · PPL ' + s.ppl + ' · 체험단 ' + s.trial + ' · 컨택 ' + s.contact + '</span></div>'
+            + '<button onclick="restoreSnapshot(' + i + ')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold rounded-lg">이 시점으로 되돌리기</button>'
+            + '</div>').join('')
+        : '<p class="text-[11px] text-slate-400 text-center py-3">아직 스냅샷이 없습니다. 데이터를 한 번 저장하면 자동으로 생겨요.</p>';
+    }
+    function restoreSnapshot(i) {
+      let snaps = [];
+      try { snaps = JSON.parse(localStorage.getItem('onsal_snapshots') || '[]'); } catch (e) {}
+      const s = snaps[i];
+      if (!s) return;
+      if (!confirm(s.at.slice(0, 16).replace('T', ' ') + ' 시점으로 되돌립니다.\n\n⚠️ 캡쳐 이미지 · 계약서 · 가이드 첨부 파일은 스냅샷에 없어서 복구되지 않습니다.\n완전 복구가 필요하면 [백업 파일 받기]로 만든 파일을 쓰세요.\n\n계속할까요?')) return;
+      applyBackupData(s.data, { push: true });
+    }
+
+    function renderBackupInfo() {
+      const el = document.getElementById('backupLastInfo');
+      if (!el) return;
+      const at = localStorage.getItem('onsal_lastBackup');
+      el.innerText = at ? '마지막 백업: ' + at.slice(0, 16).replace('T', ' ') : '아직 백업 파일을 받은 적이 없어요.';
+    }
+    function openBackupModal() {
+      renderBackupInfo();
+      renderSnapshots();
+      document.getElementById('backupModal').classList.remove('hidden');
+    }
+    function closeBackupModal() {
+      document.getElementById('backupModal').classList.add('hidden');
+    }
+
+
+    /* ==================== 리포트 모드 전용 동기화 ==================== */
+    async function pushReportSheet() {
+      setSyncStatus('saving', '저장 중...');
+      try {
+        const data = {};
+        REPORT_OWNED.forEach(k => { data[k] = JSON.parse(localStorage.getItem(k) || 'null'); });
+        const res = await fetch(SYNC_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ key: REPORT_SYNC_KEY, data: data })
+        });
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'save failed');
+        const t = new Date();
+        setSyncStatus('ok', `저장됨 ${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`);
+      } catch (e) {
+        setSyncStatus('error', '저장 실패 · 다시 시도');
+      }
+    }
+
+    async function pullReportSheet() {
+      try {
+        const res = await fetch(`${SYNC_URL}?key=${encodeURIComponent(REPORT_SYNC_KEY)}&t=${Date.now()}`);
+        const json = await res.json();
+        if (!json.ok) return;
+        const d = json.data || {};
+        if (Array.isArray(d.onsal_budgets)) { budgets = d.onsal_budgets; localStorage.setItem('onsal_budgets', JSON.stringify(budgets)); }
+        if (Array.isArray(d.onsal_launchBudgets)) { launchBudgets = d.onsal_launchBudgets; localStorage.setItem('onsal_launchBudgets', JSON.stringify(launchBudgets)); }
+        if (Array.isArray(d.onsal_monthlyNotes)) { monthlyNotes = d.onsal_monthlyNotes; localStorage.setItem('onsal_monthlyNotes', JSON.stringify(monthlyNotes)); }
+      } catch (e) { /* 리포트 키가 아직 없을 수 있음 */ }
+    }
+
+    /* ==================== 모드별 화면 구성 ==================== */
+    function applyAppMode() {
+      const showGroups = IS_REPORT ? ['report', 'money'] : ['run', 'inf', 'money', 'ops'];
+      ['run', 'inf', 'report', 'money', 'ops'].forEach(g => {
+        const btn = document.getElementById('navgrp-' + g);
+        if (btn) btn.style.display = showGroups.includes(g) ? '' : 'none';
+      });
+      // 정산 그룹: main 은 입금 관리, report 는 예산
+      const payBtn = document.getElementById('nav-pay');
+      if (payBtn) payBtn.style.display = IS_REPORT ? 'none' : '';
+      ['온살', '루메아카이브'].forEach(bn => {
+        const el = document.getElementById('nav-budget-' + bn);
+        if (el) el.style.display = IS_REPORT ? '' : 'none';
+      });
+
+      NAV_GROUPS.money = IS_REPORT ? ['budget'] : ['pay'];
+      NAV_GROUPS.report = IS_REPORT ? ['monthly', 'perf'] : [];
+
+      const badge = document.getElementById('appModeBadge');
+      if (badge) {
+        badge.innerHTML = IS_REPORT
+          ? '<i class="fa-solid fa-chart-pie"></i> 리포트 · 예산'
+          : '<i class="fa-solid fa-bolt"></i> 진행 관리';
+        badge.className = IS_REPORT
+          ? 'px-3 py-1.5 bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-black rounded-xl flex items-center gap-1.5'
+          : 'px-3 py-1.5 bg-pink-100 text-pink-700 border border-pink-200 text-xs font-black rounded-xl flex items-center gap-1.5';
+      }
+      const other = document.getElementById('appModeLink');
+      if (other) {
+        other.href = IS_REPORT ? './index.html' : './report.html';
+        other.innerHTML = IS_REPORT
+          ? '<i class="fa-solid fa-arrow-right-arrow-left"></i> 진행 관리로'
+          : '<i class="fa-solid fa-arrow-right-arrow-left"></i> 리포트 · 예산으로';
+      }
+      if (IS_REPORT) {
+        const ro = document.getElementById('readOnlyNote');
+        if (ro) ro.classList.remove('hidden');
+      }
+    }
+
+    /* ==================== 성과 리포트 ==================== */
+    let perfBrand = '전체';
+    let perfRange = 1;          // 개월 수 (0 = 전체)
+    let perfSort = 'revenue';
+    let perfSortDir = -1;
+
+    function perfPeriod() {
+      if (!perfRange) return { from: '0000-00', to: '9999-99', label: '전체 기간' };
+      const now = new Date();
+      const to = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      const f = new Date(now.getFullYear(), now.getMonth() - (perfRange - 1), 1);
+      const from = f.getFullYear() + '-' + String(f.getMonth() + 1).padStart(2, '0');
+      return { from, to, label: perfRange === 1 ? to : (from + ' ~ ' + to) };
+    }
+    function inPerfPeriod(dateStr, p) {
+      if (!dateStr) return false;
+      const ym = dateStr.slice(0, 7);
+      return ym >= p.from && ym <= p.to;
+    }
+    function setPerfBrand(b) {
+      perfBrand = b;
+      ['전체', '온살', '루메아카이브'].forEach(x => {
+        const el = document.getElementById('ptab-' + x);
+        if (el) el.className = (x === b)
+          ? 'px-4 py-2 rounded-lg bg-white text-indigo-700 shadow-xs transition'
+          : 'px-4 py-2 rounded-lg text-slate-500 hover:text-slate-800 transition';
+      });
+      renderPerf();
+    }
+    function setPerfRange(n) {
+      perfRange = n;
+      [1, 3, 6, 0].forEach(x => {
+        const el = document.getElementById('prange-' + x);
+        if (el) el.className = (x === n)
+          ? 'px-3 py-1.5 rounded-lg bg-white text-slate-800 shadow-xs'
+          : 'px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800';
+      });
+      renderPerf();
+    }
+    function setPerfSort(key) {
+      if (perfSort === key) perfSortDir *= -1;
+      else { perfSort = key; perfSortDir = -1; }
+      renderPerf();
+    }
+
+    function perfRows() {
+      const per = perfPeriod();
+      const rows = [];
+
+      pplList.forEach(p => {
+        if (perfBrand !== '전체' && p.brand !== perfBrand) return;
+        const ups = uploadsOf(p).filter(u => inPerfPeriod(u.date, per));
+        const utms = (p.utmResults || []).filter(u => !u.date || inPerfPeriod(u.date, per));
+        const ranks = (p.rankChecks || []).filter(r => inPerfPeriod(r.date, per));
+        if (!ups.length && !utms.length && !ranks.length) return;
+
+        const views = ups.reduce((a, u) => a + (Number(u.views) || 0), 0);
+        const likes = ups.reduce((a, u) => a + (Number(u.likes) || 0), 0);
+        const comments = ups.reduce((a, u) => a + (Number(u.comments) || 0), 0);
+        const impressions = utms.reduce((a, u) => a + (Number(u.impressions) || 0), 0);
+        const clicks = utms.reduce((a, u) => a + (Number(u.clicks) || 0), 0);
+        const orders = utms.reduce((a, u) => a + (Number(u.orders) || 0), 0);
+        const revenue = utms.reduce((a, u) => a + (Number(u.revenue) || 0), 0);
+        const cost = ups.length ? costOfPpl(p) : 0;
+
+        rows.push({
+          id: p.id, who: whoOf(p), brand: p.brand, cat: catOfPpl(p),
+          products: prodNamesOf(p), channels: ups.map(u => u.channel || '기타'),
+          uploads: ups.length, views, likes, comments, interaction: likes + comments,
+          impressions, clicks, orders, revenue, cost,
+          rankHits: ranks.filter(r => Number(r.rank) > 0).length,
+          ups
+        });
+      });
+
+      trialList.forEach(t => {
+        if (perfBrand !== '전체' && t.brand !== perfBrand) return;
+        const dt = trialUploadDate(t);
+        if (!inPerfPeriod(dt, per)) return;
+        rows.push({
+          id: t.id, who: (t.title || '체험단') + ' · ' + (t.headcount || 0) + '명', brand: t.brand, cat: '체험단',
+          products: [t.product || ''], channels: [t.sns || '기타'],
+          uploads: Number(t.headcount) || 0, views: 0, likes: 0, comments: 0, interaction: 0,
+          impressions: 0, clicks: 0, orders: 0, revenue: 0, cost: trialCostOf(t),
+          rankHits: 0, ups: []
+        });
+      });
+
+      return rows;
+    }
+
+    function perfTotals(rows) {
+      const sum = k => rows.reduce((a, r) => a + (r[k] || 0), 0);
+      const t = {
+        uploads: sum('uploads'), views: sum('views'), interaction: sum('interaction'),
+        impressions: sum('impressions'), clicks: sum('clicks'), orders: sum('orders'),
+        revenue: sum('revenue'), cost: sum('cost'), rankHits: sum('rankHits'), count: rows.length
+      };
+      t.roas = t.cost ? (t.revenue / t.cost) : 0;
+      t.cpv = t.views ? (t.cost / t.views) : 0;
+      t.cpc = t.clicks ? (t.cost / t.clicks) : 0;
+      t.cpa = t.orders ? (t.cost / t.orders) : 0;
+      t.cvr = t.clicks ? (t.orders / t.clicks * 100) : 0;
+      return t;
+    }
+
+    function renderPerf() {
+      const tbody = document.getElementById('perfTableBody');
+      if (!tbody) return;
+      const per = perfPeriod();
+      setTxt('perfPeriodLabel', per.label + (perfBrand === '전체' ? '' : ' · ' + perfBrand));
+
+      const rows = perfRows();
+      const T = perfTotals(rows);
+
+      const card = (label, val, sub, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
+        + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
+        + '<div class="text-xl font-black text-' + color + '-600 mt-0.5">' + val + '</div>'
+        + '<div class="text-[11px] text-slate-500 font-semibold">' + (sub || '') + '</div></div>';
+
+      document.getElementById('perfCards').innerHTML =
+        card('업로드', T.uploads.toLocaleString() + '건', rows.length + '개 협업', 'indigo')
+        + card('총 조회수', fmtCount(T.views), '인터랙션 ' + fmtCount(T.interaction), 'violet')
+        + card('유입(클릭)', T.clicks.toLocaleString(), '노출 ' + fmtCount(T.impressions), 'sky')
+        + card('구매 전환', T.orders.toLocaleString() + '건', '전환율 ' + T.cvr.toFixed(1) + '%', 'emerald');
+
+      document.getElementById('perfEffCards').innerHTML =
+        card('매출', T.revenue.toLocaleString() + '원', '', 'pink')
+        + card('집행 비용', T.cost.toLocaleString() + '원', '', 'slate')
+        + card('ROAS', T.cost ? (T.roas * 100).toFixed(0) + '%' : '-', T.cost ? '매출 ÷ 비용' : '비용 미입력', T.roas >= 1 ? 'emerald' : 'rose')
+        + card('CPV / CPA', (T.cpv ? T.cpv.toFixed(1) : '-') + ' / ' + (T.cpa ? Math.round(T.cpa).toLocaleString() : '-'),
+               '조회 1회 / 전환 1건당 비용', 'amber');
+
+      // 정렬
+      const sorted = rows.slice().sort((a, b) => {
+        let av, bv;
+        if (perfSort === 'roas') { av = a.cost ? a.revenue / a.cost : -1; bv = b.cost ? b.revenue / b.cost : -1; }
+        else if (perfSort === 'cpv') { av = a.views ? a.cost / a.views : 9e15; bv = b.views ? b.cost / b.views : 9e15; }
+        else if (perfSort === 'who') return a.who.localeCompare(b.who) * perfSortDir;
+        else { av = a[perfSort] || 0; bv = b[perfSort] || 0; }
+        return (av - bv) * perfSortDir;
+      });
+
+      setTxt('perfRowCount', rows.length + '명');
+      tbody.innerHTML = sorted.length ? sorted.map(r => {
+        const roas = r.cost ? (r.revenue / r.cost) : null;
+        const cpv = r.views ? (r.cost / r.views) : null;
+        const brandBadgeClass = r.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
+        return '<tr class="hover:bg-indigo-50/30 transition">'
+          + '<td class="py-2.5 px-3"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + tEsc(r.brand) + '</span> '
+          + '<span class="font-bold text-slate-900">' + tEsc(r.who) + '</span>'
+          + (r.rankHits ? '<span class="ml-1 text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded">상위노출 ' + r.rankHits + '</span>' : '') + '</td>'
+          + '<td class="py-2.5 px-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + (CAT_STYLE[r.cat] || 'bg-slate-100 text-slate-700') + '">' + r.cat + '</span></td>'
+          + '<td class="py-2.5 px-3 text-center font-bold">' + r.uploads + '</td>'
+          + '<td class="py-2.5 px-3 text-right font-bold text-slate-900">' + (r.views ? r.views.toLocaleString() : '-') + '</td>'
+          + '<td class="py-2.5 px-3 text-right">' + (r.interaction ? r.interaction.toLocaleString() : '-') + '</td>'
+          + '<td class="py-2.5 px-3 text-right">' + (r.clicks ? r.clicks.toLocaleString() : '-') + '</td>'
+          + '<td class="py-2.5 px-3 text-right">' + (r.orders ? r.orders.toLocaleString() : '-') + '</td>'
+          + '<td class="py-2.5 px-3 text-right font-bold text-pink-600">' + (r.revenue ? r.revenue.toLocaleString() : '-') + '</td>'
+          + '<td class="py-2.5 px-3 text-right text-slate-600">' + (r.cost ? r.cost.toLocaleString() : '-') + '</td>'
+          + '<td class="py-2.5 px-3 text-right font-black ' + (roas == null ? 'text-slate-300' : (roas >= 1 ? 'text-emerald-600' : 'text-rose-500')) + '">'
+          + (roas == null ? '-' : (roas * 100).toFixed(0) + '%') + '</td>'
+          + '<td class="py-2.5 px-3 text-right text-slate-600">' + (cpv == null ? '-' : cpv.toFixed(1)) + '</td>'
+          + '</tr>';
+      }).join('')
+        : '<tr><td colspan="11" class="py-10 text-center text-slate-400">이 기간에 기록된 성과가 없습니다.<br>업로드 일자와 UTM 결과를 넣으면 여기에 모입니다.</td></tr>';
+
+      document.getElementById('perfTableFoot').innerHTML = sorted.length
+        ? '<tr class="bg-indigo-50 font-black text-slate-900">'
+          + '<td class="py-3 px-3" colspan="2">합계</td>'
+          + '<td class="py-3 px-3 text-center">' + T.uploads + '</td>'
+          + '<td class="py-3 px-3 text-right">' + T.views.toLocaleString() + '</td>'
+          + '<td class="py-3 px-3 text-right">' + T.interaction.toLocaleString() + '</td>'
+          + '<td class="py-3 px-3 text-right">' + T.clicks.toLocaleString() + '</td>'
+          + '<td class="py-3 px-3 text-right">' + T.orders.toLocaleString() + '</td>'
+          + '<td class="py-3 px-3 text-right text-pink-600">' + T.revenue.toLocaleString() + '</td>'
+          + '<td class="py-3 px-3 text-right">' + T.cost.toLocaleString() + '</td>'
+          + '<td class="py-3 px-3 text-right">' + (T.cost ? (T.roas * 100).toFixed(0) + '%' : '-') + '</td>'
+          + '<td class="py-3 px-3 text-right">' + (T.cpv ? T.cpv.toFixed(1) : '-') + '</td></tr>'
+        : '';
+
+      // 구분별
+      const byCat = {};
+      rows.forEach(r => {
+        byCat[r.cat] = byCat[r.cat] || { n: 0, views: 0, cost: 0, revenue: 0 };
+        byCat[r.cat].n++; byCat[r.cat].views += r.views; byCat[r.cat].cost += r.cost; byCat[r.cat].revenue += r.revenue;
+      });
+      const catBody = document.getElementById('perfCatBody');
+      const catEntries = Object.entries(byCat).sort((a, b) => b[1].cost - a[1].cost);
+      catBody.innerHTML = catEntries.length ? catEntries.map(([c, v]) => {
+        const cpv = v.views ? v.cost / v.views : null;
+        const roas = v.cost ? v.revenue / v.cost : null;
+        return '<tr class="hover:bg-slate-50/60">'
+          + '<td class="py-2.5 px-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + (CAT_STYLE[c] || 'bg-slate-100 text-slate-700') + '">' + c + '</span></td>'
+          + '<td class="py-2.5 px-3 text-center font-bold">' + v.n + '</td>'
+          + '<td class="py-2.5 px-3 text-right">' + (v.views ? v.views.toLocaleString() : '-') + '</td>'
+          + '<td class="py-2.5 px-3 text-right">' + (v.cost ? v.cost.toLocaleString() : '-') + '</td>'
+          + '<td class="py-2.5 px-3 text-right">' + (cpv == null ? '-' : cpv.toFixed(1)) + '</td>'
+          + '<td class="py-2.5 px-3 text-right font-bold ' + (roas == null ? 'text-slate-300' : (roas >= 1 ? 'text-emerald-600' : 'text-rose-500')) + '">'
+          + (roas == null ? '-' : (roas * 100).toFixed(0) + '%') + '</td></tr>';
+      }).join('') : '<tr><td colspan="6" class="py-6 text-center text-slate-400">데이터 없음</td></tr>';
+
+      // 채널별
+      const byCh = {};
+      rows.forEach(r => (r.ups || []).forEach(u => {
+        const c = u.channel || '기타';
+        byCh[c] = byCh[c] || { n: 0, views: 0, inter: 0 };
+        byCh[c].n++;
+        byCh[c].views += Number(u.views) || 0;
+        byCh[c].inter += (Number(u.likes) || 0) + (Number(u.comments) || 0);
+      }));
+      const chBody = document.getElementById('perfChannelBody');
+      const chEntries = Object.entries(byCh).sort((a, b) => b[1].views - a[1].views);
+      chBody.innerHTML = chEntries.length ? chEntries.map(([c, v]) => {
+        const avg = v.n ? Math.round(v.views / v.n) : 0;
+        const er = v.views ? (v.inter / v.views * 100) : 0;
+        return '<tr class="hover:bg-slate-50/60">'
+          + '<td class="py-2.5 px-3 font-bold text-slate-800">' + tEsc(c) + '</td>'
+          + '<td class="py-2.5 px-3 text-center">' + v.n + '</td>'
+          + '<td class="py-2.5 px-3 text-right">' + v.views.toLocaleString() + '</td>'
+          + '<td class="py-2.5 px-3 text-right font-bold">' + avg.toLocaleString() + '</td>'
+          + '<td class="py-2.5 px-3 text-right ' + (er >= 3 ? 'text-emerald-600 font-bold' : 'text-slate-600') + '">' + er.toFixed(1) + '%</td></tr>';
+      }).join('') : '<tr><td colspan="5" class="py-6 text-center text-slate-400">데이터 없음</td></tr>';
+
+      // 제품별
+      const byProd = {};
+      rows.forEach(r => {
+        const list = (r.products || []).filter(Boolean);
+        if (!list.length) return;
+        list.forEach(pn => {
+          byProd[pn] = byProd[pn] || { n: 0, views: 0, revenue: 0, cost: 0 };
+          byProd[pn].n++;
+          byProd[pn].views += Math.round(r.views / list.length);
+          byProd[pn].revenue += Math.round(r.revenue / list.length);
+          byProd[pn].cost += Math.round(r.cost / list.length);
+        });
+      });
+      const prodBody = document.getElementById('perfProductBody');
+      const prodEntries = Object.entries(byProd).sort((a, b) => b[1].views - a[1].views).slice(0, 15);
+      prodBody.innerHTML = prodEntries.length ? prodEntries.map(([pn, v]) =>
+        '<tr class="hover:bg-slate-50/60">'
+        + '<td class="py-2.5 px-3 font-semibold text-slate-800 max-w-[200px] truncate" title="' + tEsc(pn) + '">' + tEsc(pn) + '</td>'
+        + '<td class="py-2.5 px-3 text-center">' + v.n + '</td>'
+        + '<td class="py-2.5 px-3 text-right">' + (v.views ? v.views.toLocaleString() : '-') + '</td>'
+        + '<td class="py-2.5 px-3 text-right font-bold text-pink-600">' + (v.revenue ? v.revenue.toLocaleString() : '-') + '</td>'
+        + '<td class="py-2.5 px-3 text-right text-slate-600">' + (v.cost ? v.cost.toLocaleString() : '-') + '</td></tr>'
+      ).join('') : '<tr><td colspan="5" class="py-6 text-center text-slate-400">데이터 없음</td></tr>';
+
+      // 상위노출
+      const per2 = per;
+      const rankAll = [];
+      pplList.forEach(p => {
+        if (perfBrand !== '전체' && p.brand !== perfBrand) return;
+        (p.rankChecks || []).forEach(r => {
+          if (!inPerfPeriod(r.date, per2)) return;
+          const n = Number(r.rank);
+          if (!n) return;
+          rankAll.push({ p, r, n });
+        });
+      });
+      const box = document.getElementById('perfRankBox');
+      if (box) {
+        if (!rankAll.length) {
+          box.innerHTML = '<p class="text-slate-400 text-center py-6">이 기간에 기록된 상위노출이 없습니다.</p>';
+        } else {
+          const top3 = rankAll.filter(x => x.n <= 3).length;
+          const top10 = rankAll.filter(x => x.n <= 10).length;
+          box.innerHTML = '<div class="grid grid-cols-3 gap-2 mb-3">'
+            + '<div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-center"><div class="text-[10px] text-slate-500 font-semibold">1~3위</div><div class="text-lg font-black text-emerald-600">' + top3 + '건</div></div>'
+            + '<div class="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center"><div class="text-[10px] text-slate-500 font-semibold">10위 이내</div><div class="text-lg font-black text-amber-700">' + top10 + '건</div></div>'
+            + '<div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center"><div class="text-[10px] text-slate-500 font-semibold">전체 기록</div><div class="text-lg font-black text-slate-700">' + rankAll.length + '건</div></div>'
+            + '</div>'
+            + '<div class="space-y-1 max-h-56 overflow-y-auto custom-scrollbar">'
+            + rankAll.sort((a, b) => a.n - b.n).slice(0, 20).map(x =>
+                '<div class="flex items-center justify-between gap-2 bg-white border border-slate-100 rounded-lg px-2.5 py-1.5">'
+                + '<span class="truncate"><b class="text-slate-800">' + tEsc(x.r.keyword || '-') + '</b> <span class="text-slate-400">' + tEsc(x.r.platform || '') + '</span></span>'
+                + '<span class="whitespace-nowrap"><span class="text-slate-500">' + tEsc(x.p.realName || '무명') + '</span> '
+                + '<b class="' + (x.n <= 3 ? 'text-emerald-600' : (x.n <= 10 ? 'text-amber-700' : 'text-slate-500')) + '">' + x.n + '위</b></span></div>').join('')
+            + '</div>';
+        }
+      }
+    }
+
+    function exportPerfExcel() {
+      const rows = perfRows();
+      if (!rows.length) { alert('내보낼 성과 데이터가 없습니다.'); return; }
+      const per = perfPeriod();
+      downloadSheet(rows.map(r => ({
+        '기간': per.label, '브랜드': r.brand, '구분': r.cat, '대상': r.who,
+        '제품': (r.products || []).join(', '),
+        '업로드': r.uploads, '조회수': r.views, '좋아요': r.likes, '댓글': r.comments, '인터랙션': r.interaction,
+        '노출': r.impressions, '유입': r.clicks, '전환': r.orders, '매출': r.revenue, '비용': r.cost,
+        'ROAS(%)': r.cost ? Math.round(r.revenue / r.cost * 100) : '',
+        'CPV': r.views ? Math.round(r.cost / r.views * 10) / 10 : '',
+        'CPA': r.orders ? Math.round(r.cost / r.orders) : '',
+        '상위노출건수': r.rankHits
+      })), '성과리포트_' + per.label.replace(/ /g, ''));
+    }
+
     function renderPplTable() {
       const tbody = document.getElementById('pplTableBody');
       let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p) && !isSupporters(p));
@@ -10269,637 +10953,6 @@
       }
     }
 
-    /* ==================================================================
-       PPL 성과 리포트 (인플루언서별)  — 탭 편집 / 링크공유(보기전용) / PDF
-       ================================================================== */
-    const PERF_VIEW_ID = new URLSearchParams(location.search).get('perf') || '';
-    const PERF_READONLY = !!PERF_VIEW_ID;
-
-    let perfCurId = localStorage.getItem('onsal_perfCurId') || '';
-    let perfCurTab = '';
-    let perfRange = null;
-    let perfSaveTimer = null;
-
-    function perfUid() { return 'pf' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-    function perfEd() { return document.getElementById('perfEditor'); }
-    function perfCur() { return perfReports.find(r => r.id === perfCurId) || null; }
-    function perfTabObj() {
-      const r = perfCur(); if (!r) return null;
-      return (r.tabs || []).find(t => t.id === perfCurTab) || (r.tabs || [])[0] || null;
-    }
-    function perfNum(n) { const v = Number(n); return isNaN(v) ? '-' : v.toLocaleString('ko-KR'); }
-    function perfToday() { return new Date().toISOString().slice(0, 10); }
-
-    function perfPersist() {
-      if (PERF_READONLY) return;
-      localStorage.setItem('onsal_perfReports', JSON.stringify(perfReports));
-      localStorage.setItem('onsal_perfCurId', perfCurId);
-      queueSync();
-    }
-    function perfFlush() {
-      const t = perfTabObj(), ed = perfEd();
-      if (!t || !ed || PERF_READONLY) return;
-      t.html = ed.innerHTML;
-      const r = perfCur(); if (r) r.updatedAt = new Date().toISOString();
-    }
-    function perfQueueSave() {
-      if (PERF_READONLY) return;
-      clearTimeout(perfSaveTimer);
-      perfSaveTimer = setTimeout(() => { perfFlush(); perfPersist(); }, 700);
-    }
-
-    /* ---------- 리포트 목록 ---------- */
-    function renderPerfPage() {
-      const sel = document.getElementById('perfReportSelect');
-      if (!sel) return;
-      if (perfReports.length && !perfCur()) perfCurId = perfReports[0].id;
-      sel.innerHTML = perfReports.length
-        ? perfReports.map(r => `<option value="${tEsc(r.id)}"${r.id === perfCurId ? ' selected' : ''}>${tEsc(r.title)}</option>`).join('')
-        : '<option value="">리포트가 없습니다 — “새 리포트”를 눌러 주세요</option>';
-      renderPerfTabs();
-    }
-
-    function perfNewReport() {
-      const title = prompt('리포트 이름을 적어 주세요.\n예) 온살 비타민 앰플 8월 PPL 성과', '');
-      if (title === null) return;
-      const r = { id: perfUid(), title: (title.trim() || 'PPL 성과 ' + perfToday()), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), tabs: [] };
-      r.tabs.push({ id: perfUid(), name: '전체', html: '' });
-      perfReports.unshift(r);
-      perfCurId = r.id; perfCurTab = r.tabs[0].id;
-      perfPersist(); renderPerfPage();
-    }
-    function perfRenameReport() {
-      const r = perfCur(); if (!r) return;
-      const v = prompt('리포트 이름', r.title);
-      if (v === null) return;
-      r.title = v.trim() || r.title;
-      perfPersist(); renderPerfPage();
-    }
-    function perfDeleteReport() {
-      const r = perfCur(); if (!r) return;
-      if (!confirm(`"${r.title}" 리포트를 삭제할까요?\n안에 있는 탭 내용도 모두 지워집니다.`)) return;
-      perfReports = perfReports.filter(x => x.id !== r.id);
-      perfCurId = perfReports.length ? perfReports[0].id : '';
-      perfCurTab = '';
-      perfPersist(); renderPerfPage();
-    }
-    function perfSelectReport(id) {
-      perfFlush(); perfPersist();
-      perfCurId = id; perfCurTab = '';
-      renderPerfPage();
-    }
-
-    /* ---------- 탭 ---------- */
-    function renderPerfTabs() {
-      const bar = document.getElementById('perfTabBar');
-      const ed = perfEd();
-      const card = document.getElementById('perfCard');
-      if (!bar || !ed) return;
-      const r = perfCur();
-      if (!r) { bar.innerHTML = ''; ed.innerHTML = ''; if (card) card.classList.add('opacity-40', 'pointer-events-none'); return; }
-      if (card) card.classList.remove('opacity-40', 'pointer-events-none');
-      setTxt('perfCardTitle', r.title);
-
-      if (!r.tabs || !r.tabs.length) r.tabs = [{ id: perfUid(), name: '전체', html: '' }];
-      if (!r.tabs.some(t => t.id === perfCurTab)) perfCurTab = r.tabs[0].id;
-
-      bar.innerHTML = r.tabs.map(t => {
-        const on = t.id === perfCurTab;
-        return `<span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-[11.5px] font-bold cursor-pointer transition ${on ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-slate-500 border-slate-200 hover:border-pink-300'}"
-            onclick="perfSwitchTab('${tArg(t.id)}')" ondblclick="perfRenameTab('${tArg(t.id)}')" title="더블클릭하면 이름을 바꿀 수 있어요">
-            ${tEsc(t.name)}
-            <i class="fa-solid fa-xmark opacity-60 hover:opacity-100" onclick="event.stopPropagation();perfDeleteTab('${tArg(t.id)}')"></i>
-          </span>`;
-      }).join('') + `<button onclick="perfAddTab()" class="px-3 py-1.5 rounded-full border border-dashed border-pink-300 text-pink-600 text-[11.5px] font-bold hover:bg-pink-50"><i class="fa-solid fa-plus"></i> 탭 추가</button>`;
-
-      const t = perfTabObj();
-      ed.innerHTML = (t && t.html) || '';
-    }
-
-    function perfSwitchTab(id) {
-      perfFlush(); perfPersist();
-      perfCurTab = id;
-      renderPerfTabs();
-    }
-    function perfAddTab() {
-      const r = perfCur(); if (!r) { alert('먼저 리포트를 만들어 주세요.'); return; }
-      const name = prompt('탭 이름 (인플루언서 이름 등)', '');
-      if (name === null) return;
-      perfFlush();
-      const t = { id: perfUid(), name: name.trim() || ('탭 ' + (r.tabs.length + 1)), html: '' };
-      r.tabs.push(t); perfCurTab = t.id;
-      perfPersist(); renderPerfTabs();
-    }
-    function perfRenameTab(id) {
-      const r = perfCur(); if (!r) return;
-      const t = r.tabs.find(x => x.id === id); if (!t) return;
-      const v = prompt('탭 이름', t.name);
-      if (v === null) return;
-      t.name = v.trim() || t.name;
-      perfPersist(); renderPerfTabs();
-    }
-    function perfDeleteTab(id) {
-      const r = perfCur(); if (!r) return;
-      if (r.tabs.length <= 1) { alert('탭이 하나뿐이라 지울 수 없어요.'); return; }
-      const t = r.tabs.find(x => x.id === id);
-      if (!confirm(`"${t ? t.name : ''}" 탭을 삭제할까요?`)) return;
-      r.tabs = r.tabs.filter(x => x.id !== id);
-      if (perfCurTab === id) perfCurTab = r.tabs[0].id;
-      perfPersist(); renderPerfTabs();
-    }
-
-    /* ---------- 서식 ---------- */
-    function perfKeepRange() { /* selectionchange 가 이미 저장해 둡니다 */ }
-    function perfFocus() {
-      const ed = perfEd(); if (!ed) return;
-      ed.focus();
-      if (perfRange && ed.contains(perfRange.commonAncestorContainer)) {
-        const s = window.getSelection(); s.removeAllRanges(); s.addRange(perfRange);
-      }
-    }
-    function perfExec(cmd, val) {
-      perfFocus();
-      try { document.execCommand('styleWithCSS', false, true); } catch (e) { }
-      document.execCommand(cmd, false, val === undefined ? null : val);
-      perfQueueSave();
-    }
-    function perfFontStep(delta) {
-      const ed = perfEd(); if (!ed) return;
-      perfFocus();
-      const sel = window.getSelection();
-      if (!sel.rangeCount || sel.isCollapsed) { alert('크기를 바꿀 글자를 먼저 드래그해서 선택해 주세요.'); return; }
-      let node = sel.getRangeAt(0).startContainer;
-      if (node.nodeType === 3) node = node.parentNode;
-      const cur = parseFloat(getComputedStyle(node).fontSize) || 13;
-      const next = Math.min(60, Math.max(9, Math.round(cur + delta)));
-      try { document.execCommand('styleWithCSS', false, true); } catch (e) { }
-      document.execCommand('fontSize', false, '7');
-      ed.querySelectorAll('font[size="7"]').forEach(f => {
-        const span = document.createElement('span');
-        span.style.fontSize = next + 'px';
-        while (f.firstChild) span.appendChild(f.firstChild);
-        f.replaceWith(span);
-      });
-      perfQueueSave();
-    }
-    function perfCellsInSelection() {
-      const ed = perfEd(); if (!ed) return [];
-      const sel = window.getSelection();
-      if (!sel.rangeCount) return [];
-      const range = sel.getRangeAt(0);
-      const all = Array.from(ed.querySelectorAll('td,th'));
-      const hit = all.filter(c => { try { return range.intersectsNode(c); } catch (e) { return false; } });
-      if (hit.length) return hit;
-      let n = range.startContainer;
-      if (n.nodeType === 3) n = n.parentNode;
-      const c = n.closest ? n.closest('td,th') : null;
-      return c ? [c] : [];
-    }
-    function perfCellBg(color) {
-      perfFocus();
-      const cells = perfCellsInSelection();
-      if (!cells.length) { alert('표 안의 칸을 클릭(또는 드래그)한 뒤 눌러 주세요.'); return; }
-      cells.forEach(c => { c.style.backgroundColor = color || ''; });
-      perfQueueSave();
-    }
-
-    /* ---------- 표 ---------- */
-    function perfInsertHtml(html) {
-      perfFocus();
-      document.execCommand('insertHTML', false, html);
-      perfQueueSave();
-    }
-    function perfInsertTable() {
-      const rows = parseInt(prompt('행 수 (제목 행 제외)', '3'), 10);
-      if (isNaN(rows)) return;
-      const cols = parseInt(prompt('열 수', '4'), 10);
-      if (isNaN(cols)) return;
-      perfInsertHtml(perfTableHtml(
-        Array.from({ length: cols }, (_, i) => '항목 ' + (i + 1)),
-        Array.from({ length: Math.max(1, rows) }, () => Array.from({ length: cols }, () => ''))
-      ));
-    }
-    function perfTableHtml(headers, rows) {
-      return '<table><thead><tr>' + headers.map(h => '<th>' + tEsc(h) + '</th>').join('') + '</tr></thead><tbody>'
-        + rows.map(r => '<tr>' + r.map(c => '<td>' + (c == null ? '' : c) + '</td>').join('') + '</tr>').join('')
-        + '</tbody></table><p><br></p>';
-    }
-    function perfCellCtx() {
-      const cells = perfCellsInSelection();
-      if (!cells.length) return null;
-      const cell = cells[0], row = cell.parentElement, table = cell.closest('table');
-      return { cell, row, table, idx: Array.from(row.children).indexOf(cell) };
-    }
-    function perfTableOp(op) {
-      const c = perfCellCtx();
-      if (!c) { alert('표 안의 칸을 먼저 클릭해 주세요.'); return; }
-      const { cell, row, table, idx } = c;
-      if (op === 'addRow') {
-        const tr = document.createElement('tr');
-        for (let i = 0; i < row.children.length; i++) tr.appendChild(document.createElement('td'));
-        const body = table.tBodies[0] || table;
-        if (row.parentElement === body) row.after(tr); else body.insertBefore(tr, body.firstChild);
-      } else if (op === 'delRow') {
-        if (row.closest('thead')) { alert('제목 행은 지울 수 없어요.'); return; }
-        row.remove();
-      } else if (op === 'addCol') {
-        Array.from(table.rows).forEach(tr => {
-          const tag = tr.closest('thead') ? 'th' : 'td';
-          const el = document.createElement(tag);
-          if (tag === 'th') el.textContent = '새 항목';
-          const ref = tr.children[idx];
-          if (ref) ref.after(el); else tr.appendChild(el);
-        });
-      } else if (op === 'delCol') {
-        if (table.rows[0] && table.rows[0].children.length <= 1) { alert('열이 하나뿐이라 지울 수 없어요.'); return; }
-        Array.from(table.rows).forEach(tr => { if (tr.children[idx]) tr.children[idx].remove(); });
-      }
-      perfQueueSave();
-    }
-
-    /* ---------- 링크 / 유튜브 / 인스타 ---------- */
-    function perfInsertLink() {
-      const url = prompt('링크 주소 (https://...)', 'https://');
-      if (!url || url === 'https://') return;
-      const sel = window.getSelection();
-      const hasText = sel && sel.rangeCount && !sel.isCollapsed;
-      if (hasText) perfExec('createLink', url);
-      else perfInsertHtml('<a href="' + tEsc(url) + '" target="_blank" rel="noopener">' + tEsc(url) + '</a>&nbsp;');
-    }
-
-    function perfYtCardHtml(id, d) {
-      d = d || {};
-      const thumb = d.thumb || ('https://i.ytimg.com/vi/' + id + '/mqdefault.jpg');
-      return '<div class="perf-yt" data-yt-id="' + tEsc(id) + '">'
-        + '<img class="perf-yt-thumb" src="' + tEsc(thumb) + '" alt="">'
-        + '<div class="perf-yt-info" style="flex:1">'
-        + '<div class="perf-yt-title"><a href="https://youtu.be/' + tEsc(id) + '" target="_blank" rel="noopener">' + tEsc(d.title || '유튜브 영상') + '</a></div>'
-        + '<div class="perf-yt-meta">' + tEsc(d.channel || '') + (d.published ? ' · 게시 ' + tEsc(d.published) : '') + '</div>'
-        + '<div class="perf-yt-stats">조회수 ' + perfNum(d.views) + ' · 좋아요 ' + perfNum(d.likes) + ' · 댓글 ' + perfNum(d.comments) + '</div>'
-        + '<div class="perf-yt-asof">' + tEsc(d.asOf || perfToday()) + ' 기준</div>'
-        + '</div></div><p><br></p>';
-    }
-
-    async function perfYtFetch(ids) {
-      const j = await ytApi('videos?part=snippet,statistics&id=' + ids.join(','));
-      const out = {};
-      (j.items || []).forEach(it => {
-        const s = it.statistics || {}, sn = it.snippet || {};
-        out[it.id] = {
-          title: sn.title || '', channel: sn.channelTitle || '',
-          published: (sn.publishedAt || '').slice(0, 10),
-          thumb: ((sn.thumbnails || {}).medium || {}).url || '',
-          views: s.viewCount, likes: s.likeCount, comments: s.commentCount, asOf: perfToday()
-        };
-      });
-      return out;
-    }
-
-    async function perfInsertYoutube() {
-      const url = prompt('유튜브 영상 주소를 넣어 주세요.\n예) https://youtu.be/xxxxxxxx', 'https://');
-      if (!url || url === 'https://') return;
-      const id = youtubeIdOf(url);
-      if (!id) { alert('유튜브 영상 주소를 인식하지 못했습니다.'); return; }
-      try {
-        const map = await perfYtFetch([id]);
-        perfInsertHtml(perfYtCardHtml(id, map[id]));
-      } catch (e) {
-        if (e.message === 'NOKEY') {
-          perfInsertHtml(perfYtCardHtml(id, {}));
-          alert('YouTube API 키가 없어서 카드만 넣었습니다.\n키를 설정한 뒤 “유튜브 수치 갱신”을 눌러 주세요.');
-          setYoutubeKey();
-        } else { alert('가져오지 못했습니다: ' + e.message); }
-      }
-    }
-
-    async function perfRefreshYoutube(alertResult) {
-      const ed = perfEd(); if (!ed) return;
-      const cards = Array.from(ed.querySelectorAll('.perf-yt[data-yt-id]'));
-      if (!cards.length) { if (alertResult) alert('이 탭에 유튜브 카드가 없습니다.\n“유튜브 링크” 버튼으로 먼저 넣어 주세요.'); return; }
-      try {
-        const ids = Array.from(new Set(cards.map(c => c.dataset.ytId)));
-        const map = await perfYtFetch(ids);
-        let n = 0;
-        cards.forEach(c => {
-          const d = map[c.dataset.ytId]; if (!d) return;
-          const st = c.querySelector('.perf-yt-stats'), as = c.querySelector('.perf-yt-asof');
-          const ti = c.querySelector('.perf-yt-title a'), me = c.querySelector('.perf-yt-meta'), th = c.querySelector('.perf-yt-thumb');
-          if (st) st.textContent = '조회수 ' + perfNum(d.views) + ' · 좋아요 ' + perfNum(d.likes) + ' · 댓글 ' + perfNum(d.comments);
-          if (as) as.textContent = d.asOf + ' 기준';
-          if (ti && (!ti.textContent.trim() || ti.textContent.trim() === '유튜브 영상')) ti.textContent = d.title;
-          if (me && !me.textContent.trim()) me.textContent = d.channel + (d.published ? ' · 게시 ' + d.published : '');
-          if (th && d.thumb) th.src = d.thumb;
-          n++;
-        });
-        perfFlush(); perfPersist();
-        if (alertResult) alert(n + '개 영상의 수치를 오늘 기준으로 갱신했습니다.');
-      } catch (e) {
-        if (e.message === 'NOKEY') { alert('먼저 YouTube API 키를 설정해 주세요.'); setYoutubeKey(); }
-        else alert('가져오지 못했습니다: ' + e.message);
-      }
-    }
-
-    function perfInsertInstagram() {
-      const url = prompt('인스타그램 게시물 주소를 넣어 주세요.', 'https://');
-      if (!url || url === 'https://') return;
-      perfInsertHtml('<div class="perf-yt" data-ig-url="' + tEsc(url) + '">'
-        + '<div style="flex:1">'
-        + '<div class="perf-yt-title"><a href="' + tEsc(url) + '" target="_blank" rel="noopener">인스타그램 게시물</a></div>'
-        + '<div class="perf-yt-stats">조회수 - · 좋아요 - · 댓글 - · 저장 -</div>'
-        + '<div class="perf-yt-asof">인스타는 자동 수집이 안 돼요 — 숫자를 직접 고쳐 주세요 (' + perfToday() + ' 기준)</div>'
-        + '</div></div><p><br></p>');
-    }
-
-    /* ---------- 이미지 (리포트는 더 강하게 압축합니다) ---------- */
-    const PERF_IMG_MAX_W = 900;
-    const PERF_IMG_TARGET = 110000;   // 장당 약 110KB 이하로
-    function perfShrinkDataUrl(dataUrl, cb) {
-      const img = new Image();
-      img.onload = () => {
-        let w = img.width, h = img.height;
-        if (w > PERF_IMG_MAX_W) { h = Math.round(h * PERF_IMG_MAX_W / w); w = PERF_IMG_MAX_W; }
-        const cv = document.createElement('canvas');
-        cv.width = w; cv.height = h;
-        const ctx = cv.getContext('2d');
-        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(img, 0, 0, w, h);
-        let out = cv.toDataURL('image/jpeg', 0.68);
-        if (out.length > PERF_IMG_TARGET) out = cv.toDataURL('image/jpeg', 0.5);
-        if (out.length > PERF_IMG_TARGET * 1.6) out = cv.toDataURL('image/jpeg', 0.35);
-        cb(out);
-      };
-      img.onerror = () => cb(null);
-      img.src = dataUrl;
-    }
-    function perfCompressImage(file, cb) {
-      if (!file || !/^image\//.test(file.type)) return;
-      const fr = new FileReader();
-      fr.onload = ev => perfShrinkDataUrl(ev.target.result, d => { if (d) cb(d); });
-      fr.readAsDataURL(file);
-    }
-    function perfInsertImage(dataUrl) { perfInsertHtml('<img src="' + dataUrl + '" style="max-width:100%"><p><br></p>'); }
-    function perfPickImages(input) {
-      Array.from(input.files || []).forEach(f => perfCompressImage(f, d => perfInsertImage(d)));
-      input.value = '';
-    }
-
-    /* ---------- 크기 조절 (이미지 모서리 / 표 세로선) ---------- */
-    function perfInitResizers() {
-      const ed = perfEd(); if (!ed || ed.dataset.rsInit) return;
-      ed.dataset.rsInit = '1';
-
-      ed.addEventListener('mousemove', e => {
-        const t = e.target;
-        if (t.tagName === 'IMG') {
-          const r = t.getBoundingClientRect();
-          t.style.cursor = (e.clientX > r.right - 16 && e.clientY > r.bottom - 16) ? 'nwse-resize' : '';
-        } else if (t.tagName === 'TD' || t.tagName === 'TH') {
-          const r = t.getBoundingClientRect();
-          t.style.cursor = (e.clientX > r.right - 6) ? 'col-resize' : '';
-        }
-      });
-
-      ed.addEventListener('mousedown', e => {
-        const t = e.target;
-        if (t.tagName === 'IMG') {
-          const r = t.getBoundingClientRect();
-          if (e.clientX < r.right - 16 || e.clientY < r.bottom - 16) return;
-          e.preventDefault();
-          const sx = e.clientX, sw = r.width;
-          const mm = ev => { t.style.width = Math.max(60, sw + (ev.clientX - sx)) + 'px'; t.style.height = 'auto'; };
-          const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); perfQueueSave(); };
-          document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
-        } else if (t.tagName === 'TD' || t.tagName === 'TH') {
-          const r = t.getBoundingClientRect();
-          if (e.clientX < r.right - 6) return;
-          e.preventDefault();
-          const table = t.closest('table'); if (!table) return;
-          table.style.tableLayout = 'fixed';
-          const idx = Array.from(t.parentElement.children).indexOf(t);
-          const sx = e.clientX, sw = r.width;
-          const mm = ev => {
-            const w = Math.max(40, sw + (ev.clientX - sx)) + 'px';
-            Array.from(table.rows).forEach(tr => { if (tr.children[idx]) tr.children[idx].style.width = w; });
-          };
-          const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); perfQueueSave(); };
-          document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
-        }
-      });
-
-      ed.addEventListener('input', perfQueueSave);
-      ed.addEventListener('blur', () => { perfFlush(); perfPersist(); });
-
-      ed.addEventListener('paste', e => {
-        const items = (e.clipboardData && e.clipboardData.items) || [];
-        const files = [];
-        for (let i = 0; i < items.length; i++) {
-          if (items[i].kind === 'file' && /^image\//.test(items[i].type)) { const f = items[i].getAsFile(); if (f) files.push(f); }
-        }
-        if (files.length) { e.preventDefault(); e.stopPropagation(); files.forEach(f => perfCompressImage(f, d => perfInsertImage(d))); return; }
-        const html = e.clipboardData && e.clipboardData.getData('text/html');
-        if (html) {
-          e.preventDefault();
-          const box = document.createElement('div');
-          box.innerHTML = html;
-          box.querySelectorAll('script,style,link,meta,button,input,select,textarea,svg,i,iframe,video').forEach(n => n.remove());
-          box.querySelectorAll('*').forEach(n => {
-            n.removeAttribute('class'); n.removeAttribute('onclick'); n.removeAttribute('id');
-            n.removeAttribute('srcset'); n.removeAttribute('data-src');
-          });
-          // 붙여넣은 이미지가 base64(data:)면 그대로 두면 용량이 폭발합니다 → 압축해서 넣기
-          const heavy = Array.from(box.querySelectorAll('img')).filter(i => (i.getAttribute('src') || '').startsWith('data:'));
-          if (!heavy.length) { perfInsertHtml(box.innerHTML); return; }
-          Promise.all(heavy.map(i => new Promise(res => perfShrinkDataUrl(i.src, d => {
-            if (d) { i.setAttribute('src', d); i.setAttribute('style', 'max-width:100%'); } else { i.remove(); }
-            res();
-          })))).then(() => perfInsertHtml(box.innerHTML));
-        }
-      });
-
-      ed.addEventListener('keydown', e => {
-        if (!(e.ctrlKey || e.metaKey)) return;
-        if (e.key === ']') { e.preventDefault(); perfFontStep(2); }
-        if (e.key === '[') { e.preventDefault(); perfFontStep(-2); }
-      });
-    }
-
-    document.addEventListener('selectionchange', () => {
-      const ed = perfEd(); if (!ed) return;
-      const s = window.getSelection();
-      if (s.rangeCount && ed.contains(s.anchorNode)) perfRange = s.getRangeAt(0).cloneRange();
-    });
-
-    /* ---------- 진행완료에서 불러오기 ---------- */
-    function perfOpenImport() {
-      const r = perfCur(); if (!r) { alert('먼저 “새 리포트”를 만들어 주세요.'); return; }
-      const done = pplList.filter(p => isUploadStepDone(p));
-      const box = document.getElementById('perfImportBody');
-      if (!done.length) { alert("진행완료(단계별 일자에서 '업로드' 완료 체크)된 건이 없습니다."); return; }
-      done.sort((a, b) => (lastUploadDateOf(b) || '').localeCompare(lastUploadDateOf(a) || ''));
-      box.innerHTML = done.map(p => {
-        const ups = uploadsOf(p);
-        return `<label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:bg-pink-50/40 cursor-pointer">
-          <input type="checkbox" class="perf-imp mt-0.5" value="${tEsc(p.id)}">
-          <div class="flex-1 min-w-0">
-            <div class="text-xs font-bold text-slate-800">${tEsc(p.brand)} · ${tEsc(whoOf(p))}</div>
-            <div class="text-[11px] text-slate-500 mt-0.5">${tEsc(prodNamesOf(p).join(', ') || '제품 미지정')}</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">업로드 ${ups.length}건${ups.length ? ' · 최근 ' + tEsc(lastUploadDateOf(p) || '-') : ''}</div>
-          </div>
-        </label>`;
-      }).join('');
-      const m = document.getElementById('perfImportModal');
-      m.classList.remove('hidden'); m.classList.add('flex');
-    }
-    function perfCloseImport() {
-      const m = document.getElementById('perfImportModal');
-      m.classList.add('hidden'); m.classList.remove('flex');
-    }
-
-    function perfTemplateFor(p) {
-      const ups = uploadsOf(p);
-      const prods = prodNamesOf(p).join(', ') || '제품 미지정';
-      const cost = totalCostOf(p);
-      let h = '<p><b>[' + tEsc(prods) + ']</b></p>';
-      h += '<p>-인플루언서 : ' + tEsc(whoOf(p)) + ' (' + tEsc(p.brand) + ')</p>';
-      if (ups.length) h += '<p>-업로드 일자 : ' + tEsc(ups.map(u => u.date).filter(Boolean).join(', ')) + '</p>';
-      h += '<p>-채널 : ' + tEsc(Array.from(new Set(ups.map(u => u.channel).filter(Boolean))).join(', ') || '-') + '</p>';
-      if (cost) h += '<p>-비용 : ' + cost.toLocaleString('ko-KR') + '원</p>';
-      if (p.resultNote) h += '<p>-메모 : ' + tEsc(p.resultNote) + '</p>';
-      h += '<p><br></p>';
-
-      ups.forEach(u => {
-        const yid = youtubeIdOf(u.url);
-        if (yid) {
-          h += perfYtCardHtml(yid, { views: u.views, likes: u.likes, comments: u.comments, asOf: perfToday() });
-        } else if (u.url) {
-          h += '<p><a href="' + tEsc(u.url) + '" target="_blank" rel="noopener">' + tEsc((u.channel || '업로드') + ' · ' + (u.date || '')) + '</a>'
-            + (u.views ? ' — 조회수 ' + perfNum(u.views) + ' · 좋아요 ' + perfNum(u.likes) + ' · 댓글 ' + perfNum(u.comments) : '') + '</p>';
-        }
-      });
-
-      const ur = (p.utmResults || []);
-      const headers = ['기준일', '채널 / UTM 소스', '노출수', '유입(클릭)', '구매전환(건)', '구매 금액(원)', '전환율'];
-      const rows = ur.length ? ur.map(u => {
-        const cr = u.clicks ? ((u.orders / u.clicks) * 100).toFixed(2) + '%' : '-';
-        return [tEsc(u.date || ''), tEsc(u.source || ''), perfNum(u.impressions), perfNum(u.clicks), perfNum(u.orders), perfNum(u.revenue), cr];
-      }) : [['', '', '', '', '', '', '']];
-      if (ur.length) {
-        const t = utmTotalsOf(p);
-        rows.push(['<b>합계</b>', '', '<b>' + perfNum(t.impressions) + '</b>', '<b>' + perfNum(t.clicks) + '</b>', '<b>' + perfNum(t.orders) + '</b>', '<b>' + perfNum(t.revenue) + '</b>',
-          '<b>' + (t.clicks ? ((t.orders / t.clicks) * 100).toFixed(2) + '%' : '-') + '</b>']);
-      }
-      h += perfTableHtml(headers, rows);
-
-      (p.resultImages || []).forEach(im => { if (im && im.data) h += '<img src="' + im.data + '" style="max-width:100%"><p><br></p>'; });
-      return h;
-    }
-
-    async function perfDoImport() {
-      const r = perfCur(); if (!r) return;
-      const ids = Array.from(document.querySelectorAll('.perf-imp:checked')).map(c => c.value);
-      if (!ids.length) { alert('한 명 이상 골라 주세요.'); return; }
-      perfFlush();
-      let last = null;
-      ids.forEach(id => {
-        const p = pplList.find(x => x.id === id); if (!p) return;
-        const name = (p.influencer || p.realName || '인플루언서').trim();
-        const t = { id: perfUid(), name, pplId: p.id, html: perfTemplateFor(p) };
-        r.tabs.push(t); last = t.id;
-      });
-      if (last) perfCurTab = last;
-      perfPersist(); renderPerfTabs(); perfCloseImport();
-      await perfRefreshYoutube(false);
-    }
-
-    /* ---------- 공유 링크 (보기 전용) ---------- */
-    async function perfShareLink() {
-      const r = perfCur(); if (!r) { alert('먼저 리포트를 만들어 주세요.'); return; }
-      perfFlush();
-      localStorage.setItem('onsal_perfReports', JSON.stringify(perfReports));
-      await pushToSheet();
-      const url = location.origin + location.pathname + '?perf=' + encodeURIComponent(r.id);
-      document.getElementById('perfShareUrl').value = url;
-      const m = document.getElementById('perfShareModal');
-      m.classList.remove('hidden'); m.classList.add('flex');
-    }
-    function perfCopyShare() {
-      const el = document.getElementById('perfShareUrl');
-      el.select(); el.setSelectionRange(0, 99999);
-      navigator.clipboard.writeText(el.value).then(() => alert('링크를 복사했습니다.')).catch(() => { document.execCommand('copy'); alert('링크를 복사했습니다.'); });
-    }
-
-    /* ---------- PDF (인쇄 → PDF로 저장) ---------- */
-    function perfPrintHtml(r, tabs) {
-      return '<div style="font-family:Pretendard,sans-serif;">'
-        + '<h1 style="font-size:19px;font-weight:800;margin:0 0 4px;">' + tEsc(r.title) + '</h1>'
-        + '<p style="font-size:11px;color:#64748b;margin:0 0 18px;">' + perfToday() + ' 기준</p>'
-        + tabs.map(t => '<div class="perf-print-tab" style="margin-bottom:26px;">'
-          + '<h2 style="font-size:14px;font-weight:800;color:#db2777;border-bottom:2px solid #fbcfe8;padding-bottom:5px;margin:0 0 10px;">' + tEsc(t.name) + '</h2>'
-          + '<div class="perf-doc">' + (t.html || '<p style="color:#94a3b8">내용 없음</p>') + '</div></div>').join('')
-        + '</div>';
-    }
-    function perfExportPdf(reportOverride) {
-      const r = reportOverride || perfCur();
-      if (!r) { alert('먼저 리포트를 만들어 주세요.'); return; }
-      if (!reportOverride) perfFlush();
-      let tabs = r.tabs || [];
-      if (!reportOverride && tabs.length > 1) {
-        tabs = confirm('탭을 모두 담을까요?\n\n확인 = 전체 탭\n취소 = 지금 보고 있는 탭만') ? tabs : tabs.filter(t => t.id === perfCurTab);
-      }
-      const area = document.getElementById('perfPrintArea');
-      area.innerHTML = perfPrintHtml(r, tabs);
-      perfWrapTables(area);
-      area.classList.remove('hidden');
-      setTimeout(() => {
-        window.print();
-        setTimeout(() => { area.classList.add('hidden'); area.innerHTML = ''; }, 400);
-      }, 120);
-    }
-
-    /* ---------- 보기 전용 뷰어 ---------- */
-    async function perfEnterViewer(id) {
-      document.querySelectorAll('header, main').forEach(el => el.classList.add('hidden'));
-      const v = document.getElementById('perfViewer');
-      v.classList.remove('hidden');
-      v.innerHTML = '<p class="text-sm text-slate-400 py-16 text-center">리포트를 불러오는 중입니다…</p>';
-      await pullFromSheet();
-      const r = perfReports.find(x => x.id === id);
-      if (!r) { v.innerHTML = '<p class="text-sm text-slate-500 py-16 text-center">리포트를 찾을 수 없습니다. 링크를 다시 확인해 주세요.</p>'; return; }
-      v.innerHTML = '<div class="bg-white rounded-2xl border border-pink-100 shadow-sm p-6 sm:p-8">'
-        + '<div class="flex flex-wrap items-start justify-between gap-3 mb-5">'
-        + '<div><h1 class="text-lg font-extrabold text-slate-900">' + tEsc(r.title) + '</h1>'
-        + '<p class="text-[11px] text-slate-400 mt-1">보기 전용 · 마지막 수정 ' + tEsc((r.updatedAt || '').slice(0, 10)) + '</p></div>'
-        + '<button onclick="perfViewerPdf()" class="px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-bold rounded-xl"><i class="fa-solid fa-file-pdf"></i> PDF로 저장</button>'
-        + '</div>'
-        + '<div class="flex flex-wrap gap-1.5 mb-4" id="perfViewTabs"></div>'
-        + '<div id="perfViewBody" class="perf-doc"></div></div>';
-      window.__perfViewReport = r;
-      perfViewerTab((r.tabs[0] || {}).id);
-    }
-    // 편집할 때 지정한 열 너비가 화면보다 넓으면 찌그러지므로 스크롤 박스로 감쌉니다
-    function perfWrapTables(root) {
-      if (!root) return;
-      Array.from(root.querySelectorAll('table')).forEach(t => {
-        if (t.parentElement && t.parentElement.classList.contains('perf-scroll')) return;
-        const box = document.createElement('div');
-        box.className = 'perf-scroll';
-        t.replaceWith(box);
-        box.appendChild(t);
-      });
-    }
-
-    function perfViewerTab(tabId) {
-      const r = window.__perfViewReport; if (!r) return;
-      const t = (r.tabs || []).find(x => x.id === tabId) || (r.tabs || [])[0];
-      document.getElementById('perfViewTabs').innerHTML = (r.tabs || []).map(x =>
-        `<button onclick="perfViewerTab('${tArg(x.id)}')" class="px-3 py-1.5 rounded-full border text-[11.5px] font-bold ${x.id === (t || {}).id ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-slate-500 border-slate-200'}">${tEsc(x.name)}</button>`
-      ).join('');
-      const body = document.getElementById('perfViewBody');
-      body.innerHTML = (t && t.html) || '<p class="text-slate-400 text-sm">내용 없음</p>';
-      perfWrapTables(body);
-    }
-    function perfViewerPdf() { perfExportPdf(window.__perfViewReport); }
-
     function exportToCSV() {
       let csv = '\uFEFF브랜드,제품명,인플루언서본명,계정,진행상태,컨택일자,시딩수량\n';
       pplList.forEach(p => {
@@ -10914,147 +10967,5 @@
       URL.revokeObjectURL(url);
     }
   </script>
-  <!-- ==================== PAGE: PPL 성과 리포트 ==================== -->
-  <main id="page-perf" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-5 hidden">
-
-    <!-- 리포트 선택 바 -->
-    <section class="bg-white p-3 rounded-2xl border border-pink-100 shadow-xs flex flex-wrap items-center gap-2">
-      <div class="flex items-center gap-2 flex-1 min-w-[240px]">
-        <i class="fa-solid fa-chart-line text-pink-500"></i>
-        <select id="perfReportSelect" onchange="perfSelectReport(this.value)"
-          class="flex-1 min-w-[180px] px-3 py-2 text-xs font-bold border border-pink-200 rounded-xl bg-white"></select>
-      </div>
-      <button onclick="perfNewReport()" class="px-3 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-        <i class="fa-solid fa-plus"></i> 새 리포트
-      </button>
-      <button onclick="perfRenameReport()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-        <i class="fa-solid fa-pen"></i> 이름 수정
-      </button>
-      <button onclick="perfDeleteReport()" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-        <i class="fa-solid fa-trash"></i> 삭제
-      </button>
-      <span class="w-px h-6 bg-slate-200 mx-1"></span>
-      <button onclick="perfOpenImport()" class="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-        <i class="fa-solid fa-download"></i> 진행완료에서 불러오기
-      </button>
-      <button onclick="perfShareLink()" class="px-3 py-2 bg-violet-100 hover:bg-violet-200 text-violet-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-        <i class="fa-solid fa-share-nodes"></i> 링크 공유 (보기 전용)
-      </button>
-      <button onclick="perfExportPdf()" class="px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-        <i class="fa-solid fa-file-pdf"></i> PDF 저장
-      </button>
-      <button onclick="showSyncSize()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-        <i class="fa-solid fa-database"></i> 저장 용량 확인
-      </button>
-    </section>
-
-    <!-- 리포트 카드 -->
-    <section id="perfCard" class="bg-white rounded-2xl border border-pink-100 shadow-sm">
-      <div class="px-5 pt-4 pb-2 flex flex-wrap items-center justify-between gap-2">
-        <h2 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-pink-500"></span>
-          <span id="perfCardTitle">PPL 성과 (인플루언서별)</span>
-        </h2>
-        <span class="text-[11px] font-semibold text-slate-400">인플루언서별로 탭을 나눠 자유롭게 정리하세요</span>
-      </div>
-
-      <!-- 탭 바 -->
-      <div id="perfTabBar" class="px-5 pb-2 flex flex-wrap items-center gap-1.5"></div>
-      <p class="px-5 pb-3 text-[11px] font-semibold text-pink-600">
-        <i class="fa-solid fa-lightbulb"></i> 탭 이름을 <b>더블클릭</b>하면 바꿀 수 있어요. 대시보드에서 복사한 표를 그대로 붙여넣어도 됩니다.
-      </p>
-
-      <!-- 서식 툴바 -->
-      <div class="px-5 pb-3 flex flex-wrap items-center gap-1.5 text-[11px] font-bold">
-        <button onclick="perfExec('bold')" class="perf-tb w-8"><b>B</b></button>
-        <button onclick="perfExec('italic')" class="perf-tb w-8"><i>I</i></button>
-        <button onclick="perfExec('underline')" class="perf-tb w-8"><u>U</u></button>
-        <span class="w-px h-5 bg-slate-200 mx-0.5"></span>
-        <button onclick="perfFontStep(2)" class="perf-tb">가+</button>
-        <button onclick="perfFontStep(-2)" class="perf-tb">가−</button>
-        <span class="w-px h-5 bg-slate-200 mx-0.5"></span>
-        <label class="perf-tb cursor-pointer" onmousedown="perfKeepRange()">글자
-          <input type="color" value="#e11d48" onchange="perfExec('foreColor', this.value)" class="w-6 h-4 border-0 bg-transparent p-0 cursor-pointer align-middle">
-        </label>
-        <label class="perf-tb cursor-pointer" onmousedown="perfKeepRange()">형광
-          <input type="color" value="#fef08a" onchange="perfExec('hiliteColor', this.value)" class="w-6 h-4 border-0 bg-transparent p-0 cursor-pointer align-middle">
-        </label>
-        <span class="w-px h-5 bg-slate-200 mx-0.5"></span>
-        <label class="perf-tb cursor-pointer" onmousedown="perfKeepRange()">칸색
-          <input type="color" value="#fde7f1" onchange="perfCellBg(this.value)" class="w-6 h-4 border-0 bg-transparent p-0 cursor-pointer align-middle">
-        </label>
-        <button onclick="perfCellBg('')" class="perf-tb">칸색 빼기</button>
-        <button onclick="perfExec('removeFormat')" class="perf-tb">서식 지우기</button>
-      </div>
-
-      <!-- 편집 영역 -->
-      <div class="px-5">
-        <div id="perfEditor" contenteditable="true" spellcheck="false"
-          data-ph="여기에 성과를 정리하세요. 캡쳐는 Ctrl+V로 바로 붙여넣기 됩니다."
-          class="perf-doc custom-scrollbar border border-slate-200 rounded-xl p-4 max-h-[70vh] overflow-y-auto bg-white"></div>
-      </div>
-
-      <!-- 하단 툴바 -->
-      <div class="px-5 py-3 mt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
-        <p class="text-[10.5px] font-semibold text-slate-400 leading-relaxed">
-          <i class="fa-solid fa-paste"></i> Ctrl+V 붙여넣기 ·
-          <i class="fa-solid fa-up-right-and-down-left-from-center"></i> 표 선 · 이미지 모서리를 끌면 크기 조정 ·
-          <i class="fa-solid fa-keyboard"></i> Ctrl+B 굵게, Ctrl+] / Ctrl+[ 글씨 크기
-        </p>
-        <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-bold">
-          <button onclick="perfInsertLink()" class="perf-tb"><i class="fa-solid fa-link"></i> 링크</button>
-          <button onclick="perfInsertYoutube()" class="perf-tb text-rose-600"><i class="fa-brands fa-youtube"></i> 유튜브 링크</button>
-          <button onclick="perfRefreshYoutube(true)" class="perf-tb text-rose-600"><i class="fa-solid fa-rotate"></i> 유튜브 수치 갱신</button>
-          <button onclick="perfInsertInstagram()" class="perf-tb text-fuchsia-600"><i class="fa-brands fa-instagram"></i> 인스타 링크</button>
-          <span class="w-px h-5 bg-slate-200 mx-0.5"></span>
-          <button onclick="perfInsertTable()" class="perf-tb">표 넣기</button>
-          <button onclick="perfTableOp('addRow')" class="perf-tb">행 추가</button>
-          <button onclick="perfTableOp('addCol')" class="perf-tb">열 추가</button>
-          <button onclick="perfTableOp('delCol')" class="perf-tb">열 삭제</button>
-          <button onclick="perfTableOp('delRow')" class="perf-tb">행 삭제</button>
-          <button onclick="document.getElementById('perfImgInput').click()" class="perf-tb">이미지 첨부</button>
-          <input type="file" id="perfImgInput" accept="image/*" multiple class="hidden" onchange="perfPickImages(this)">
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- 진행완료 불러오기 모달 -->
-  <div id="perfImportModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col">
-      <div class="px-6 py-4 border-b border-slate-100">
-        <h3 class="font-extrabold text-slate-800 text-sm"><i class="fa-solid fa-download text-emerald-600"></i> 진행완료 건에서 인플루언서 탭 만들기</h3>
-        <p class="text-[11px] text-slate-500 mt-1">단계별 일자에서 <b>'업로드' 완료 체크</b>가 된 건만 보입니다. 고른 사람마다 탭이 하나씩 생기고, 업로드 링크·UTM 결과가 자동으로 채워져요.</p>
-      </div>
-      <div id="perfImportBody" class="p-5 overflow-y-auto custom-scrollbar space-y-2 flex-1"></div>
-      <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
-        <button onclick="perfCloseImport()" class="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl">취소</button>
-        <button onclick="perfDoImport()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl">탭 만들기</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 공유 링크 모달 -->
-  <div id="perfShareModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-lg p-6 space-y-3">
-      <h3 class="font-extrabold text-slate-800 text-sm"><i class="fa-solid fa-share-nodes text-violet-600"></i> 보기 전용 공유 링크</h3>
-      <p class="text-[11px] text-slate-500 leading-relaxed">
-        이 링크를 받은 사람은 <b>내용을 볼 수만 있고 수정은 못 합니다.</b> 대시보드의 다른 메뉴도 보이지 않아요.<br>
-        여기서 리포트를 고치면 링크 내용도 자동으로 최신으로 바뀝니다.
-      </p>
-      <div class="flex gap-2">
-        <input id="perfShareUrl" readonly class="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50">
-        <button onclick="perfCopyShare()" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl whitespace-nowrap">복사</button>
-      </div>
-      <div class="flex justify-end pt-1">
-        <button onclick="document.getElementById('perfShareModal').classList.add('hidden')" class="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl">닫기</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 보기 전용 뷰어 / 인쇄 영역 -->
-  <div id="perfViewer" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8"></div>
-  <div id="perfPrintArea" class="hidden"></div>
-
 </body>
 </html>
