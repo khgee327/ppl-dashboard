@@ -37,6 +37,10 @@
     body.hide-ship table[data-cols="wide"] td:nth-child(8),
     body.hide-ship table[data-cols="std"] th:nth-child(7),
     body.hide-ship table[data-cols="std"] td:nth-child(7) { display: none; }
+    body.hide-steps table[data-cols="micro"] th:nth-child(5),
+    body.hide-steps table[data-cols="micro"] td:nth-child(5) { display: none; }
+    body.hide-ship table[data-cols="micro"] th:nth-child(6),
+    body.hide-ship table[data-cols="micro"] td:nth-child(6) { display: none; }
   </style>
 </head>
 <body class="bg-pink-50/40 text-slate-800 min-h-screen pb-16">
@@ -58,9 +62,6 @@
           <div class="flex flex-wrap p-1 bg-slate-100 rounded-2xl border border-slate-200 text-xs font-bold">
             <button onclick="setNavGroup('run')" id="navgrp-run" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
               <i class="fa-solid fa-bolt"></i> 진행 관리
-            </button>
-            <button onclick="setNavGroup('inf')" id="navgrp-inf" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
-              <i class="fa-solid fa-user-group"></i> 인플루언서
             </button>
             <button onclick="setNavGroup('report')" id="navgrp-report" class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
               <i class="fa-solid fa-chart-column"></i> 리포트
@@ -91,8 +92,6 @@
           <button onclick="switchMainPage('trial')" id="nav-trial" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-users-rectangle text-[10px]"></i> 체험단
           </button>
-        </div>
-        <div id="navsub-inf" class="flex flex-wrap p-1 bg-pink-50 rounded-2xl border border-pink-100 text-xs font-bold hidden">
           <button onclick="switchMainPage('creator')" id="nav-creator" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-video text-[10px]"></i> 인플루언서 관리
           </button>
@@ -918,6 +917,9 @@
           </h2>
           <p class="text-xs text-slate-500">마이크로 릴스 / 마이크로 PPL 건만 모아서 관리합니다.</p>
         </div>
+        <button onclick="createPackageFromSelection()" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-object-group"></i> 선택 인원으로 패키지 묶기
+        </button>
         <button onclick="exportShippingExcel('micro')" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
           <i class="fa-solid fa-file-arrow-down"></i> 마이크로 배송정보 다운로드
         </button>
@@ -962,7 +964,7 @@
       </div>
 
       <div class="overflow-x-auto custom-scrollbar">
-        <table data-cols="std" class="w-full text-left text-xs">
+        <table data-cols="micro" class="w-full text-left text-xs">
           <thead class="bg-sky-50/60 text-slate-600 font-semibold border-y border-sky-100">
             <tr>
               <th class="py-3 px-3 w-8">
@@ -971,8 +973,7 @@
               <th class="py-3 px-3">브랜드 / 제품</th>
               <th class="py-3 px-3">인플루언서</th>
               <th class="py-3 px-3">유형</th>
-              <th class="py-3 px-3">진행 상태</th>
-              <th class="py-3 px-3">단계별 일자</th>
+              <th class="py-3 px-3">진행 상태 · 단계별 일자</th>
               <th class="py-3 px-3">배송 정보</th>
               <th class="py-3 px-3">시딩 / 비용</th>
               <th class="py-3 px-3 text-right">수정 / 삭제</th>
@@ -1007,13 +1008,21 @@
               <option value="루메아카이브">루메아카이브</option>
             </select>
           </div>
-          <div class="md:col-span-2">
+          <div>
             <label class="block text-[11px] font-bold text-sky-800 mb-1">패키지명</label>
-            <input id="pkgName" placeholder="예) 8월 마이크로 릴스 10인 패키지" class="w-full px-2.5 py-2 text-xs border border-sky-200 rounded-xl">
+            <input id="pkgName" placeholder="예) 8월 마이크로 릴스 10인" class="w-full px-2.5 py-2 text-xs border border-sky-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-sky-800 mb-1">계약 회사명</label>
+            <input id="pkgCompany" placeholder="예) OO미디어 / 샌드박스" class="w-full px-2.5 py-2 text-xs border border-sky-200 rounded-xl">
           </div>
           <div>
             <label class="block text-[11px] font-bold text-sky-800 mb-1">진행 월</label>
             <input type="month" id="pkgMonth" class="w-full px-2.5 py-2 text-xs border border-sky-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-sky-800 mb-1">계약 일자</label>
+            <input type="date" id="pkgContractDate" class="w-full px-2.5 py-2 text-xs border border-sky-200 rounded-xl">
           </div>
           <div>
             <label class="block text-[11px] font-bold text-sky-800 mb-1">계약 인원 (명)</label>
@@ -1025,7 +1034,7 @@
           </div>
         </div>
         <div class="flex flex-wrap gap-2.5">
-          <input id="pkgMemo" placeholder="메모 (업체명, 계약 조건, 릴스 1회+2차활용 포함 등)" class="flex-1 min-w-[220px] px-2.5 py-2 text-xs border border-sky-200 rounded-xl">
+          <input id="pkgMemo" placeholder="계약 내용 (릴스 1회 + 2차활용 3개월 포함 / 원고 검수 1회 등)" class="flex-1 min-w-[220px] px-2.5 py-2 text-xs border border-sky-200 rounded-xl">
           <button onclick="addMicroPackage()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl whitespace-nowrap">
             <i class="fa-solid fa-plus"></i> 패키지 추가
           </button>
@@ -1162,6 +1171,11 @@
         </div>
       </div>
 
+      <div class="flex flex-wrap gap-1 p-1 bg-teal-50 rounded-xl border border-teal-100 text-xs font-bold mb-3 w-fit">
+        <button onclick="setFreeAmbBrand('전체')" id="fatab-전체" class="px-4 py-1.5 rounded-lg bg-white text-teal-700 shadow-xs transition">전체</button>
+        <button onclick="setFreeAmbBrand('온살')" id="fatab-온살" class="px-4 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition">온살</button>
+        <button onclick="setFreeAmbBrand('루메아카이브')" id="fatab-루메아카이브" class="px-4 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition">루메아카이브</button>
+      </div>
       <div class="overflow-x-auto custom-scrollbar">
         <table data-cols="std" class="w-full text-left text-xs">
           <thead class="bg-teal-50/60 text-slate-600 font-semibold border-y border-teal-100">
@@ -3424,7 +3438,7 @@
        index.html  → 'main'   : 진행 관리 · 인플루언서 · 입금 · 시딩 · UTM  (모든 데이터 저장)
        report.html → 'report' : 월간 통합 현황 · 성과 리포트 · 예산
                                 본 데이터는 읽기 전용, 예산/월간메모만 자체 키에 저장 → 서로 덮어쓸 일 없음 */
-    const APP_MODE = (typeof window !== 'undefined' && window.__APP_MODE === 'report') ? 'report' : 'main';
+    const APP_MODE = 'main';   // 대시보드는 index.html 하나로 운영합니다
     const IS_REPORT = APP_MODE === 'report';
     const REPORT_SYNC_KEY = SYNC_KEY + '-report';
     const REPORT_OWNED = ['onsal_budgets', 'onsal_launchBudgets', 'onsal_monthlyNotes'];
@@ -4355,7 +4369,7 @@
 
       applyAppMode();
       applyCompactTable();
-      syncNavGroup(IS_REPORT ? 'monthly' : 'ppl');
+      syncNavGroup('ppl');
       document.addEventListener('paste', handleGlobalPaste);
       const cz = document.getElementById('payContractDrop');
       if (cz) {
@@ -4381,14 +4395,10 @@
         });
       }
 
-      if (IS_REPORT) switchMainPage('monthly');
-
       pullFromSheet().then(() => {
         renderAll();
-        if (!IS_REPORT) {
-          syncToScheduler(true);
-          pullReuseRecords(false);
-        }
+        syncToScheduler(true);
+        pullReuseRecords(false);
       });
     });
 
@@ -7648,13 +7658,15 @@
         id: Date.now(),
         brand: document.getElementById('pkgBrand').value,
         name: name,
+        company: document.getElementById('pkgCompany').value.trim(),
+        contractDate: document.getElementById('pkgContractDate').value,
         month: document.getElementById('pkgMonth').value || new Date().toISOString().slice(0, 7),
         headcount: Number(document.getElementById('pkgHeadcount').value) || 0,
         amount: amount,
         memo: document.getElementById('pkgMemo').value.trim(),
         memberIds: []
       });
-      ['pkgName', 'pkgHeadcount', 'pkgAmount', 'pkgMemo'].forEach(id => { document.getElementById(id).value = ''; });
+      ['pkgName', 'pkgCompany', 'pkgHeadcount', 'pkgAmount', 'pkgMemo'].forEach(id => { document.getElementById(id).value = ''; });
       saveAll();
       renderPackages();
     }
@@ -7701,13 +7713,20 @@
           + '<div class="min-w-0"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + tEsc(k.brand) + '</span> '
           + '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-white">' + tEsc(k.month || '월 미정') + '</span>'
           + '<div class="font-black text-slate-900 mt-1">' + tEsc(k.name) + '</div>'
-          + (k.memo ? '<div class="text-[11px] text-slate-500">' + tEsc(k.memo) + '</div>' : '') + '</div>'
+          + '<div class="text-[11px] text-slate-600 mt-0.5">'
+          + (k.company ? '<i class="fa-solid fa-building text-slate-400"></i> <b>' + tEsc(k.company) + '</b>' : '<span class="text-slate-400">회사명 미입력</span>')
+          + (k.contractDate ? ' <span class="text-slate-400">·</span> <i class="fa-solid fa-file-signature text-slate-400"></i> ' + tEsc(k.contractDate) + ' 계약' : '')
+          + '</div></div>'
           + '<div class="flex items-center gap-2">'
           + '<button onclick="openPkgAssign(' + k.id + ')" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-bold rounded-xl"><i class="fa-solid fa-user-plus"></i> 인원 배정</button>'
           + '<button onclick="deletePackage(' + k.id + ')" class="text-slate-400 hover:text-rose-600 px-2"><i class="fa-solid fa-trash"></i></button>'
           + '</div></div>'
 
           + '<div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">'
+          + '<div class="md:col-span-2"><label class="block text-[10px] font-bold text-slate-500 mb-0.5">계약 회사명</label>'
+          + '<input value="' + tEsc(k.company || '') + '" placeholder="회사명" onchange="updatePackageField(' + k.id + ', \'company\', this.value)" class="w-full px-2 py-1.5 text-xs border border-sky-200 rounded-lg"></div>'
+          + '<div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">계약 일자</label>'
+          + '<input type="date" value="' + tEsc(k.contractDate || '') + '" onchange="updatePackageField(' + k.id + ', \'contractDate\', this.value)" class="w-full px-2 py-1.5 text-xs border border-sky-200 rounded-lg"></div>'
           + '<div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">계약 인원</label>'
           + '<input type="number" value="' + tEsc(k.headcount || '') + '" onchange="updatePackageField(' + k.id + ", 'headcount', this.value)\" class=\"w-full px-2 py-1.5 text-xs border border-sky-200 rounded-lg\"></div>"
           + '<div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">총 금액 (원)</label>'
@@ -7719,6 +7738,8 @@
           + '<div class="h-1.5 bg-slate-200 rounded-full overflow-hidden mt-1"><div class="h-full ' + (cap && filled === cap ? 'bg-emerald-500' : 'bg-sky-400') + '" style="width:' + pct + '%"></div></div></div>'
           + '</div>'
 
+          + '<div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">계약 내용</label>'
+          + '<textarea rows="2" placeholder="예) 릴스 1회 + 2차활용 3개월 포함 / 원고 검수 1회 / 세금계산서 익월 10일" onchange="updatePackageField(' + k.id + ', \'memo\', this.value)" class="w-full px-2 py-1.5 text-xs border border-sky-200 rounded-lg">' + tEsc(k.memo || '') + '</textarea></div>'
           + '<div class="flex flex-wrap gap-1.5">'
           + (members.length
               ? members.map(p => '<span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-sky-50 text-sky-800 border border-sky-200 rounded-lg px-2 py-1">'
@@ -7772,12 +7793,12 @@
         const members = (k.memberIds || []).map(id => pplList.find(p => p.id === id)).filter(Boolean);
         const unit = pkgUnitCost(k);
         if (!members.length) {
-          out.push({ '진행월': k.month || '', '브랜드': k.brand, '패키지명': k.name, '계약인원': k.headcount,
+          out.push({ '진행월': k.month || '', '브랜드': k.brand, '패키지명': k.name, '회사명': k.company || '', '계약일': k.contractDate || '', '계약인원': k.headcount,
             '총금액': k.amount, '1인당단가': unit, '배정인원': 0, '인플루언서': '', '계정': '', '제품': '', '메모': k.memo || '' });
           return;
         }
         members.forEach(p => out.push({
-          '진행월': k.month || '', '브랜드': k.brand, '패키지명': k.name, '계약인원': k.headcount,
+          '진행월': k.month || '', '브랜드': k.brand, '패키지명': k.name, '회사명': k.company || '', '계약일': k.contractDate || '', '계약인원': k.headcount,
           '총금액': k.amount, '1인당단가': unit, '배정인원': members.length,
           '인플루언서': p.realName || '', '계정': p.influencer || '',
           '제품': prodNamesOf(p).join(', '), '메모': k.memo || ''
@@ -8638,8 +8659,7 @@
 
     /* ==================== 네비게이션 그룹 ==================== */
     const NAV_GROUPS = {
-      run: ['contact', 'ppl', 'micro', 'amb', 'sup', 'trial'],
-      inf: ['creator'],
+      run: ['contact', 'ppl', 'micro', 'amb', 'sup', 'trial', 'creator'],
       report: ['monthly', 'perf'],
       money: ['pay', 'budget'],
       ops: ['seeding', 'utm']
@@ -8909,42 +8929,10 @@
 
     /* ==================== 모드별 화면 구성 ==================== */
     function applyAppMode() {
-      const showGroups = IS_REPORT ? ['report', 'money'] : ['run', 'inf', 'money', 'ops'];
-      ['run', 'inf', 'report', 'money', 'ops'].forEach(g => {
-        const btn = document.getElementById('navgrp-' + g);
-        if (btn) btn.style.display = showGroups.includes(g) ? '' : 'none';
-      });
-      // 정산 그룹: main 은 입금 관리, report 는 예산
-      const payBtn = document.getElementById('nav-pay');
-      if (payBtn) payBtn.style.display = IS_REPORT ? 'none' : '';
-      ['온살', '루메아카이브'].forEach(bn => {
-        const el = document.getElementById('nav-budget-' + bn);
-        if (el) el.style.display = IS_REPORT ? '' : 'none';
-      });
-
-      NAV_GROUPS.money = IS_REPORT ? ['budget'] : ['pay'];
-      NAV_GROUPS.report = IS_REPORT ? ['monthly', 'perf'] : [];
-
       const badge = document.getElementById('appModeBadge');
-      if (badge) {
-        badge.innerHTML = IS_REPORT
-          ? '<i class="fa-solid fa-chart-pie"></i> 리포트 · 예산'
-          : '<i class="fa-solid fa-bolt"></i> 진행 관리';
-        badge.className = IS_REPORT
-          ? 'px-3 py-1.5 bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-black rounded-xl flex items-center gap-1.5'
-          : 'px-3 py-1.5 bg-pink-100 text-pink-700 border border-pink-200 text-xs font-black rounded-xl flex items-center gap-1.5';
-      }
+      if (badge) badge.style.display = 'none';
       const other = document.getElementById('appModeLink');
-      if (other) {
-        other.href = IS_REPORT ? './index.html' : './report.html';
-        other.innerHTML = IS_REPORT
-          ? '<i class="fa-solid fa-arrow-right-arrow-left"></i> 진행 관리로'
-          : '<i class="fa-solid fa-arrow-right-arrow-left"></i> 리포트 · 예산으로';
-      }
-      if (IS_REPORT) {
-        const ro = document.getElementById('readOnlyNote');
-        if (ro) ro.classList.remove('hidden');
-      }
+      if (other) other.style.display = 'none';
     }
 
     /* ==================== 성과 리포트 ==================== */
@@ -9246,6 +9234,60 @@
       })), '성과리포트_' + per.label.replace(/ /g, ''));
     }
 
+
+    /* ==================== 무상앰버서더 브랜드 필터 ==================== */
+    let freeAmbBrand = '전체';
+    function setFreeAmbBrand(b) {
+      freeAmbBrand = b;
+      ['전체', '온살', '루메아카이브'].forEach(x => {
+        const el = document.getElementById('fatab-' + x);
+        if (el) el.className = (x === b)
+          ? 'px-4 py-1.5 rounded-lg bg-white text-teal-700 shadow-xs transition'
+          : 'px-4 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition';
+      });
+      renderFreeAmbTable();
+    }
+
+    /* ==================== 선택 인원으로 패키지 묶기 ==================== */
+    function createPackageFromSelection() {
+      const ids = Array.from(document.querySelectorAll('.micro-select:checked')).map(c => Number(c.value));
+      if (!ids.length) { alert('먼저 목록에서 묶을 인플루언서를 체크해 주세요.'); return; }
+
+      const already = ids.filter(id => packageOfPpl(id));
+      if (already.length) {
+        const names = already.map(id => { const p = pplList.find(x => x.id === id); return p ? (p.realName || '무명') : ''; }).join(', ');
+        if (!confirm(names + ' 님은 이미 다른 패키지에 들어 있습니다.\n그 패키지에서 빼고 새 패키지로 옮길까요?')) return;
+        microPackages.forEach(k => { k.memberIds = (k.memberIds || []).filter(x => !ids.includes(x)); });
+      }
+
+      const picked = ids.map(id => pplList.find(x => x.id === id)).filter(Boolean);
+      const brand = picked[0] ? picked[0].brand : '온살';
+      const company = window.prompt('계약 회사명을 입력해 주세요.\n(예: OO미디어 / 샌드박스)', '');
+      if (company === null) return;
+      const name = window.prompt('패키지명을 입력해 주세요.', (company ? company + ' ' : '') + picked.length + '인 패키지');
+      if (name === null || !name.trim()) { alert('패키지명이 필요합니다.'); return; }
+      const contractDate = window.prompt('계약 일자 (YYYY-MM-DD)', todayStr());
+      if (contractDate === null) return;
+      const amount = Number(window.prompt('총 계약 금액 (원)', '')) || 0;
+
+      microPackages.unshift({
+        id: Date.now(),
+        brand: brand,
+        name: name.trim(),
+        company: (company || '').trim(),
+        contractDate: contractDate || '',
+        month: (contractDate || todayStr()).slice(0, 7),
+        headcount: picked.length,
+        amount: amount,
+        memo: '',
+        memberIds: ids
+      });
+      saveAll();
+      renderAll();
+      document.querySelectorAll('.micro-select:checked').forEach(c => { c.checked = false; });
+      alert(picked.length + '명을 "' + name.trim() + '" 패키지로 묶었습니다.\n계약 내용은 아래 패키지 카드에서 이어서 적어 주세요.');
+    }
+
     function renderPplTable() {
       const tbody = document.getElementById('pplTableBody');
       let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p) && !isSupporters(p));
@@ -9404,7 +9446,10 @@
         const stepHtml = sortedStepEntries(p.stepDates).map(([st, info]) => {
           const dt = typeof info === 'object' ? info.date : info;
           const done = typeof info === 'object' ? info.done : false;
-          return `<div class="text-[11px] ${done ? 'line-through text-slate-400' : 'text-slate-700 font-semibold'}">${st}: ${dt}</div>`;
+          return `<div class="flex items-center gap-1.5 text-[11px] bg-slate-50 px-2 py-1 rounded border border-slate-200 mb-1">
+            <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleStepDateDone(${p.id}, '${st}', this.checked)" class="accent-sky-600 w-3.5 h-3.5 cursor-pointer">
+            <span class="font-bold ${done ? 'line-through text-slate-400' : 'text-slate-700'}">${st}: ${dt}</span>
+          </div>`;
         }).join('');
 
         const addrLine = (p.receiverName || p.receiverPhone || p.address)
@@ -9431,13 +9476,14 @@
               ${p.category ? `<span class="text-[10px] font-bold px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded-full">${p.category}</span>` : ''}
             </td>
             <td class="py-3 px-3 align-top"><div class="flex flex-col gap-1 items-start">${typeChips}</div></td>
-            <td class="py-3 px-3 align-top">
-              <select onchange="updatePplStatus(${p.id}, this.value)" class="px-2 py-1 text-xs border border-sky-200 rounded-lg font-bold text-sky-700 bg-sky-50/40">
+            <td class="py-3 px-3 align-top max-w-[230px] min-w-[210px]">
+              <select onchange="updatePplStatus(${p.id}, this.value)" class="w-full mb-1.5 px-2 py-1 text-xs border border-sky-200 rounded-lg font-bold text-sky-700 bg-sky-50/40">
                 ${STAGES.map(st => `<option value="${st}" ${p.status === st ? 'selected' : ''}>${st}</option>`).join('')}
               </select>
-            </td>
-            <td class="py-3 px-3 align-top max-w-[180px]">
-              <div class="max-h-[90px] overflow-y-auto custom-scrollbar pr-1">${stepHtml || '<span class="text-slate-400 text-[11px]">일정 없음</span>'}</div>
+              <div class="max-h-[110px] overflow-y-auto custom-scrollbar pr-1">${stepHtml || '<span class="text-slate-400 text-[11px]">일정 없음</span>'}</div>
+              <button onclick="openStepDateModal(${p.id})" class="mt-1 text-[11px] text-sky-700 font-semibold hover:underline">
+                <i class="fa-solid fa-pen-to-square"></i> 단계별 일자 전체 관리
+              </button>
             </td>
             <td class="py-3 px-3 align-top min-w-[170px]">${addrLine}</td>
             <td class="py-3 px-3 align-top">
@@ -9459,7 +9505,7 @@
             </td>
           </tr>`;
       };
-      tbody.innerHTML = groupedTbodyHtml('micro', list, 9, rowFn, '마이크로 진행 건이 없습니다.');
+      tbody.innerHTML = groupedTbodyHtml('micro', list, 8, rowFn, '마이크로 진행 건이 없습니다.');
     }
 
     function toggleSelectAllFreeAmb(checked) {
@@ -9467,7 +9513,8 @@
     }
 
     function renderFreeAmbTable() {
-      const list = pplList.filter(isFreeAmb);
+      let list = pplList.filter(isFreeAmb);
+      if (freeAmbBrand !== '전체') list = list.filter(p => p.brand === freeAmbBrand);
 
       document.getElementById('freeAmbTotal').innerText = list.length + '명';
       document.getElementById('freeAmbHeaderCount').innerText = list.length + '명';
