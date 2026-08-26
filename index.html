@@ -27,6 +27,31 @@
     .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #fdf2f8; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #fbcfe8; border-radius: 4px; }
+
+    /* ===== PPL 성과 리포트 ===== */
+    .perf-tb { padding: 5px 9px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; color: #475569; }
+    .perf-tb:hover { border-color: #f9a8d4; color: #db2777; background: #fff5f9; }
+    .perf-doc { font-size: 13px; line-height: 1.75; color: #1e293b; outline: none; }
+    .perf-doc:empty:before { content: attr(data-ph); color: #94a3b8; }
+    .perf-doc table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+    .perf-doc th, .perf-doc td { border: 1px solid #f7b8d3; padding: 7px 9px; font-size: 12px; vertical-align: top; word-break: break-word; }
+    .perf-doc th { background: #fde7f1; font-weight: 700; text-align: left; }
+    .perf-doc img { max-width: 100%; height: auto; border-radius: 8px; }
+    .perf-doc a { color: #db2777; text-decoration: underline; }
+    .perf-doc p { margin: 2px 0; }
+    .perf-yt { display: flex; gap: 12px; align-items: flex-start; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 12px; padding: 10px; margin: 8px 0; max-width: 640px; }
+    .perf-yt .perf-yt-thumb { width: 96px; flex: none; border-radius: 8px; }
+    .perf-yt-title { font-weight: 700; font-size: 12.5px; }
+    .perf-yt-meta { font-size: 11px; color: #64748b; margin-top: 3px; }
+    .perf-yt-stats { font-size: 12px; font-weight: 700; color: #db2777; margin-top: 5px; }
+    .perf-yt-asof { font-size: 10.5px; color: #94a3b8; margin-top: 2px; }
+    @media print {
+      body * { visibility: hidden !important; }
+      #perfPrintArea, #perfPrintArea * { visibility: visible !important; }
+      #perfPrintArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+      #perfPrintArea .perf-print-tab { page-break-inside: avoid; }
+      @page { margin: 12mm; }
+    }
   </style>
 </head>
 <body class="bg-pink-50/40 text-slate-800 min-h-screen pb-16">
@@ -83,6 +108,9 @@
           </button>
           <button onclick="openBudget('루메아카이브')" id="nav-budget-루메아카이브" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
             <i class="fa-solid fa-calculator"></i> 루메 예산관리
+          </button>
+          <button onclick="switchMainPage('perf')" id="nav-perf" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-line"></i> PPL 성과 리포트
           </button>
         </div>
         <button onclick="exportToCSV()" class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold rounded-xl transition flex items-center gap-1 shadow-xs">
@@ -3224,12 +3252,14 @@
         onsal_creatorMissions: creatorMissions,
         onsal_microPackages: microPackages,
         onsal_budgets: budgets,
-        onsal_launchBudgets: launchBudgets
+        onsal_launchBudgets: launchBudgets,
+        onsal_perfReports: perfReports
       };
     }
 
     let sizeWarned = false;
     async function pushToSheet() {
+      if (PERF_READONLY) return;              // 보기 전용 공유 링크에서는 절대 저장하지 않습니다
       setSyncStatus('saving', '저장 중...');
       try {
         const payload = JSON.stringify({ key: SYNC_KEY, data: collectSyncData() });
@@ -3253,6 +3283,7 @@
     }
 
     function queueSync() {
+      if (PERF_READONLY) return;
       if (!syncReady) return;
       clearTimeout(syncTimer);
       syncTimer = setTimeout(pushToSheet, 1200);
@@ -3292,6 +3323,7 @@
           if (Array.isArray(d.onsal_microPackages)) microPackages = d.onsal_microPackages;
           if (Array.isArray(d.onsal_budgets)) budgets = d.onsal_budgets;
           if (Array.isArray(d.onsal_launchBudgets)) launchBudgets = d.onsal_launchBudgets;
+          if (Array.isArray(d.onsal_perfReports)) perfReports = d.onsal_perfReports;
 
           localStorage.setItem('onsal_products', JSON.stringify(products));
           localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
@@ -3310,6 +3342,7 @@
           localStorage.setItem('onsal_microPackages', JSON.stringify(microPackages));
           localStorage.setItem('onsal_budgets', JSON.stringify(budgets));
           localStorage.setItem('onsal_launchBudgets', JSON.stringify(launchBudgets));
+          if (!PERF_READONLY) localStorage.setItem('onsal_perfReports', JSON.stringify(perfReports));
         }
 
         syncReady = true;
@@ -3613,6 +3646,8 @@
     let budgets = JSON.parse(localStorage.getItem('onsal_budgets')) || [];
     // 제품 출시 예산 [{ id, brand, name, date, memo, items:[{label, qty, unit, memo}] }]
     let launchBudgets = JSON.parse(localStorage.getItem('onsal_launchBudgets')) || [];
+    // PPL 성과 리포트 [{ id, title, createdAt, updatedAt, tabs:[{id, name, pplId, html}] }]
+    let perfReports = JSON.parse(localStorage.getItem('onsal_perfReports')) || [];
 
     /* ==================== 체험단 관리 ==================== */
     const TRIAL_RECRUIT_DAYS = 4;   // 총 모집 일수
@@ -4099,6 +4134,7 @@
     let currentMonth = 5; // June
 
     window.addEventListener('DOMContentLoaded', () => {
+      if (PERF_READONLY) { perfEnterViewer(PERF_VIEW_ID); return; }   // 보기 전용 공유 링크
       document.getElementById('contactDate').valueAsDate = new Date();
       document.getElementById('logDate').valueAsDate = new Date();
       renderAll();
@@ -4128,8 +4164,10 @@
         });
       }
 
+      perfInitResizers();
       pullFromSheet().then(() => {
         renderAll();
+        renderPerfPage();
         syncToScheduler(true);
         pullReuseRecords(false);
       });
@@ -4153,6 +4191,7 @@
       localStorage.setItem('onsal_microPackages', JSON.stringify(microPackages));
       localStorage.setItem('onsal_budgets', JSON.stringify(budgets));
       localStorage.setItem('onsal_launchBudgets', JSON.stringify(launchBudgets));
+      localStorage.setItem('onsal_perfReports', JSON.stringify(perfReports));
       queueSync();
       queueSchedulerSync();
     }
@@ -4217,7 +4256,7 @@
 
     // 페이지 전환 (PPL / 시딩재고 / UTM)
     function switchMainPage(pageId) {
-      const pages = ['monthly', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'pay', 'seeding', 'utm', 'budget'];
+      const pages = ['monthly', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'pay', 'seeding', 'utm', 'budget', 'perf'];
       const activeClass = "px-3 py-2 rounded-xl bg-white text-pink-600 shadow-xs transition flex items-center gap-1.5";
       const idleClass = "px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
 
@@ -4249,6 +4288,7 @@
       if (pageId === 'trial') renderTrialDashboard();
       if (pageId === 'seeding') renderSeedingDashboard();
       if (pageId === 'utm') renderUtmDashboard();
+      if (pageId === 'perf') { renderPerfPage(); perfInitResizers(); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -10080,6 +10120,587 @@
       }
     }
 
+    /* ==================================================================
+       PPL 성과 리포트 (인플루언서별)  — 탭 편집 / 링크공유(보기전용) / PDF
+       ================================================================== */
+    const PERF_VIEW_ID = new URLSearchParams(location.search).get('perf') || '';
+    const PERF_READONLY = !!PERF_VIEW_ID;
+
+    let perfCurId = localStorage.getItem('onsal_perfCurId') || '';
+    let perfCurTab = '';
+    let perfRange = null;
+    let perfSaveTimer = null;
+
+    function perfUid() { return 'pf' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+    function perfEd() { return document.getElementById('perfEditor'); }
+    function perfCur() { return perfReports.find(r => r.id === perfCurId) || null; }
+    function perfTabObj() {
+      const r = perfCur(); if (!r) return null;
+      return (r.tabs || []).find(t => t.id === perfCurTab) || (r.tabs || [])[0] || null;
+    }
+    function perfNum(n) { const v = Number(n); return isNaN(v) ? '-' : v.toLocaleString('ko-KR'); }
+    function perfToday() { return new Date().toISOString().slice(0, 10); }
+
+    function perfPersist() {
+      if (PERF_READONLY) return;
+      localStorage.setItem('onsal_perfReports', JSON.stringify(perfReports));
+      localStorage.setItem('onsal_perfCurId', perfCurId);
+      queueSync();
+    }
+    function perfFlush() {
+      const t = perfTabObj(), ed = perfEd();
+      if (!t || !ed || PERF_READONLY) return;
+      t.html = ed.innerHTML;
+      const r = perfCur(); if (r) r.updatedAt = new Date().toISOString();
+    }
+    function perfQueueSave() {
+      if (PERF_READONLY) return;
+      clearTimeout(perfSaveTimer);
+      perfSaveTimer = setTimeout(() => { perfFlush(); perfPersist(); }, 700);
+    }
+
+    /* ---------- 리포트 목록 ---------- */
+    function renderPerfPage() {
+      const sel = document.getElementById('perfReportSelect');
+      if (!sel) return;
+      if (perfReports.length && !perfCur()) perfCurId = perfReports[0].id;
+      sel.innerHTML = perfReports.length
+        ? perfReports.map(r => `<option value="${tEsc(r.id)}"${r.id === perfCurId ? ' selected' : ''}>${tEsc(r.title)}</option>`).join('')
+        : '<option value="">리포트가 없습니다 — “새 리포트”를 눌러 주세요</option>';
+      renderPerfTabs();
+    }
+
+    function perfNewReport() {
+      const title = prompt('리포트 이름을 적어 주세요.\n예) 온살 비타민 앰플 8월 PPL 성과', '');
+      if (title === null) return;
+      const r = { id: perfUid(), title: (title.trim() || 'PPL 성과 ' + perfToday()), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), tabs: [] };
+      r.tabs.push({ id: perfUid(), name: '전체', html: '' });
+      perfReports.unshift(r);
+      perfCurId = r.id; perfCurTab = r.tabs[0].id;
+      perfPersist(); renderPerfPage();
+    }
+    function perfRenameReport() {
+      const r = perfCur(); if (!r) return;
+      const v = prompt('리포트 이름', r.title);
+      if (v === null) return;
+      r.title = v.trim() || r.title;
+      perfPersist(); renderPerfPage();
+    }
+    function perfDeleteReport() {
+      const r = perfCur(); if (!r) return;
+      if (!confirm(`"${r.title}" 리포트를 삭제할까요?\n안에 있는 탭 내용도 모두 지워집니다.`)) return;
+      perfReports = perfReports.filter(x => x.id !== r.id);
+      perfCurId = perfReports.length ? perfReports[0].id : '';
+      perfCurTab = '';
+      perfPersist(); renderPerfPage();
+    }
+    function perfSelectReport(id) {
+      perfFlush(); perfPersist();
+      perfCurId = id; perfCurTab = '';
+      renderPerfPage();
+    }
+
+    /* ---------- 탭 ---------- */
+    function renderPerfTabs() {
+      const bar = document.getElementById('perfTabBar');
+      const ed = perfEd();
+      const card = document.getElementById('perfCard');
+      if (!bar || !ed) return;
+      const r = perfCur();
+      if (!r) { bar.innerHTML = ''; ed.innerHTML = ''; if (card) card.classList.add('opacity-40', 'pointer-events-none'); return; }
+      if (card) card.classList.remove('opacity-40', 'pointer-events-none');
+      setTxt('perfCardTitle', r.title);
+
+      if (!r.tabs || !r.tabs.length) r.tabs = [{ id: perfUid(), name: '전체', html: '' }];
+      if (!r.tabs.some(t => t.id === perfCurTab)) perfCurTab = r.tabs[0].id;
+
+      bar.innerHTML = r.tabs.map(t => {
+        const on = t.id === perfCurTab;
+        return `<span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-[11.5px] font-bold cursor-pointer transition ${on ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-slate-500 border-slate-200 hover:border-pink-300'}"
+            onclick="perfSwitchTab('${tArg(t.id)}')" ondblclick="perfRenameTab('${tArg(t.id)}')" title="더블클릭하면 이름을 바꿀 수 있어요">
+            ${tEsc(t.name)}
+            <i class="fa-solid fa-xmark opacity-60 hover:opacity-100" onclick="event.stopPropagation();perfDeleteTab('${tArg(t.id)}')"></i>
+          </span>`;
+      }).join('') + `<button onclick="perfAddTab()" class="px-3 py-1.5 rounded-full border border-dashed border-pink-300 text-pink-600 text-[11.5px] font-bold hover:bg-pink-50"><i class="fa-solid fa-plus"></i> 탭 추가</button>`;
+
+      const t = perfTabObj();
+      ed.innerHTML = (t && t.html) || '';
+    }
+
+    function perfSwitchTab(id) {
+      perfFlush(); perfPersist();
+      perfCurTab = id;
+      renderPerfTabs();
+    }
+    function perfAddTab() {
+      const r = perfCur(); if (!r) { alert('먼저 리포트를 만들어 주세요.'); return; }
+      const name = prompt('탭 이름 (인플루언서 이름 등)', '');
+      if (name === null) return;
+      perfFlush();
+      const t = { id: perfUid(), name: name.trim() || ('탭 ' + (r.tabs.length + 1)), html: '' };
+      r.tabs.push(t); perfCurTab = t.id;
+      perfPersist(); renderPerfTabs();
+    }
+    function perfRenameTab(id) {
+      const r = perfCur(); if (!r) return;
+      const t = r.tabs.find(x => x.id === id); if (!t) return;
+      const v = prompt('탭 이름', t.name);
+      if (v === null) return;
+      t.name = v.trim() || t.name;
+      perfPersist(); renderPerfTabs();
+    }
+    function perfDeleteTab(id) {
+      const r = perfCur(); if (!r) return;
+      if (r.tabs.length <= 1) { alert('탭이 하나뿐이라 지울 수 없어요.'); return; }
+      const t = r.tabs.find(x => x.id === id);
+      if (!confirm(`"${t ? t.name : ''}" 탭을 삭제할까요?`)) return;
+      r.tabs = r.tabs.filter(x => x.id !== id);
+      if (perfCurTab === id) perfCurTab = r.tabs[0].id;
+      perfPersist(); renderPerfTabs();
+    }
+
+    /* ---------- 서식 ---------- */
+    function perfKeepRange() { /* selectionchange 가 이미 저장해 둡니다 */ }
+    function perfFocus() {
+      const ed = perfEd(); if (!ed) return;
+      ed.focus();
+      if (perfRange && ed.contains(perfRange.commonAncestorContainer)) {
+        const s = window.getSelection(); s.removeAllRanges(); s.addRange(perfRange);
+      }
+    }
+    function perfExec(cmd, val) {
+      perfFocus();
+      try { document.execCommand('styleWithCSS', false, true); } catch (e) { }
+      document.execCommand(cmd, false, val === undefined ? null : val);
+      perfQueueSave();
+    }
+    function perfFontStep(delta) {
+      const ed = perfEd(); if (!ed) return;
+      perfFocus();
+      const sel = window.getSelection();
+      if (!sel.rangeCount || sel.isCollapsed) { alert('크기를 바꿀 글자를 먼저 드래그해서 선택해 주세요.'); return; }
+      let node = sel.getRangeAt(0).startContainer;
+      if (node.nodeType === 3) node = node.parentNode;
+      const cur = parseFloat(getComputedStyle(node).fontSize) || 13;
+      const next = Math.min(60, Math.max(9, Math.round(cur + delta)));
+      try { document.execCommand('styleWithCSS', false, true); } catch (e) { }
+      document.execCommand('fontSize', false, '7');
+      ed.querySelectorAll('font[size="7"]').forEach(f => {
+        const span = document.createElement('span');
+        span.style.fontSize = next + 'px';
+        while (f.firstChild) span.appendChild(f.firstChild);
+        f.replaceWith(span);
+      });
+      perfQueueSave();
+    }
+    function perfCellsInSelection() {
+      const ed = perfEd(); if (!ed) return [];
+      const sel = window.getSelection();
+      if (!sel.rangeCount) return [];
+      const range = sel.getRangeAt(0);
+      const all = Array.from(ed.querySelectorAll('td,th'));
+      const hit = all.filter(c => { try { return range.intersectsNode(c); } catch (e) { return false; } });
+      if (hit.length) return hit;
+      let n = range.startContainer;
+      if (n.nodeType === 3) n = n.parentNode;
+      const c = n.closest ? n.closest('td,th') : null;
+      return c ? [c] : [];
+    }
+    function perfCellBg(color) {
+      perfFocus();
+      const cells = perfCellsInSelection();
+      if (!cells.length) { alert('표 안의 칸을 클릭(또는 드래그)한 뒤 눌러 주세요.'); return; }
+      cells.forEach(c => { c.style.backgroundColor = color || ''; });
+      perfQueueSave();
+    }
+
+    /* ---------- 표 ---------- */
+    function perfInsertHtml(html) {
+      perfFocus();
+      document.execCommand('insertHTML', false, html);
+      perfQueueSave();
+    }
+    function perfInsertTable() {
+      const rows = parseInt(prompt('행 수 (제목 행 제외)', '3'), 10);
+      if (isNaN(rows)) return;
+      const cols = parseInt(prompt('열 수', '4'), 10);
+      if (isNaN(cols)) return;
+      perfInsertHtml(perfTableHtml(
+        Array.from({ length: cols }, (_, i) => '항목 ' + (i + 1)),
+        Array.from({ length: Math.max(1, rows) }, () => Array.from({ length: cols }, () => ''))
+      ));
+    }
+    function perfTableHtml(headers, rows) {
+      return '<table><thead><tr>' + headers.map(h => '<th>' + tEsc(h) + '</th>').join('') + '</tr></thead><tbody>'
+        + rows.map(r => '<tr>' + r.map(c => '<td>' + (c == null ? '' : c) + '</td>').join('') + '</tr>').join('')
+        + '</tbody></table><p><br></p>';
+    }
+    function perfCellCtx() {
+      const cells = perfCellsInSelection();
+      if (!cells.length) return null;
+      const cell = cells[0], row = cell.parentElement, table = cell.closest('table');
+      return { cell, row, table, idx: Array.from(row.children).indexOf(cell) };
+    }
+    function perfTableOp(op) {
+      const c = perfCellCtx();
+      if (!c) { alert('표 안의 칸을 먼저 클릭해 주세요.'); return; }
+      const { cell, row, table, idx } = c;
+      if (op === 'addRow') {
+        const tr = document.createElement('tr');
+        for (let i = 0; i < row.children.length; i++) tr.appendChild(document.createElement('td'));
+        const body = table.tBodies[0] || table;
+        if (row.parentElement === body) row.after(tr); else body.insertBefore(tr, body.firstChild);
+      } else if (op === 'delRow') {
+        if (row.closest('thead')) { alert('제목 행은 지울 수 없어요.'); return; }
+        row.remove();
+      } else if (op === 'addCol') {
+        Array.from(table.rows).forEach(tr => {
+          const tag = tr.closest('thead') ? 'th' : 'td';
+          const el = document.createElement(tag);
+          if (tag === 'th') el.textContent = '새 항목';
+          const ref = tr.children[idx];
+          if (ref) ref.after(el); else tr.appendChild(el);
+        });
+      } else if (op === 'delCol') {
+        if (table.rows[0] && table.rows[0].children.length <= 1) { alert('열이 하나뿐이라 지울 수 없어요.'); return; }
+        Array.from(table.rows).forEach(tr => { if (tr.children[idx]) tr.children[idx].remove(); });
+      }
+      perfQueueSave();
+    }
+
+    /* ---------- 링크 / 유튜브 / 인스타 ---------- */
+    function perfInsertLink() {
+      const url = prompt('링크 주소 (https://...)', 'https://');
+      if (!url || url === 'https://') return;
+      const sel = window.getSelection();
+      const hasText = sel && sel.rangeCount && !sel.isCollapsed;
+      if (hasText) perfExec('createLink', url);
+      else perfInsertHtml('<a href="' + tEsc(url) + '" target="_blank" rel="noopener">' + tEsc(url) + '</a>&nbsp;');
+    }
+
+    function perfYtCardHtml(id, d) {
+      d = d || {};
+      const thumb = d.thumb || ('https://i.ytimg.com/vi/' + id + '/mqdefault.jpg');
+      return '<div class="perf-yt" data-yt-id="' + tEsc(id) + '">'
+        + '<img class="perf-yt-thumb" src="' + tEsc(thumb) + '" alt="">'
+        + '<div class="perf-yt-info" style="flex:1">'
+        + '<div class="perf-yt-title"><a href="https://youtu.be/' + tEsc(id) + '" target="_blank" rel="noopener">' + tEsc(d.title || '유튜브 영상') + '</a></div>'
+        + '<div class="perf-yt-meta">' + tEsc(d.channel || '') + (d.published ? ' · 게시 ' + tEsc(d.published) : '') + '</div>'
+        + '<div class="perf-yt-stats">조회수 ' + perfNum(d.views) + ' · 좋아요 ' + perfNum(d.likes) + ' · 댓글 ' + perfNum(d.comments) + '</div>'
+        + '<div class="perf-yt-asof">' + tEsc(d.asOf || perfToday()) + ' 기준</div>'
+        + '</div></div><p><br></p>';
+    }
+
+    async function perfYtFetch(ids) {
+      const j = await ytApi('videos?part=snippet,statistics&id=' + ids.join(','));
+      const out = {};
+      (j.items || []).forEach(it => {
+        const s = it.statistics || {}, sn = it.snippet || {};
+        out[it.id] = {
+          title: sn.title || '', channel: sn.channelTitle || '',
+          published: (sn.publishedAt || '').slice(0, 10),
+          thumb: ((sn.thumbnails || {}).medium || {}).url || '',
+          views: s.viewCount, likes: s.likeCount, comments: s.commentCount, asOf: perfToday()
+        };
+      });
+      return out;
+    }
+
+    async function perfInsertYoutube() {
+      const url = prompt('유튜브 영상 주소를 넣어 주세요.\n예) https://youtu.be/xxxxxxxx', 'https://');
+      if (!url || url === 'https://') return;
+      const id = youtubeIdOf(url);
+      if (!id) { alert('유튜브 영상 주소를 인식하지 못했습니다.'); return; }
+      try {
+        const map = await perfYtFetch([id]);
+        perfInsertHtml(perfYtCardHtml(id, map[id]));
+      } catch (e) {
+        if (e.message === 'NOKEY') {
+          perfInsertHtml(perfYtCardHtml(id, {}));
+          alert('YouTube API 키가 없어서 카드만 넣었습니다.\n키를 설정한 뒤 “유튜브 수치 갱신”을 눌러 주세요.');
+          setYoutubeKey();
+        } else { alert('가져오지 못했습니다: ' + e.message); }
+      }
+    }
+
+    async function perfRefreshYoutube(alertResult) {
+      const ed = perfEd(); if (!ed) return;
+      const cards = Array.from(ed.querySelectorAll('.perf-yt[data-yt-id]'));
+      if (!cards.length) { if (alertResult) alert('이 탭에 유튜브 카드가 없습니다.\n“유튜브 링크” 버튼으로 먼저 넣어 주세요.'); return; }
+      try {
+        const ids = Array.from(new Set(cards.map(c => c.dataset.ytId)));
+        const map = await perfYtFetch(ids);
+        let n = 0;
+        cards.forEach(c => {
+          const d = map[c.dataset.ytId]; if (!d) return;
+          const st = c.querySelector('.perf-yt-stats'), as = c.querySelector('.perf-yt-asof');
+          const ti = c.querySelector('.perf-yt-title a'), me = c.querySelector('.perf-yt-meta'), th = c.querySelector('.perf-yt-thumb');
+          if (st) st.textContent = '조회수 ' + perfNum(d.views) + ' · 좋아요 ' + perfNum(d.likes) + ' · 댓글 ' + perfNum(d.comments);
+          if (as) as.textContent = d.asOf + ' 기준';
+          if (ti && (!ti.textContent.trim() || ti.textContent.trim() === '유튜브 영상')) ti.textContent = d.title;
+          if (me && !me.textContent.trim()) me.textContent = d.channel + (d.published ? ' · 게시 ' + d.published : '');
+          if (th && d.thumb) th.src = d.thumb;
+          n++;
+        });
+        perfFlush(); perfPersist();
+        if (alertResult) alert(n + '개 영상의 수치를 오늘 기준으로 갱신했습니다.');
+      } catch (e) {
+        if (e.message === 'NOKEY') { alert('먼저 YouTube API 키를 설정해 주세요.'); setYoutubeKey(); }
+        else alert('가져오지 못했습니다: ' + e.message);
+      }
+    }
+
+    function perfInsertInstagram() {
+      const url = prompt('인스타그램 게시물 주소를 넣어 주세요.', 'https://');
+      if (!url || url === 'https://') return;
+      perfInsertHtml('<div class="perf-yt" data-ig-url="' + tEsc(url) + '">'
+        + '<div style="flex:1">'
+        + '<div class="perf-yt-title"><a href="' + tEsc(url) + '" target="_blank" rel="noopener">인스타그램 게시물</a></div>'
+        + '<div class="perf-yt-stats">조회수 - · 좋아요 - · 댓글 - · 저장 -</div>'
+        + '<div class="perf-yt-asof">인스타는 자동 수집이 안 돼요 — 숫자를 직접 고쳐 주세요 (' + perfToday() + ' 기준)</div>'
+        + '</div></div><p><br></p>');
+    }
+
+    /* ---------- 이미지 ---------- */
+    function perfInsertImage(dataUrl) { perfInsertHtml('<img src="' + dataUrl + '" style="max-width:100%"><p><br></p>'); }
+    function perfPickImages(input) {
+      Array.from(input.files || []).forEach(f => compressImageFile(f, d => perfInsertImage(d)));
+      input.value = '';
+    }
+
+    /* ---------- 크기 조절 (이미지 모서리 / 표 세로선) ---------- */
+    function perfInitResizers() {
+      const ed = perfEd(); if (!ed || ed.dataset.rsInit) return;
+      ed.dataset.rsInit = '1';
+
+      ed.addEventListener('mousemove', e => {
+        const t = e.target;
+        if (t.tagName === 'IMG') {
+          const r = t.getBoundingClientRect();
+          t.style.cursor = (e.clientX > r.right - 16 && e.clientY > r.bottom - 16) ? 'nwse-resize' : '';
+        } else if (t.tagName === 'TD' || t.tagName === 'TH') {
+          const r = t.getBoundingClientRect();
+          t.style.cursor = (e.clientX > r.right - 6) ? 'col-resize' : '';
+        }
+      });
+
+      ed.addEventListener('mousedown', e => {
+        const t = e.target;
+        if (t.tagName === 'IMG') {
+          const r = t.getBoundingClientRect();
+          if (e.clientX < r.right - 16 || e.clientY < r.bottom - 16) return;
+          e.preventDefault();
+          const sx = e.clientX, sw = r.width;
+          const mm = ev => { t.style.width = Math.max(60, sw + (ev.clientX - sx)) + 'px'; t.style.height = 'auto'; };
+          const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); perfQueueSave(); };
+          document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
+        } else if (t.tagName === 'TD' || t.tagName === 'TH') {
+          const r = t.getBoundingClientRect();
+          if (e.clientX < r.right - 6) return;
+          e.preventDefault();
+          const table = t.closest('table'); if (!table) return;
+          table.style.tableLayout = 'fixed';
+          const idx = Array.from(t.parentElement.children).indexOf(t);
+          const sx = e.clientX, sw = r.width;
+          const mm = ev => {
+            const w = Math.max(40, sw + (ev.clientX - sx)) + 'px';
+            Array.from(table.rows).forEach(tr => { if (tr.children[idx]) tr.children[idx].style.width = w; });
+          };
+          const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); perfQueueSave(); };
+          document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
+        }
+      });
+
+      ed.addEventListener('input', perfQueueSave);
+      ed.addEventListener('blur', () => { perfFlush(); perfPersist(); });
+
+      ed.addEventListener('paste', e => {
+        const items = (e.clipboardData && e.clipboardData.items) || [];
+        const files = [];
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].kind === 'file' && /^image\//.test(items[i].type)) { const f = items[i].getAsFile(); if (f) files.push(f); }
+        }
+        if (files.length) { e.preventDefault(); e.stopPropagation(); files.forEach(f => compressImageFile(f, d => perfInsertImage(d))); return; }
+        const html = e.clipboardData && e.clipboardData.getData('text/html');
+        if (html) {
+          e.preventDefault();
+          const box = document.createElement('div');
+          box.innerHTML = html;
+          box.querySelectorAll('script,style,link,meta,button,input,select,textarea,svg,i').forEach(n => n.remove());
+          box.querySelectorAll('*').forEach(n => { n.removeAttribute('class'); n.removeAttribute('onclick'); n.removeAttribute('id'); });
+          perfInsertHtml(box.innerHTML);
+        }
+      });
+
+      ed.addEventListener('keydown', e => {
+        if (!(e.ctrlKey || e.metaKey)) return;
+        if (e.key === ']') { e.preventDefault(); perfFontStep(2); }
+        if (e.key === '[') { e.preventDefault(); perfFontStep(-2); }
+      });
+    }
+
+    document.addEventListener('selectionchange', () => {
+      const ed = perfEd(); if (!ed) return;
+      const s = window.getSelection();
+      if (s.rangeCount && ed.contains(s.anchorNode)) perfRange = s.getRangeAt(0).cloneRange();
+    });
+
+    /* ---------- 진행완료에서 불러오기 ---------- */
+    function perfOpenImport() {
+      const r = perfCur(); if (!r) { alert('먼저 “새 리포트”를 만들어 주세요.'); return; }
+      const done = pplList.filter(p => isUploadStepDone(p));
+      const box = document.getElementById('perfImportBody');
+      if (!done.length) { alert("진행완료(단계별 일자에서 '업로드' 완료 체크)된 건이 없습니다."); return; }
+      done.sort((a, b) => (lastUploadDateOf(b) || '').localeCompare(lastUploadDateOf(a) || ''));
+      box.innerHTML = done.map(p => {
+        const ups = uploadsOf(p);
+        return `<label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:bg-pink-50/40 cursor-pointer">
+          <input type="checkbox" class="perf-imp mt-0.5" value="${tEsc(p.id)}">
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold text-slate-800">${tEsc(p.brand)} · ${tEsc(whoOf(p))}</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">${tEsc(prodNamesOf(p).join(', ') || '제품 미지정')}</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">업로드 ${ups.length}건${ups.length ? ' · 최근 ' + tEsc(lastUploadDateOf(p) || '-') : ''}</div>
+          </div>
+        </label>`;
+      }).join('');
+      const m = document.getElementById('perfImportModal');
+      m.classList.remove('hidden'); m.classList.add('flex');
+    }
+    function perfCloseImport() {
+      const m = document.getElementById('perfImportModal');
+      m.classList.add('hidden'); m.classList.remove('flex');
+    }
+
+    function perfTemplateFor(p) {
+      const ups = uploadsOf(p);
+      const prods = prodNamesOf(p).join(', ') || '제품 미지정';
+      const cost = totalCostOf(p);
+      let h = '<p><b>[' + tEsc(prods) + ']</b></p>';
+      h += '<p>-인플루언서 : ' + tEsc(whoOf(p)) + ' (' + tEsc(p.brand) + ')</p>';
+      if (ups.length) h += '<p>-업로드 일자 : ' + tEsc(ups.map(u => u.date).filter(Boolean).join(', ')) + '</p>';
+      h += '<p>-채널 : ' + tEsc(Array.from(new Set(ups.map(u => u.channel).filter(Boolean))).join(', ') || '-') + '</p>';
+      if (cost) h += '<p>-비용 : ' + cost.toLocaleString('ko-KR') + '원</p>';
+      if (p.resultNote) h += '<p>-메모 : ' + tEsc(p.resultNote) + '</p>';
+      h += '<p><br></p>';
+
+      ups.forEach(u => {
+        const yid = youtubeIdOf(u.url);
+        if (yid) {
+          h += perfYtCardHtml(yid, { views: u.views, likes: u.likes, comments: u.comments, asOf: perfToday() });
+        } else if (u.url) {
+          h += '<p><a href="' + tEsc(u.url) + '" target="_blank" rel="noopener">' + tEsc((u.channel || '업로드') + ' · ' + (u.date || '')) + '</a>'
+            + (u.views ? ' — 조회수 ' + perfNum(u.views) + ' · 좋아요 ' + perfNum(u.likes) + ' · 댓글 ' + perfNum(u.comments) : '') + '</p>';
+        }
+      });
+
+      const ur = (p.utmResults || []);
+      const headers = ['기준일', '채널 / UTM 소스', '노출수', '유입(클릭)', '구매전환(건)', '구매 금액(원)', '전환율'];
+      const rows = ur.length ? ur.map(u => {
+        const cr = u.clicks ? ((u.orders / u.clicks) * 100).toFixed(2) + '%' : '-';
+        return [tEsc(u.date || ''), tEsc(u.source || ''), perfNum(u.impressions), perfNum(u.clicks), perfNum(u.orders), perfNum(u.revenue), cr];
+      }) : [['', '', '', '', '', '', '']];
+      if (ur.length) {
+        const t = utmTotalsOf(p);
+        rows.push(['<b>합계</b>', '', '<b>' + perfNum(t.impressions) + '</b>', '<b>' + perfNum(t.clicks) + '</b>', '<b>' + perfNum(t.orders) + '</b>', '<b>' + perfNum(t.revenue) + '</b>',
+          '<b>' + (t.clicks ? ((t.orders / t.clicks) * 100).toFixed(2) + '%' : '-') + '</b>']);
+      }
+      h += perfTableHtml(headers, rows);
+
+      (p.resultImages || []).forEach(im => { if (im && im.data) h += '<img src="' + im.data + '" style="max-width:100%"><p><br></p>'; });
+      return h;
+    }
+
+    async function perfDoImport() {
+      const r = perfCur(); if (!r) return;
+      const ids = Array.from(document.querySelectorAll('.perf-imp:checked')).map(c => c.value);
+      if (!ids.length) { alert('한 명 이상 골라 주세요.'); return; }
+      perfFlush();
+      let last = null;
+      ids.forEach(id => {
+        const p = pplList.find(x => x.id === id); if (!p) return;
+        const name = (p.influencer || p.realName || '인플루언서').trim();
+        const t = { id: perfUid(), name, pplId: p.id, html: perfTemplateFor(p) };
+        r.tabs.push(t); last = t.id;
+      });
+      if (last) perfCurTab = last;
+      perfPersist(); renderPerfTabs(); perfCloseImport();
+      await perfRefreshYoutube(false);
+    }
+
+    /* ---------- 공유 링크 (보기 전용) ---------- */
+    async function perfShareLink() {
+      const r = perfCur(); if (!r) { alert('먼저 리포트를 만들어 주세요.'); return; }
+      perfFlush();
+      localStorage.setItem('onsal_perfReports', JSON.stringify(perfReports));
+      await pushToSheet();
+      const url = location.origin + location.pathname + '?perf=' + encodeURIComponent(r.id);
+      document.getElementById('perfShareUrl').value = url;
+      const m = document.getElementById('perfShareModal');
+      m.classList.remove('hidden'); m.classList.add('flex');
+    }
+    function perfCopyShare() {
+      const el = document.getElementById('perfShareUrl');
+      el.select(); el.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(el.value).then(() => alert('링크를 복사했습니다.')).catch(() => { document.execCommand('copy'); alert('링크를 복사했습니다.'); });
+    }
+
+    /* ---------- PDF (인쇄 → PDF로 저장) ---------- */
+    function perfPrintHtml(r, tabs) {
+      return '<div style="font-family:Pretendard,sans-serif;">'
+        + '<h1 style="font-size:19px;font-weight:800;margin:0 0 4px;">' + tEsc(r.title) + '</h1>'
+        + '<p style="font-size:11px;color:#64748b;margin:0 0 18px;">' + perfToday() + ' 기준</p>'
+        + tabs.map(t => '<div class="perf-print-tab" style="margin-bottom:26px;">'
+          + '<h2 style="font-size:14px;font-weight:800;color:#db2777;border-bottom:2px solid #fbcfe8;padding-bottom:5px;margin:0 0 10px;">' + tEsc(t.name) + '</h2>'
+          + '<div class="perf-doc">' + (t.html || '<p style="color:#94a3b8">내용 없음</p>') + '</div></div>').join('')
+        + '</div>';
+    }
+    function perfExportPdf(reportOverride) {
+      const r = reportOverride || perfCur();
+      if (!r) { alert('먼저 리포트를 만들어 주세요.'); return; }
+      if (!reportOverride) perfFlush();
+      let tabs = r.tabs || [];
+      if (!reportOverride && tabs.length > 1) {
+        tabs = confirm('탭을 모두 담을까요?\n\n확인 = 전체 탭\n취소 = 지금 보고 있는 탭만') ? tabs : tabs.filter(t => t.id === perfCurTab);
+      }
+      const area = document.getElementById('perfPrintArea');
+      area.innerHTML = perfPrintHtml(r, tabs);
+      area.classList.remove('hidden');
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => { area.classList.add('hidden'); area.innerHTML = ''; }, 400);
+      }, 120);
+    }
+
+    /* ---------- 보기 전용 뷰어 ---------- */
+    async function perfEnterViewer(id) {
+      document.querySelectorAll('header, main').forEach(el => el.classList.add('hidden'));
+      const v = document.getElementById('perfViewer');
+      v.classList.remove('hidden');
+      v.innerHTML = '<p class="text-sm text-slate-400 py-16 text-center">리포트를 불러오는 중입니다…</p>';
+      await pullFromSheet();
+      const r = perfReports.find(x => x.id === id);
+      if (!r) { v.innerHTML = '<p class="text-sm text-slate-500 py-16 text-center">리포트를 찾을 수 없습니다. 링크를 다시 확인해 주세요.</p>'; return; }
+      v.innerHTML = '<div class="bg-white rounded-2xl border border-pink-100 shadow-sm p-6 sm:p-8">'
+        + '<div class="flex flex-wrap items-start justify-between gap-3 mb-5">'
+        + '<div><h1 class="text-lg font-extrabold text-slate-900">' + tEsc(r.title) + '</h1>'
+        + '<p class="text-[11px] text-slate-400 mt-1">보기 전용 · 마지막 수정 ' + tEsc((r.updatedAt || '').slice(0, 10)) + '</p></div>'
+        + '<button onclick="perfViewerPdf()" class="px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-bold rounded-xl"><i class="fa-solid fa-file-pdf"></i> PDF로 저장</button>'
+        + '</div>'
+        + '<div class="flex flex-wrap gap-1.5 mb-4" id="perfViewTabs"></div>'
+        + '<div id="perfViewBody" class="perf-doc"></div></div>';
+      window.__perfViewReport = r;
+      perfViewerTab((r.tabs[0] || {}).id);
+    }
+    function perfViewerTab(tabId) {
+      const r = window.__perfViewReport; if (!r) return;
+      const t = (r.tabs || []).find(x => x.id === tabId) || (r.tabs || [])[0];
+      document.getElementById('perfViewTabs').innerHTML = (r.tabs || []).map(x =>
+        `<button onclick="perfViewerTab('${tArg(x.id)}')" class="px-3 py-1.5 rounded-full border text-[11.5px] font-bold ${x.id === (t || {}).id ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-slate-500 border-slate-200'}">${tEsc(x.name)}</button>`
+      ).join('');
+      document.getElementById('perfViewBody').innerHTML = (t && t.html) || '<p class="text-slate-400 text-sm">내용 없음</p>';
+    }
+    function perfViewerPdf() { perfExportPdf(window.__perfViewReport); }
+
     function exportToCSV() {
       let csv = '\uFEFF브랜드,제품명,인플루언서본명,계정,진행상태,컨택일자,시딩수량\n';
       pplList.forEach(p => {
@@ -10094,5 +10715,144 @@
       URL.revokeObjectURL(url);
     }
   </script>
+  <!-- ==================== PAGE: PPL 성과 리포트 ==================== -->
+  <main id="page-perf" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-5 hidden">
+
+    <!-- 리포트 선택 바 -->
+    <section class="bg-white p-3 rounded-2xl border border-pink-100 shadow-xs flex flex-wrap items-center gap-2">
+      <div class="flex items-center gap-2 flex-1 min-w-[240px]">
+        <i class="fa-solid fa-chart-line text-pink-500"></i>
+        <select id="perfReportSelect" onchange="perfSelectReport(this.value)"
+          class="flex-1 min-w-[180px] px-3 py-2 text-xs font-bold border border-pink-200 rounded-xl bg-white"></select>
+      </div>
+      <button onclick="perfNewReport()" class="px-3 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+        <i class="fa-solid fa-plus"></i> 새 리포트
+      </button>
+      <button onclick="perfRenameReport()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+        <i class="fa-solid fa-pen"></i> 이름 수정
+      </button>
+      <button onclick="perfDeleteReport()" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+        <i class="fa-solid fa-trash"></i> 삭제
+      </button>
+      <span class="w-px h-6 bg-slate-200 mx-1"></span>
+      <button onclick="perfOpenImport()" class="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+        <i class="fa-solid fa-download"></i> 진행완료에서 불러오기
+      </button>
+      <button onclick="perfShareLink()" class="px-3 py-2 bg-violet-100 hover:bg-violet-200 text-violet-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+        <i class="fa-solid fa-share-nodes"></i> 링크 공유 (보기 전용)
+      </button>
+      <button onclick="perfExportPdf()" class="px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+        <i class="fa-solid fa-file-pdf"></i> PDF 저장
+      </button>
+    </section>
+
+    <!-- 리포트 카드 -->
+    <section id="perfCard" class="bg-white rounded-2xl border border-pink-100 shadow-sm">
+      <div class="px-5 pt-4 pb-2 flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-pink-500"></span>
+          <span id="perfCardTitle">PPL 성과 (인플루언서별)</span>
+        </h2>
+        <span class="text-[11px] font-semibold text-slate-400">인플루언서별로 탭을 나눠 자유롭게 정리하세요</span>
+      </div>
+
+      <!-- 탭 바 -->
+      <div id="perfTabBar" class="px-5 pb-2 flex flex-wrap items-center gap-1.5"></div>
+      <p class="px-5 pb-3 text-[11px] font-semibold text-pink-600">
+        <i class="fa-solid fa-lightbulb"></i> 탭 이름을 <b>더블클릭</b>하면 바꿀 수 있어요. 대시보드에서 복사한 표를 그대로 붙여넣어도 됩니다.
+      </p>
+
+      <!-- 서식 툴바 -->
+      <div class="px-5 pb-3 flex flex-wrap items-center gap-1.5 text-[11px] font-bold">
+        <button onclick="perfExec('bold')" class="perf-tb w-8"><b>B</b></button>
+        <button onclick="perfExec('italic')" class="perf-tb w-8"><i>I</i></button>
+        <button onclick="perfExec('underline')" class="perf-tb w-8"><u>U</u></button>
+        <span class="w-px h-5 bg-slate-200 mx-0.5"></span>
+        <button onclick="perfFontStep(2)" class="perf-tb">가+</button>
+        <button onclick="perfFontStep(-2)" class="perf-tb">가−</button>
+        <span class="w-px h-5 bg-slate-200 mx-0.5"></span>
+        <label class="perf-tb cursor-pointer" onmousedown="perfKeepRange()">글자
+          <input type="color" value="#e11d48" onchange="perfExec('foreColor', this.value)" class="w-6 h-4 border-0 bg-transparent p-0 cursor-pointer align-middle">
+        </label>
+        <label class="perf-tb cursor-pointer" onmousedown="perfKeepRange()">형광
+          <input type="color" value="#fef08a" onchange="perfExec('hiliteColor', this.value)" class="w-6 h-4 border-0 bg-transparent p-0 cursor-pointer align-middle">
+        </label>
+        <span class="w-px h-5 bg-slate-200 mx-0.5"></span>
+        <label class="perf-tb cursor-pointer" onmousedown="perfKeepRange()">칸색
+          <input type="color" value="#fde7f1" onchange="perfCellBg(this.value)" class="w-6 h-4 border-0 bg-transparent p-0 cursor-pointer align-middle">
+        </label>
+        <button onclick="perfCellBg('')" class="perf-tb">칸색 빼기</button>
+        <button onclick="perfExec('removeFormat')" class="perf-tb">서식 지우기</button>
+      </div>
+
+      <!-- 편집 영역 -->
+      <div class="px-5">
+        <div id="perfEditor" contenteditable="true" spellcheck="false"
+          data-ph="여기에 성과를 정리하세요. 캡쳐는 Ctrl+V로 바로 붙여넣기 됩니다."
+          class="perf-doc custom-scrollbar border border-slate-200 rounded-xl p-4 max-h-[70vh] overflow-y-auto bg-white"></div>
+      </div>
+
+      <!-- 하단 툴바 -->
+      <div class="px-5 py-3 mt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+        <p class="text-[10.5px] font-semibold text-slate-400 leading-relaxed">
+          <i class="fa-solid fa-paste"></i> Ctrl+V 붙여넣기 ·
+          <i class="fa-solid fa-up-right-and-down-left-from-center"></i> 표 선 · 이미지 모서리를 끌면 크기 조정 ·
+          <i class="fa-solid fa-keyboard"></i> Ctrl+B 굵게, Ctrl+] / Ctrl+[ 글씨 크기
+        </p>
+        <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-bold">
+          <button onclick="perfInsertLink()" class="perf-tb"><i class="fa-solid fa-link"></i> 링크</button>
+          <button onclick="perfInsertYoutube()" class="perf-tb text-rose-600"><i class="fa-brands fa-youtube"></i> 유튜브 링크</button>
+          <button onclick="perfRefreshYoutube(true)" class="perf-tb text-rose-600"><i class="fa-solid fa-rotate"></i> 유튜브 수치 갱신</button>
+          <button onclick="perfInsertInstagram()" class="perf-tb text-fuchsia-600"><i class="fa-brands fa-instagram"></i> 인스타 링크</button>
+          <span class="w-px h-5 bg-slate-200 mx-0.5"></span>
+          <button onclick="perfInsertTable()" class="perf-tb">표 넣기</button>
+          <button onclick="perfTableOp('addRow')" class="perf-tb">행 추가</button>
+          <button onclick="perfTableOp('addCol')" class="perf-tb">열 추가</button>
+          <button onclick="perfTableOp('delCol')" class="perf-tb">열 삭제</button>
+          <button onclick="perfTableOp('delRow')" class="perf-tb">행 삭제</button>
+          <button onclick="document.getElementById('perfImgInput').click()" class="perf-tb">이미지 첨부</button>
+          <input type="file" id="perfImgInput" accept="image/*" multiple class="hidden" onchange="perfPickImages(this)">
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 진행완료 불러오기 모달 -->
+  <div id="perfImportModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col">
+      <div class="px-6 py-4 border-b border-slate-100">
+        <h3 class="font-extrabold text-slate-800 text-sm"><i class="fa-solid fa-download text-emerald-600"></i> 진행완료 건에서 인플루언서 탭 만들기</h3>
+        <p class="text-[11px] text-slate-500 mt-1">단계별 일자에서 <b>'업로드' 완료 체크</b>가 된 건만 보입니다. 고른 사람마다 탭이 하나씩 생기고, 업로드 링크·UTM 결과가 자동으로 채워져요.</p>
+      </div>
+      <div id="perfImportBody" class="p-5 overflow-y-auto custom-scrollbar space-y-2 flex-1"></div>
+      <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+        <button onclick="perfCloseImport()" class="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl">취소</button>
+        <button onclick="perfDoImport()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl">탭 만들기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 공유 링크 모달 -->
+  <div id="perfShareModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-lg p-6 space-y-3">
+      <h3 class="font-extrabold text-slate-800 text-sm"><i class="fa-solid fa-share-nodes text-violet-600"></i> 보기 전용 공유 링크</h3>
+      <p class="text-[11px] text-slate-500 leading-relaxed">
+        이 링크를 받은 사람은 <b>내용을 볼 수만 있고 수정은 못 합니다.</b> 대시보드의 다른 메뉴도 보이지 않아요.<br>
+        여기서 리포트를 고치면 링크 내용도 자동으로 최신으로 바뀝니다.
+      </p>
+      <div class="flex gap-2">
+        <input id="perfShareUrl" readonly class="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50">
+        <button onclick="perfCopyShare()" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl whitespace-nowrap">복사</button>
+      </div>
+      <div class="flex justify-end pt-1">
+        <button onclick="document.getElementById('perfShareModal').classList.add('hidden')" class="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 보기 전용 뷰어 / 인쇄 영역 -->
+  <div id="perfViewer" class="hidden max-w-4xl mx-auto px-4 sm:px-6 py-8"></div>
+  <div id="perfPrintArea" class="hidden"></div>
+
 </body>
 </html>
