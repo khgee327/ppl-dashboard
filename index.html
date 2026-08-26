@@ -119,7 +119,7 @@
         <button id="schedSyncBtn" onclick="syncToScheduler()" title="📅 체크한 일정이 자동으로 스케줄러에 반영됩니다 (클릭 시 즉시 동기화)" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
           <i class="fa-solid fa-calendar-check"></i> <span id="schedSyncText">스케줄러 자동연동</span>
         </button>
-        <button id="syncStatus" onclick="syncNow()" title="눌러서 다시 동기화" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
+        <button id="syncStatus" onclick="syncStatusClick()" title="눌러서 다시 동기화 (저장 실패 시 원인 표시)" class="px-3 py-2 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
           <i class="fa-solid fa-cloud"></i> <span id="syncStatusText">연결 확인 중...</span>
         </button>
       </div>
@@ -3234,7 +3234,13 @@
       label.innerText = text;
     }
 
-    function collectSyncData() {
+    // 구글 시트는 셀 하나에 50,000자까지만 들어갑니다.
+    // 그보다 큰 값은 자동으로 잘라서 여러 칸(key__c0, key__c1 …)에 나눠 담고,
+    // 불러올 때 다시 합칩니다. (Apps Script 는 손댈 필요 없음)
+    const SYNC_CELL_MAX = 40000;
+    let syncChunkTrack = JSON.parse(localStorage.getItem('onsal_syncChunkTrack') || '{}');
+
+    function collectSyncRaw() {
       return {
         onsal_products: products,
         onsal_pplList: pplList,
@@ -3257,28 +3263,153 @@
       };
     }
 
+    function collectSyncData() {
+      const raw = collectSyncRaw();
+      const out = {};
+      const track = {};
+      Object.entries(raw).forEach(([k, v]) => {
+        const str = JSON.stringify(v);
+        if (str.length <= SYNC_CELL_MAX) { out[k] = v; return; }
+        const n = Math.ceil(str.length / SYNC_CELL_MAX);
+        for (let i = 0; i < n; i++) out[k + '__c' + i] = str.slice(i * SYNC_CELL_MAX, (i + 1) * SYNC_CELL_MAX);
+        out[k + '__cn'] = n;
+        out[k] = '';           // 원래 칸은 비워 둡니다 (조각 쪽을 읽어요)
+        track[k] = n;
+      });
+      // 예전에 조각을 더 많이 썼다면 남은 칸을 비워 줍니다
+      Object.entries(syncChunkTrack).forEach(([k, prev]) => {
+        const now = track[k] || 0;
+        for (let i = now; i < prev; i++) out[k + '__c' + i] = '';
+        if (!now) out[k + '__cn'] = 0;
+      });
+      syncChunkTrack = track;
+      try { localStorage.setItem('onsal_syncChunkTrack', JSON.stringify(track)); } catch (e) { }
+      return out;
+    }
+
+    // 불러올 때 조각을 다시 합치기
+    function expandSyncChunks(d) {
+      Object.keys(d).forEach(k => {
+        if (!/__cn$/.test(k)) return;
+        const base = k.slice(0, -4);
+        const n = Number(d[k]) || 0;
+        if (!n) return;
+        let str = '';
+        for (let i = 0; i < n; i++) str += (d[base + '__c' + i] || '');
+        if (!str) return;
+        try { d[base] = JSON.parse(str); } catch (e) { console.warn('조각 합치기 실패:', base); }
+      });
+      return d;
+    }
+
+    // ===== 저장 용량 진단 =====
+    const SYNC_WARN_BYTES = 700000;    // 이 이상이면 경고 (약 700KB)
+    const SYNC_MAX_BYTES  = 1300000;   // 이 이상이면 아예 보내지 않음 (약 1.3MB)
     let sizeWarned = false;
+    let lastSyncError = '';
+    let lastSyncBytes = 0;
+
+    function syncSizeBreakdown() {
+      const d = collectSyncRaw();
+      return Object.entries(d)
+        .map(([k, v]) => { const c = JSON.stringify(v).length; return { k: k.replace('onsal_', ''), kb: Math.round(c / 1024), chars: c }; })
+        .filter(x => x.kb > 0)
+        .sort((a, b) => b.kb - a.kb);
+    }
+
+    // 용량을 많이 잡아먹는 '개별 항목'을 찾아 줍니다 (지울 대상 알려주기)
+    function syncHeavyItems() {
+      const out = [];
+      const add = (kb, where, how) => { if (kb >= 20) out.push({ kb, where, how }); };
+      pplList.forEach(p => {
+        add(Math.round(JSON.stringify(p.resultImages || []).length / 1024),
+            'PPL 결과 캡쳐 · ' + p.brand + ' ' + whoOf(p),
+            "PPL 목록 → 해당 인플루언서 '업로드/결과 입력' → 캡쳐 삭제");
+        const pay = p.payment || {};
+        add(Math.round(JSON.stringify(pay.contractFiles || []).length / 1024),
+            '계약서 첨부 · ' + p.brand + ' ' + whoOf(p),
+            "입금 관리 → 계약 진행 → 첨부 파일 삭제 (구글드라이브 링크로 대체 권장)");
+      });
+      (typeof trialList !== 'undefined' ? trialList : []).forEach(t => {
+        add(Math.round(JSON.stringify(t.guideFiles || []).length / 1024),
+            '체험단 가이드 파일 · ' + (t.name || t.platform || ''),
+            '체험단 관리 → 가이드 → 파일 삭제 (링크로 대체 권장)');
+      });
+      (typeof perfReports !== 'undefined' ? perfReports : []).forEach(r => {
+        (r.tabs || []).forEach(t => {
+          add(Math.round((t.html || '').length / 1024),
+              '성과 리포트 · ' + r.title + ' > ' + t.name,
+              '해당 탭에서 이미지 줄이기 (PDF로 뽑아 두고 이미지 삭제)');
+        });
+      });
+      pplList.forEach(p => {
+        add(Math.round(JSON.stringify((p.ranks || [])).length / 1024),
+            '상위노출 캡쳐 · ' + whoOf(p), '상위노출 기록 창에서 오래된 캡쳐 삭제');
+      });
+      return out.sort((a, b) => b.kb - a.kb).slice(0, 12);
+    }
+
+    function syncSizeText() {
+      const b = syncSizeBreakdown();
+      const total = Math.round(lastSyncBytes / 1024) || b.reduce((a, x) => a + x.kb, 0);
+      let t = '현재 저장 용량 : 약 ' + total + 'KB (한도 약 ' + Math.round(SYNC_MAX_BYTES / 1024) + 'KB)\n'
+        + '※ 50,000자가 넘는 항목은 자동으로 나눠서 저장됩니다.\n\n[항목별]\n'
+        + b.slice(0, 10).map(x => '· ' + x.k + ' : ' + x.kb + 'KB'
+            + (x.chars > SYNC_CELL_MAX ? '  (' + Math.ceil(x.chars / SYNC_CELL_MAX) + '칸으로 분할)' : '')).join('\n');
+      const heavy = syncHeavyItems();
+      if (heavy.length) {
+        t += '\n\n[용량을 많이 쓰는 건 — 여기부터 지우면 됩니다]\n'
+          + heavy.map(h => '· ' + h.kb + 'KB — ' + h.where + '\n   → ' + h.how).join('\n');
+      }
+      return t;
+    }
+    function showSyncSize() { alert(syncSizeText()); }
+
     async function pushToSheet() {
       if (PERF_READONLY) return;              // 보기 전용 공유 링크에서는 절대 저장하지 않습니다
       setSyncStatus('saving', '저장 중...');
+      let payload = '';
       try {
-        const payload = JSON.stringify({ key: SYNC_KEY, data: collectSyncData() });
-        if (payload.length > 900000 && !sizeWarned) {
-          sizeWarned = true;
-          alert('저장 데이터가 커지고 있습니다 (약 ' + Math.round(payload.length / 1024) + 'KB).\n캡쳐 이미지가 많이 쌓이면 동기화가 느려질 수 있어요. 지난 캠페인의 캡쳐는 정리해 주세요.');
+        payload = JSON.stringify({ key: SYNC_KEY, data: collectSyncData() });
+        lastSyncBytes = payload.length;
+
+        if (payload.length > SYNC_MAX_BYTES) {
+          lastSyncError = '⛔ 저장 용량을 넘어서 시트에 보내지 못했습니다.\n\n'
+            + syncSizeText()
+            + '\n\n※ 지금 화면에서 작업한 내용은 이 브라우저에는 남아 있습니다.\n'
+            + '   위 목록에서 큰 항목(대부분 캡쳐 이미지·첨부파일)을 지우면 바로 다시 저장됩니다.';
+          setSyncStatus('error', '용량 초과 — 클릭해서 원인 보기');
+          return;
         }
+        if (payload.length > SYNC_WARN_BYTES && !sizeWarned) {
+          sizeWarned = true;
+          alert('저장 데이터가 커지고 있습니다 (약 ' + Math.round(payload.length / 1024) + 'KB).\n'
+            + '한도(약 ' + Math.round(SYNC_MAX_BYTES / 1024) + 'KB)에 가까워지면 저장이 막혀요.\n'
+            + '지난 캠페인 캡쳐는 PDF로 뽑아 두고 정리해 주세요.');
+        }
+
         const res = await fetch(SYNC_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: payload
         });
-        const json = await res.json();
+        const text = await res.text();
+        let json;
+        try { json = JSON.parse(text); }
+        catch (pe) {
+          throw new Error('시트가 정상 응답을 주지 않았습니다 (HTTP ' + res.status + ').\n'
+            + '보낸 용량 약 ' + Math.round(payload.length / 1024) + 'KB.\n'
+            + '응답 앞부분: ' + text.slice(0, 160));
+        }
         if (!json.ok) throw new Error(json.error || 'save failed');
 
+        lastSyncError = '';
         const t = new Date();
         setSyncStatus('ok', `저장됨 ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`);
       } catch (e) {
-        setSyncStatus('error', '저장 실패 (다시 시도하려면 클릭)');
+        lastSyncError = '저장 실패 원인\n\n' + (e && e.message ? e.message : e)
+          + '\n\n' + syncSizeText();
+        setSyncStatus('error', '저장 실패 — 클릭해서 원인 보기');
       }
     }
 
@@ -3287,6 +3418,16 @@
       if (!syncReady) return;
       clearTimeout(syncTimer);
       syncTimer = setTimeout(pushToSheet, 1200);
+    }
+
+    function syncStatusClick() {
+      if (lastSyncError) {
+        alert(lastSyncError);
+        const wasSize = lastSyncError.indexOf('용량') === 1 || lastSyncError.startsWith('⛔');
+        lastSyncError = '';
+        if (wasSize) { pushToSheet(); return; }   // 정리 후 눌렀을 수 있으니 저장만 재시도
+      }
+      syncNow();
     }
 
     async function syncNow() {
@@ -3302,7 +3443,7 @@
         const json = await res.json();
         if (!json.ok) throw new Error(json.error || 'load failed');
 
-        const d = json.data || {};
+        const d = expandSyncChunks(json.data || {});
         const hasRemote = Object.keys(d).length > 0;
 
         if (hasRemote) {
@@ -10461,10 +10602,36 @@
         + '</div></div><p><br></p>');
     }
 
-    /* ---------- 이미지 ---------- */
+    /* ---------- 이미지 (리포트는 더 강하게 압축합니다) ---------- */
+    const PERF_IMG_MAX_W = 900;
+    const PERF_IMG_TARGET = 110000;   // 장당 약 110KB 이하로
+    function perfShrinkDataUrl(dataUrl, cb) {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > PERF_IMG_MAX_W) { h = Math.round(h * PERF_IMG_MAX_W / w); w = PERF_IMG_MAX_W; }
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        let out = cv.toDataURL('image/jpeg', 0.68);
+        if (out.length > PERF_IMG_TARGET) out = cv.toDataURL('image/jpeg', 0.5);
+        if (out.length > PERF_IMG_TARGET * 1.6) out = cv.toDataURL('image/jpeg', 0.35);
+        cb(out);
+      };
+      img.onerror = () => cb(null);
+      img.src = dataUrl;
+    }
+    function perfCompressImage(file, cb) {
+      if (!file || !/^image\//.test(file.type)) return;
+      const fr = new FileReader();
+      fr.onload = ev => perfShrinkDataUrl(ev.target.result, d => { if (d) cb(d); });
+      fr.readAsDataURL(file);
+    }
     function perfInsertImage(dataUrl) { perfInsertHtml('<img src="' + dataUrl + '" style="max-width:100%"><p><br></p>'); }
     function perfPickImages(input) {
-      Array.from(input.files || []).forEach(f => compressImageFile(f, d => perfInsertImage(d)));
+      Array.from(input.files || []).forEach(f => perfCompressImage(f, d => perfInsertImage(d)));
       input.value = '';
     }
 
@@ -10520,15 +10687,24 @@
         for (let i = 0; i < items.length; i++) {
           if (items[i].kind === 'file' && /^image\//.test(items[i].type)) { const f = items[i].getAsFile(); if (f) files.push(f); }
         }
-        if (files.length) { e.preventDefault(); e.stopPropagation(); files.forEach(f => compressImageFile(f, d => perfInsertImage(d))); return; }
+        if (files.length) { e.preventDefault(); e.stopPropagation(); files.forEach(f => perfCompressImage(f, d => perfInsertImage(d))); return; }
         const html = e.clipboardData && e.clipboardData.getData('text/html');
         if (html) {
           e.preventDefault();
           const box = document.createElement('div');
           box.innerHTML = html;
-          box.querySelectorAll('script,style,link,meta,button,input,select,textarea,svg,i').forEach(n => n.remove());
-          box.querySelectorAll('*').forEach(n => { n.removeAttribute('class'); n.removeAttribute('onclick'); n.removeAttribute('id'); });
-          perfInsertHtml(box.innerHTML);
+          box.querySelectorAll('script,style,link,meta,button,input,select,textarea,svg,i,iframe,video').forEach(n => n.remove());
+          box.querySelectorAll('*').forEach(n => {
+            n.removeAttribute('class'); n.removeAttribute('onclick'); n.removeAttribute('id');
+            n.removeAttribute('srcset'); n.removeAttribute('data-src');
+          });
+          // 붙여넣은 이미지가 base64(data:)면 그대로 두면 용량이 폭발합니다 → 압축해서 넣기
+          const heavy = Array.from(box.querySelectorAll('img')).filter(i => (i.getAttribute('src') || '').startsWith('data:'));
+          if (!heavy.length) { perfInsertHtml(box.innerHTML); return; }
+          Promise.all(heavy.map(i => new Promise(res => perfShrinkDataUrl(i.src, d => {
+            if (d) { i.setAttribute('src', d); i.setAttribute('style', 'max-width:100%'); } else { i.remove(); }
+            res();
+          })))).then(() => perfInsertHtml(box.innerHTML));
         }
       });
 
@@ -10743,6 +10919,9 @@
       </button>
       <button onclick="perfExportPdf()" class="px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
         <i class="fa-solid fa-file-pdf"></i> PDF 저장
+      </button>
+      <button onclick="showSyncSize()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+        <i class="fa-solid fa-database"></i> 저장 용량 확인
       </button>
     </section>
 
