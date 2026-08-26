@@ -262,6 +262,14 @@
     .side-nav .nav-grp{ font-size:12px }
     .side-nav .side-util{ font-size:12.5px }
   </style>
+
+  <style>
+    /* 보기 전용 공유 링크: 리포트 외 모든 UI 숨김 */
+    body.rpt-view .side-nav, body.rpt-view .side-toggle, body.rpt-view .side-scrim,
+    body.rpt-view header, body.rpt-view main{ display:none !important }
+    body.rpt-view{ background:#F7F6F4; padding:0 !important }
+    body.rpt-view #rptViewer{ max-width:1100px; margin:0 auto; padding:28px 20px 60px }
+  </style>
 </head>
 <body class="text-slate-800 min-h-screen pb-16">
 
@@ -11945,7 +11953,8 @@
 
     /* ---------- 보기 전용 뷰어 ---------- */
     async function rptEnterViewer(id) {
-      document.querySelectorAll('header, main').forEach(el => el.classList.add('hidden'));
+      document.body.classList.add('rpt-view');
+      document.querySelectorAll('header, main, aside, #sideNav, #sideToggle, #sideScrim').forEach(el => el.classList.add('hidden'));
       const v = document.getElementById('rptViewer');
       v.classList.remove('hidden');
       v.innerHTML = '<p class="text-sm text-slate-400 py-16 text-center">리포트를 불러오는 중입니다…</p>';
