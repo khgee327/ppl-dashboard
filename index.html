@@ -38,6 +38,10 @@
     .perf-doc th { background: #fde7f1; font-weight: 700; text-align: left; }
     .perf-doc img { max-width: 100%; height: auto; border-radius: 8px; }
     .perf-doc a { color: #db2777; text-decoration: underline; }
+    .perf-scroll { overflow-x: auto; max-width: 100%; margin: 10px 0; }
+    .perf-scroll > table { margin: 0; }
+    .perf-scroll::-webkit-scrollbar { height: 6px; }
+    .perf-scroll::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 4px; }
     .perf-doc p { margin: 2px 0; }
     .perf-yt { display: flex; gap: 12px; align-items: flex-start; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 12px; padding: 10px; margin: 8px 0; max-width: 640px; }
     .perf-yt .perf-yt-thumb { width: 96px; flex: none; border-radius: 8px; }
@@ -50,6 +54,10 @@
       #perfPrintArea, #perfPrintArea * { visibility: visible !important; }
       #perfPrintArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
       #perfPrintArea .perf-print-tab { page-break-inside: avoid; }
+      #perfPrintArea .perf-scroll { overflow: visible !important; }
+      #perfPrintArea table { table-layout: auto !important; width: 100% !important; font-size: 9px !important; }
+      #perfPrintArea th, #perfPrintArea td { width: auto !important; padding: 4px 5px !important; }
+      #perfPrintArea img { max-width: 100% !important; }
       @page { margin: 12mm; }
     }
   </style>
@@ -10840,6 +10848,7 @@
       }
       const area = document.getElementById('perfPrintArea');
       area.innerHTML = perfPrintHtml(r, tabs);
+      perfWrapTables(area);
       area.classList.remove('hidden');
       setTimeout(() => {
         window.print();
@@ -10867,13 +10876,27 @@
       window.__perfViewReport = r;
       perfViewerTab((r.tabs[0] || {}).id);
     }
+    // 편집할 때 지정한 열 너비가 화면보다 넓으면 찌그러지므로 스크롤 박스로 감쌉니다
+    function perfWrapTables(root) {
+      if (!root) return;
+      Array.from(root.querySelectorAll('table')).forEach(t => {
+        if (t.parentElement && t.parentElement.classList.contains('perf-scroll')) return;
+        const box = document.createElement('div');
+        box.className = 'perf-scroll';
+        t.replaceWith(box);
+        box.appendChild(t);
+      });
+    }
+
     function perfViewerTab(tabId) {
       const r = window.__perfViewReport; if (!r) return;
       const t = (r.tabs || []).find(x => x.id === tabId) || (r.tabs || [])[0];
       document.getElementById('perfViewTabs').innerHTML = (r.tabs || []).map(x =>
         `<button onclick="perfViewerTab('${tArg(x.id)}')" class="px-3 py-1.5 rounded-full border text-[11.5px] font-bold ${x.id === (t || {}).id ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-slate-500 border-slate-200'}">${tEsc(x.name)}</button>`
       ).join('');
-      document.getElementById('perfViewBody').innerHTML = (t && t.html) || '<p class="text-slate-400 text-sm">내용 없음</p>';
+      const body = document.getElementById('perfViewBody');
+      body.innerHTML = (t && t.html) || '<p class="text-slate-400 text-sm">내용 없음</p>';
+      perfWrapTables(body);
     }
     function perfViewerPdf() { perfExportPdf(window.__perfViewReport); }
 
@@ -11030,7 +11053,7 @@
   </div>
 
   <!-- 보기 전용 뷰어 / 인쇄 영역 -->
-  <div id="perfViewer" class="hidden max-w-4xl mx-auto px-4 sm:px-6 py-8"></div>
+  <div id="perfViewer" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8"></div>
   <div id="perfPrintArea" class="hidden"></div>
 
 </body>
