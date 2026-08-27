@@ -294,6 +294,7 @@
           <button onclick="switchMainPage('amb')" id="nav-amb" class="nav-item"><i class="fa-solid fa-crown"></i> 앰버서더</button>
           <button onclick="switchMainPage('sup')" id="nav-sup" class="nav-item"><i class="fa-solid fa-hand-holding-heart"></i> 크리에이터</button>
           <button onclick="switchMainPage('trial')" id="nav-trial" class="nav-item"><i class="fa-solid fa-users-rectangle"></i> 체험단</button>
+          <button onclick="switchMainPage('etc')" id="nav-etc" class="nav-item"><i class="fa-solid fa-bullseye"></i> 바이럴 · 기타</button>
           <button onclick="switchMainPage('creator')" id="nav-creator" class="nav-item"><i class="fa-solid fa-video"></i> LIST</button>
         </div>
         <button onclick="setNavGroup('report')" id="navgrp-report" class="nav-grp"><i class="fa-solid fa-chart-column"></i> 리포트</button>
@@ -817,6 +818,13 @@
               </label>
               <input type="number" id="cost_ambassador" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
               <p class="text-[10px] text-indigo-700 leading-tight">체크 시 <b>앰버서더 관리</b> 페이지로 분리됩니다</p>
+            </div>
+            <div class="bg-white p-2.5 rounded-xl border border-slate-300 space-y-1.5">
+              <label class="flex items-center gap-1.5 font-bold text-slate-800 cursor-pointer">
+                <input type="checkbox" id="type_viral" class="w-4 h-4 accent-slate-700 rounded"> 바이럴 / 기타
+              </label>
+              <input type="number" id="cost_viral" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
+              <p class="text-[10px] text-slate-500 leading-tight">카드뉴스 · 커뮤니티 바이럴 · 광고 집행 등 <b>대행사 건</b>. 체크 시 <b>바이럴/기타</b> 페이지로 분리됩니다</p>
             </div>
             <div class="bg-teal-50 p-2.5 rounded-xl border border-teal-200 space-y-1.5">
               <label class="flex items-center gap-1.5 font-bold text-teal-800 cursor-pointer">
@@ -1686,6 +1694,91 @@
 
   </main>
 
+  <!-- ==================== PAGE: 바이럴 / 기타 ==================== -->
+  <main data-page="1" id="page-etc" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <div class="bg-slate-100 border border-slate-200 rounded-2xl px-5 py-3.5 text-xs text-slate-700">
+      <b>바이럴 · 기타 집행 전용 페이지</b> · 카드뉴스 바이럴, 커뮤니티 바이럴, 광고 대행, 촬영 외주처럼 <b>인플루언서가 아닌 대행사 건</b>을 여기서 관리합니다.
+      등록은 <b>PPL &amp; 협찬 → 인플루언서 추가</b>에서 협업 형태 <b>바이럴 / 기타</b>를 체크하세요. (거래처명을 이름 칸에 넣으면 됩니다)
+    </div>
+
+    <section class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-slate-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-bullseye text-slate-500"></i> 바이럴 · 기타 집행 관리
+            <span id="etcHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-slate-200 text-slate-700 rounded-full">0건</span>
+          </h2>
+          <p class="text-xs text-slate-500">대행사 · 광고 집행 건입니다. 입금 관리와 월간 비용에 자동으로 반영됩니다.</p>
+        </div>
+        <button onclick="exportShippingExcel('etc')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 내역 다운로드
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <span class="text-[11px] text-slate-500 font-semibold">전체</span>
+          <div id="etcTotal" class="text-2xl font-black text-slate-800 mt-0.5">0건</div>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <span class="text-[11px] text-slate-500 font-semibold">온살</span>
+          <div id="etcOnsal" class="text-2xl font-black text-slate-800 mt-0.5">0건</div>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <span class="text-[11px] text-slate-500 font-semibold">루메아카이브</span>
+          <div id="etcLume" class="text-2xl font-black text-slate-800 mt-0.5">0건</div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 text-slate-600 font-semibold border-y border-slate-200">
+            <tr>
+              <th class="py-3 px-3 w-8"><input type="checkbox" onchange="toggleSelectAllBy('etc-select', this.checked)" class="accent-slate-700 w-4 h-4 cursor-pointer"></th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">거래처 / 담당</th>
+              <th class="py-3 px-3">형태 / 금액</th>
+              <th class="py-3 px-3">진행 상태</th>
+              <th class="py-3 px-3">단계별 일자</th>
+              <th class="py-3 px-3">결과 / 링크</th>
+              <th class="py-3 px-3">배송 정보</th>
+              <th class="py-3 px-3 text-right">수정 / 삭제</th>
+            </tr>
+          </thead>
+          <tbody id="etcTableBody" class="divide-y divide-slate-100" data-empty="등록된 바이럴 · 기타 집행 건이 없습니다. PPL 등록 시 '바이럴 / 기타'를 체크하면 여기로 들어옵니다."></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-slate-100 pb-3">
+        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-arrow-up-right-from-square text-slate-500"></i> 바이럴 · 기타 업로드 일자 &amp; 링크
+          <span id="etcUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-slate-200 text-slate-700 rounded-full">0건</span>
+        </h2>
+        <button onclick="exportUploadExcel('etc')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-arrow-down"></i> 업로드 내역 다운로드
+        </button>
+      </div>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 text-slate-600 font-semibold border-y border-slate-200">
+            <tr>
+              <th class="py-3 px-3 whitespace-nowrap">업로드 일자</th>
+              <th class="py-3 px-3">거래처</th>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3">채널 / 유형</th>
+              <th class="py-3 px-3">업로드 링크</th>
+              <th class="py-3 px-3">성과 / 메모</th>
+            </tr>
+          </thead>
+          <tbody id="etcUploadBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
   <!-- ==================== PAGE: 입금 관리 ==================== -->
   <main data-page="1" id="page-pay" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
@@ -2253,6 +2346,12 @@
               <input type="checkbox" id="editType_ambassador" class="accent-pink-500 w-4 h-4"> 앰버서더
             </label>
             <input type="number" id="editCost_ambassador" placeholder="단가" class="w-full px-2 py-1 border border-slate-200 rounded">
+          </div>
+          <div class="bg-white p-2 rounded-lg border border-slate-300 space-y-1">
+            <label class="flex items-center gap-1.5 font-bold text-slate-800 cursor-pointer">
+              <input type="checkbox" id="editType_viral" class="accent-slate-700 w-4 h-4"> 바이럴 / 기타
+            </label>
+            <input type="number" id="editCost_viral" placeholder="단가" class="w-full px-2 py-1 border border-slate-200 rounded">
           </div>
           <div class="bg-teal-50 p-2 rounded-lg border border-teal-200 space-y-1">
             <label class="flex items-center gap-1.5 font-bold text-teal-800 cursor-pointer">
@@ -4710,6 +4809,7 @@
       renderAmbTable();
       renderCreatorTable();
       renderSupTable();
+      renderEtcTable();
       renderRankTable();
       renderCreatorMissions();
       renderUploadTables();
@@ -4733,7 +4833,7 @@
 
     // 페이지 전환 (PPL / 시딩재고 / UTM)
     function switchMainPage(pageId) {
-      const pages = ['monthly', 'perf', 'report', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'pay', 'utm', 'budget'];
+      const pages = ['monthly', 'perf', 'report', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'etc', 'pay', 'utm', 'budget'];
       const activeClass = "nav-item nav-item-on";
       const idleClass = "nav-item";
 
@@ -4761,6 +4861,7 @@
       if (pageId === 'report') { renderRptPage(); rptInitResizers(); }
       if (pageId === 'contact') { updateContactProductList(); renderContactList(); }
       if (pageId === 'micro') { renderMicroTable(); renderPackages(); renderMicroCostSummary(); renderUploadTables(); }
+      if (pageId === 'etc') { renderEtcTable(); renderUploadTables(); }
       if (pageId === 'sup') { renderSupTable(); renderRankTable(); renderCreatorMissions(); renderUploadTables(); }
       if (pageId === 'amb') { renderAmbTable(); renderFreeAmbTable(); renderUploadTables(); }
       if (pageId === 'creator') { renderCreatorTable(); renderInfluencerCards(); renderProposals(); renderUploadTables(); }
@@ -5113,7 +5214,8 @@
         supporters: document.getElementById('type_supporters').checked,
         creator: document.getElementById('type_creator').checked,
         ambassador: document.getElementById('type_ambassador').checked,
-        freeAmb: document.getElementById('type_freeAmb').checked
+        freeAmb: document.getElementById('type_freeAmb').checked,
+        viral: document.getElementById('type_viral').checked
       };
 
       const costs = {
@@ -5127,7 +5229,8 @@
         supporters: Number(document.getElementById('cost_supporters').value) || 0,
         creator: Number(document.getElementById('cost_creator').value) || 0,
         ambassador: Number(document.getElementById('cost_ambassador').value) || 0,
-        freeAmb: 0
+        freeAmb: 0,
+        viral: Number(document.getElementById('cost_viral').value) || 0
       };
 
       const contactDate = document.getElementById('contactDate').value || new Date().toISOString().slice(0, 10);
@@ -5241,10 +5344,13 @@
     function isCreatorType(p) {
       return !!(p.types && p.types.creator) && !isFreeAmb(p) && !isAmbPaid(p) && !isSupporters(p);
     }
+    // 바이럴 · 광고 집행 등 인플루언서가 아닌 외주 건
+    function isViral(p) { return !!(p.types && p.types.viral); }
     function isPurePpl(p) {
-      return !isFreeAmb(p) && !isAmbPaid(p) && !isCreatorType(p) && !isMicro(p) && !isSupporters(p);
+      return !isFreeAmb(p) && !isAmbPaid(p) && !isCreatorType(p) && !isMicro(p) && !isSupporters(p) && !isViral(p);
     }
     function catOfPpl(p) {
+      if (isViral(p)) return '바이럴/기타';
       if (isFreeAmb(p)) return '무상앰버서더';
       if (isAmbPaid(p)) return '앰버서더';
       if (isSupporters(p)) return '크리에이터';
@@ -5254,6 +5360,7 @@
     }
     const CAT_STYLE = {
       'PPL': 'bg-pink-100 text-pink-700',
+      '바이럴/기타': 'bg-slate-200 text-slate-700',
       '앰버서더': 'bg-indigo-100 text-indigo-700',
       '무상앰버서더': 'bg-teal-100 text-teal-700',
       '인플루언서': 'bg-violet-100 text-violet-700',
@@ -5273,7 +5380,7 @@
     }
     function totalCostOf(p) {
       const c = p.costs || {};
-      return (c.branded||0)+(c.ppl||0)+(c.reuse||0)+(c.microReels||0)+(c.microPpl||0)+(c.reels||0)+(c.shorts||0)+(c.ambassador||0)+(c.sample||0)+(c.creator||0)+(c.supporters||0);
+      return (c.branded||0)+(c.ppl||0)+(c.reuse||0)+(c.microReels||0)+(c.microPpl||0)+(c.reels||0)+(c.shorts||0)+(c.ambassador||0)+(c.sample||0)+(c.creator||0)+(c.supporters||0)+(c.viral||0);
     }
     function uploadsOf(p) { return (p.uploads || []).filter(u => u && (u.date || u.url)); }
 
@@ -5291,7 +5398,8 @@
         { on: p.types && p.types.supporters, label: '크리에이터', cost: p.costs && p.costs.supporters },
         { on: p.types && p.types.creator, label: '인플루언서', cost: p.costs && p.costs.creator },
         { on: p.types && (p.types.ambassador || p.types.sample), label: '앰버서더', cost: (p.costs && (p.costs.ambassador || p.costs.sample)) },
-        { on: p.types && p.types.freeAmb, label: '무상앰버서더', cost: 0 }
+        { on: p.types && p.types.freeAmb, label: '무상앰버서더', cost: 0 },
+        { on: p.types && p.types.viral, label: '바이럴/기타', cost: p.costs && p.costs.viral }
       ].filter(t => t.on);
 
       const typeHtml = badgeDefs.length
@@ -5351,10 +5459,11 @@
       const tbody = document.getElementById(prefix + 'TableBody');
       if (!tbody) return;
       const list = pplList.filter(filterFn);
-      setTxt(prefix + 'Total', list.length + '명');
-      setTxt(prefix + 'HeaderCount', list.length + '명');
-      setTxt(prefix + 'Onsal', list.filter(p => p.brand === '온살').length + '명');
-      setTxt(prefix + 'Lume', list.filter(p => p.brand === '루메아카이브').length + '명');
+      const unit = prefix === 'etc' ? '건' : '명';
+      setTxt(prefix + 'Total', list.length + unit);
+      setTxt(prefix + 'HeaderCount', list.length + unit);
+      setTxt(prefix + 'Onsal', list.filter(p => p.brand === '온살').length + unit);
+      setTxt(prefix + 'Lume', list.filter(p => p.brand === '루메아카이브').length + unit);
       tbody.innerHTML = groupedTbodyHtml(prefix, list, 9, p => catRowHtml(p, prefix, accent),
         tbody.dataset.empty || '등록된 건이 없습니다.');
     }
@@ -5503,10 +5612,11 @@
       renderUploadLinkTable('creatorUploadBody', isCreatorType);
       renderUploadLinkTable('microUploadBody', isMicro);
       renderUploadLinkTable('supUploadBody', isSupporters);
+      renderUploadLinkTable('etcUploadBody', isViral);
     }
 
     function exportUploadExcel(prefix) {
-      const map = { ppl: isPurePpl, amb: p => isFreeAmb(p) || isAmbPaid(p), creator: isCreatorType, micro: isMicro, sup: isSupporters };
+      const map = { ppl: isPurePpl, amb: p => isFreeAmb(p) || isAmbPaid(p), creator: isCreatorType, micro: isMicro, sup: isSupporters, etc: isViral };
       const rows = uploadRowsFor(map[prefix] || isPurePpl);
       if (!rows.length) { alert('내보낼 업로드 기록이 없습니다.'); return; }
       const data = rows.map(({ p, u }) => ({
@@ -5817,7 +5927,8 @@
       { key: 'supporters', label: '크리에이터' },
       { key: 'creator', label: '인플루언서' },
       { key: 'ambassador', label: '앰버서더' },
-      { key: 'freeAmb', label: '무상앰버서더' }
+      { key: 'freeAmb', label: '무상앰버서더' },
+      { key: 'viral', label: '바이럴 / 기타' }
     ];
 
     function copyText(t) {
@@ -6465,6 +6576,7 @@
       return !!(p.types && p.types.supporters) && !isFreeAmb(p) && !isAmbPaid(p);
     }
     function renderSupTable() { renderCatTable('sup', 'cyan', isSupporters); }
+    function renderEtcTable() { renderCatTable('etc', 'slate', isViral); }
 
     /* ==================== 상위노출 기록 ==================== */
     const RANK_PLATFORMS = ['네이버', '유튜브', '인스타', '구글', '쿠팡', '무신사', '올리브영', '기타'];
@@ -7049,19 +7161,51 @@
       const e = new Date(y, m, day);
       return e.getFullYear() + '-' + String(e.getMonth() + 1).padStart(2, '0') + '-' + String(e.getDate()).padStart(2, '0');
     }
+    /* 입금 기한 = [기준일] + [N일] (영업일/달력일) 조합으로 계산합니다. */
+    const DUE_BASES = [
+      { v: 'tax',      label: '세금계산서 발행일' },
+      { v: 'upload',   label: '업로드일' },
+      { v: 'seal',     label: '계약 날인일' },
+      { v: 'month10',  label: '세금계산서 익월 10일' },
+      { v: 'monthEnd', label: '세금계산서 익월 말일' },
+      { v: 'fixed',    label: '날짜 직접 지정' }
+    ];
+    // 예전 방식(문장 규칙)으로 저장된 건을 새 방식으로 바꿔 줍니다.
+    function migratePayItem(it) {
+      if (it.dueBase) return it;
+      const r = it.dueRule || '';
+      if (r === '직접 입력') { it.dueBase = 'fixed'; it.dueDays = 0; it.dueBiz = false; }
+      else if (r === '업로드 후 영업일 5일 이내') { it.dueBase = 'upload'; it.dueDays = 5; it.dueBiz = true; }
+      else if (r === '계약 날인 후 영업일 5일 이내') { it.dueBase = 'seal'; it.dueDays = 5; it.dueBiz = true; }
+      else if (r === '세금계산서 발행 후 영업일 5일 이내') { it.dueBase = 'tax'; it.dueDays = 5; it.dueBiz = true; }
+      else if (r === '세금계산서 발행 후 영업일 7일 이내') { it.dueBase = 'tax'; it.dueDays = 7; it.dueBiz = true; }
+      else if (r === '세금계산서 발행 후 10일 이내') { it.dueBase = 'tax'; it.dueDays = 10; it.dueBiz = false; }
+      else if (r === '세금계산서 발행 익월 10일') { it.dueBase = 'month10'; it.dueDays = 0; it.dueBiz = false; }
+      else if (r === '세금계산서 발행 익월 말일') { it.dueBase = 'monthEnd'; it.dueDays = 0; it.dueBiz = false; }
+      else { it.dueBase = 'tax'; it.dueDays = 7; it.dueBiz = true; }
+      return it;
+    }
+    function dueRuleText(it) {
+      migratePayItem(it);
+      if (it.dueBase === 'fixed') return '날짜 직접 지정';
+      if (it.dueBase === 'month10') return '세금계산서 익월 10일';
+      if (it.dueBase === 'monthEnd') return '세금계산서 익월 말일';
+      const base = (DUE_BASES.find(b => b.v === it.dueBase) || {}).label || '';
+      const n = Number(it.dueDays) || 0;
+      return base + ' + ' + n + (it.dueBiz ? '영업일' : '일') + ' 이내';
+    }
     function calcDueDate(item, ctx) {
-      const rule = item.dueRule || PAY_RULES[0];
+      migratePayItem(item);
+      const n = Number(item.dueDays) || 0;
+      const add = (d) => item.dueBiz ? addBusinessDays(d, n) : addDays(d, n);
+      if (item.dueBase === 'fixed') return item.dueDate || '';
+      if (item.dueBase === 'upload') return ctx.uploadDate ? add(ctx.uploadDate) : '';
+      if (item.dueBase === 'seal') return ctx.sealDate ? add(ctx.sealDate) : '';
       const tax = item.taxDate || '';
-      if (rule === '직접 입력') return item.dueDate || '';
-      if (rule === '업로드 후 영업일 5일 이내') return addBusinessDays(ctx.uploadDate, 5);
-      if (rule === '계약 날인 후 영업일 5일 이내') return addBusinessDays(ctx.sealDate, 5);
       if (!tax) return '';
-      if (rule === '세금계산서 발행 후 영업일 5일 이내') return addBusinessDays(tax, 5);
-      if (rule === '세금계산서 발행 후 영업일 7일 이내') return addBusinessDays(tax, 7);
-      if (rule === '세금계산서 발행 후 10일 이내') return addDays(tax, 10);
-      if (rule === '세금계산서 발행 익월 10일') return nextMonthDay(tax, 10);
-      if (rule === '세금계산서 발행 익월 말일') return nextMonthDay(tax, 'last');
-      return item.dueDate || '';
+      if (item.dueBase === 'month10') return nextMonthDay(tax, 10);
+      if (item.dueBase === 'monthEnd') return nextMonthDay(tax, 'last');
+      return add(tax);
     }
     function todayStr() { return new Date().toISOString().slice(0, 10); }
     function ddayOf(dateStr) {
@@ -7073,7 +7217,7 @@
 
     function newPayItem(label, amount) {
       return { label: label, amount: Number(amount) || 0, taxDate: '', taxDone: false,
-        dueRule: PAY_RULES[0], dueDate: '', paidDate: '', paid: false, memo: '' };
+        dueBase: 'tax', dueDays: 7, dueBiz: true, dueDate: '', paidDate: '', paid: false, memo: '' };
     }
     function ensurePayment(rec, isTrial) {
       if (!rec.payment) {
@@ -7596,7 +7740,7 @@
       return kind === 'trial' ? trialList.find(x => x.id === id) : pplList.find(x => x.id === id);
     }
     function payItemRowHtml(it) {
-      it = it || {};
+      it = migratePayItem(it || {});
       return '<div class="pay-item bg-emerald-50/40 p-3 rounded-2xl border border-emerald-200 space-y-2">'
         + '<div class="grid grid-cols-2 md:grid-cols-12 gap-2 items-center">'
         + '<input class="pi-label md:col-span-2 px-2 py-1.5 text-xs border border-emerald-200 rounded-lg font-bold" placeholder="선금 / 잔금" value="' + tEsc(it.label || '') + '">'
@@ -7606,9 +7750,16 @@
         + '<input type="date" class="pi-taxdate flex-1 px-2 py-1.5 text-xs border border-emerald-200 rounded-lg" onchange="onPayItemChange(this)" value="' + tEsc(it.taxDate || '') + '">'
         + '<label class="flex items-center gap-1 text-[10px] font-bold text-slate-600 whitespace-nowrap"><input type="checkbox" class="pi-taxdone accent-emerald-600 w-4 h-4" ' + (it.taxDone ? 'checked' : '') + '> 발행</label>'
         + '</div>'
-        + '<select class="pi-rule md:col-span-3 px-2 py-1.5 text-xs border border-emerald-200 rounded-lg bg-white" onchange="onPayItemChange(this)">'
-        + PAY_RULES.map(r => '<option value="' + r + '"' + ((it.dueRule || PAY_RULES[0]) === r ? ' selected' : '') + '>' + r + '</option>').join('')
+        + '<div class="md:col-span-3 flex items-center gap-1">'
+        + '<select class="pi-base flex-1 min-w-0 px-2 py-1.5 text-xs border border-emerald-200 rounded-lg bg-white" onchange="onPayItemChange(this)">'
+        + DUE_BASES.map(b => '<option value="' + b.v + '"' + (it.dueBase === b.v ? ' selected' : '') + '>' + b.label + '</option>').join('')
         + '</select>'
+        + '<span class="text-[10px] text-slate-400 whitespace-nowrap">+</span>'
+        + '<input type="number" min="0" class="pi-days w-12 px-1.5 py-1.5 text-xs border border-emerald-200 rounded-lg text-center" onchange="onPayItemChange(this)" value="' + (Number(it.dueDays) || 0) + '">'
+        + '<select class="pi-biz px-1 py-1.5 text-xs border border-emerald-200 rounded-lg bg-white" onchange="onPayItemChange(this)">'
+        + '<option value="biz"' + (it.dueBiz ? ' selected' : '') + '>영업일</option>'
+        + '<option value="cal"' + (it.dueBiz ? '' : ' selected') + '>일</option>'
+        + '</select></div>'
         + '<div class="md:col-span-2 text-[11px]"><span class="text-slate-500 font-bold">입금 기한</span>'
         + '<input type="date" class="pi-due w-full px-2 py-1.5 text-xs border border-emerald-200 rounded-lg" value="' + tEsc(it.dueDate || '') + '"></div>'
         + '</div>'
@@ -7623,17 +7774,23 @@
       const row = el.closest('.pay-item');
       const it = {
         taxDate: row.querySelector('.pi-taxdate').value,
-        dueRule: row.querySelector('.pi-rule').value,
+        dueBase: row.querySelector('.pi-base').value,
+        dueDays: Number(row.querySelector('.pi-days').value) || 0,
+        dueBiz: row.querySelector('.pi-biz').value === 'biz',
         dueDate: row.querySelector('.pi-due').value
       };
-      const rec = payRecOf(payEditKind, payEditId);
       const ctx = {
         sealDate: (document.querySelector('#payContractRows [data-ck="seal"] input[type=date]') || {}).value || '',
         uploadDate: document.getElementById('payUploadDate').value
       };
+      const fixed = it.dueBase === 'fixed';
+      row.querySelector('.pi-days').disabled = fixed || it.dueBase === 'month10' || it.dueBase === 'monthEnd';
+      row.querySelector('.pi-biz').disabled = row.querySelector('.pi-days').disabled;
+      row.querySelector('.pi-due').readOnly = !fixed;
       const d = calcDueDate(it, ctx);
       if (d) row.querySelector('.pi-due').value = d;
     }
+
     function addPayItemRow() {
       document.getElementById('payItemContainer').insertAdjacentHTML('beforeend', payItemRowHtml({ label: '잔금' }));
       recalcPayRemain();
@@ -7712,7 +7869,9 @@
         amount: Number(r.querySelector('.pi-amount').value) || 0,
         taxDate: r.querySelector('.pi-taxdate').value,
         taxDone: r.querySelector('.pi-taxdone').checked,
-        dueRule: r.querySelector('.pi-rule').value,
+        dueBase: r.querySelector('.pi-base').value,
+        dueDays: Number(r.querySelector('.pi-days').value) || 0,
+        dueBiz: r.querySelector('.pi-biz').value === 'biz',
         dueDate: r.querySelector('.pi-due').value,
         paid: r.querySelector('.pi-paid').checked,
         paidDate: r.querySelector('.pi-paiddate').value,
@@ -7734,7 +7893,7 @@
           '지급방식': pay.mode, '총금액': pay.total,
           '항목': r.it.label, '금액': r.it.amount,
           '세금계산서발행일': r.it.taxDate || '', '발행여부': r.it.taxDone ? 'O' : '',
-          '입금기한규칙': r.it.dueRule, '입금기한': r.due || '',
+          '입금기한규칙': dueRuleText(r.it), '입금기한': r.due || '',
           '입금일': r.it.paidDate || '', '입금완료': r.it.paid ? 'O' : '',
           '상태': r.it.paid ? '완료' : (r.dday === null ? '기한미정' : (r.dday < 0 ? (-r.dday) + '일지남' : 'D-' + r.dday)),
           '메모': r.it.memo || ''
@@ -8199,7 +8358,7 @@
 
 
     /* ==================== 월 예산 ==================== */
-    const BUDGET_DEFAULT_CATS = ['PPL', '마이크로', '마이크로 패키지', '앰버서더', '무상앰버서더', '크리에이터', '인플루언서', '체험단', '크리에이터 활동비', '광고 / 기타'];
+    const BUDGET_DEFAULT_CATS = ['PPL', '마이크로', '마이크로 패키지', '앰버서더', '무상앰버서더', '크리에이터', '인플루언서', '체험단', '크리에이터 활동비', '바이럴/기타', '광고 / 기타'];
     let budgetMonthDate = new Date();
 
     function budgetYm() {
@@ -8946,7 +9105,7 @@
 
     /* ==================== 네비게이션 그룹 ==================== */
     const NAV_GROUPS = {
-      run: ['contact', 'ppl', 'micro', 'amb', 'sup', 'trial', 'creator'],
+      run: ['contact', 'ppl', 'micro', 'amb', 'sup', 'trial', 'etc', 'creator'],
       report: ['monthly', 'perf', 'report'],
       money: ['pay', 'budget'],
       ops: ['utm']
@@ -10084,6 +10243,8 @@
       document.getElementById('editType_creator').checked = !!(ppl.types && ppl.types.creator);
       document.getElementById('editType_ambassador').checked = !!(ppl.types && (ppl.types.ambassador || ppl.types.sample));
       document.getElementById('editType_freeAmb').checked = !!(ppl.types && ppl.types.freeAmb);
+      document.getElementById('editType_viral').checked = !!(ppl.types && ppl.types.viral);
+      document.getElementById('editCost_viral').value = (ppl.costs && ppl.costs.viral) || '';
       document.getElementById('editCost_branded').value = (ppl.costs && ppl.costs.branded) || '';
       document.getElementById('editCost_ppl').value = (ppl.costs && ppl.costs.ppl) || '';
       document.getElementById('editCost_reuse').value = (ppl.costs && ppl.costs.reuse) || '';
@@ -10188,7 +10349,8 @@
         supporters: document.getElementById('editType_supporters').checked,
         creator: document.getElementById('editType_creator').checked,
         ambassador: document.getElementById('editType_ambassador').checked,
-        freeAmb: document.getElementById('editType_freeAmb').checked
+        freeAmb: document.getElementById('editType_freeAmb').checked,
+        viral: document.getElementById('editType_viral').checked
       };
       ppl.costs = {
         branded: Number(document.getElementById('editCost_branded').value) || 0,
@@ -10201,7 +10363,8 @@
         supporters: Number(document.getElementById('editCost_supporters').value) || 0,
         creator: Number(document.getElementById('editCost_creator').value) || 0,
         ambassador: Number(document.getElementById('editCost_ambassador').value) || 0,
-        freeAmb: 0
+        freeAmb: 0,
+        viral: Number(document.getElementById('editCost_viral').value) || 0
       };
 
       ppl.channels = Array.from(document.querySelectorAll('#editModalChannelContainer .edit-channel-row')).map(r => ({
@@ -11236,13 +11399,14 @@
       const isAmbMode = mode === 'amb';
       const isCreatorMode = mode === 'creator';
       const isSupMode = mode === 'sup';
-      const isPplMode = !isFree && !isMicroMode && !isAmbMode && !isCreatorMode && !isSupMode;
+      const isEtcMode = mode === 'etc';
+      const isPplMode = !isFree && !isMicroMode && !isAmbMode && !isCreatorMode && !isSupMode && !isEtcMode;
 
       const selector = isFree ? '.freeamb-select:checked'
         : (isMicroMode ? '.micro-select:checked'
         : (isAmbMode ? '.amb-select:checked'
         : (isCreatorMode ? '.creator-select:checked'
-        : (isSupMode ? '.sup-select:checked' : '.ppl-select:checked'))));
+        : (isSupMode ? '.sup-select:checked' : (isEtcMode ? '.etc-select:checked' : '.ppl-select:checked')))));
       const checked = Array.from(document.querySelectorAll(selector)).map(cb => Number(cb.value));
 
       let rows;
@@ -11251,6 +11415,7 @@
       else if (isAmbMode) rows = pplList.filter(isAmbPaid);
       else if (isCreatorMode) rows = pplList.filter(isCreatorType);
       else if (isSupMode) rows = pplList.filter(isSupporters);
+      else if (isEtcMode) rows = pplList.filter(isViral);
       else rows = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p) && !isSupporters(p));
 
       if (isPplMode && currentTableBrandFilter !== '전체') rows = rows.filter(p => p.brand === currentTableBrandFilter);
@@ -11275,7 +11440,7 @@
         : (isMicroMode ? `마이크로_배송정보_${today}`
         : (isAmbMode ? `앰버서더_배송정보_${today}`
         : (isCreatorMode ? `인플루언서_배송정보_${today}`
-        : (isSupMode ? `크리에이터_배송정보_${today}` : `배송정보_${today}`))));
+        : (isSupMode ? `크리에이터_배송정보_${today}` : (isEtcMode ? `바이럴기타_내역_${today}` : `배송정보_${today}`)))));
 
       if (typeof XLSX !== 'undefined') {
         const ws = XLSX.utils.json_to_sheet(data);
