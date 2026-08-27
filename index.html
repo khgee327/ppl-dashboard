@@ -5448,8 +5448,10 @@
       return !!(p.types && p.types.freeAmb);
     }
 
+    // 마이크로 = 마이크로 릴스/PPL 이거나, 묶음 계약 패키지에 배정된 건
     function isMicro(p) {
-      return !!(p.types && (p.types.microReels || p.types.microPpl)) && !isFreeAmb(p)
+      const inPkg = (typeof packageOfPpl === 'function') && !!packageOfPpl(p.id);
+      return (!!(p.types && (p.types.microReels || p.types.microPpl)) || inPkg) && !isFreeAmb(p)
         && !(p.types && (p.types.ambassador || p.types.sample)) && !(p.types && p.types.creator)
         && !(p.types && p.types.supporters);
     }
