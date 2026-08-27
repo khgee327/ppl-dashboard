@@ -1147,18 +1147,19 @@
       </div>
 
       <div class="overflow-x-auto custom-scrollbar">
-        <table data-cols="micro" class="w-full text-left text-xs">
+        <table data-cols="wide" class="w-full text-left text-xs">
           <thead class="bg-sky-50/60 text-slate-600 font-semibold border-y border-sky-100">
             <tr>
               <th class="py-3 px-3 w-8">
                 <input type="checkbox" onchange="toggleSelectAllMicro(this.checked)" class="accent-sky-600 w-4 h-4 cursor-pointer">
               </th>
-              <th class="py-3 px-3">브랜드 / 제품</th>
-              <th class="py-3 px-3">인플루언서</th>
-              <th class="py-3 px-3">유형</th>
-              <th class="py-3 px-3">진행 상태 · 단계별 일자</th>
+              <th class="py-3 px-3">브랜드/제품</th>
+              <th class="py-3 px-3">인플루언서 본명 / 채널들</th>
+              <th class="py-3 px-3">이번 협업 형태</th>
+              <th class="py-3 px-3">진행 상태</th>
+              <th class="py-3 px-3">단계별 일자 및 완료 체크</th>
               <th class="py-3 px-3">배송 정보</th>
-              <th class="py-3 px-3">시딩 / 비용</th>
+              <th class="py-3 px-3">시딩수량 / 비용</th>
               <th class="py-3 px-3 text-right">수정 / 삭제</th>
             </tr>
           </thead>
@@ -9933,17 +9934,9 @@
       alert(picked.length + '명을 "' + name.trim() + '" 패키지로 묶었습니다.\n계약 내용은 아래 패키지 카드에서 이어서 적어 주세요.');
     }
 
-    function renderPplTable() {
-      const tbody = document.getElementById('pplTableBody');
-      let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p) && !isSupporters(p));
-      if (currentTableBrandFilter !== '전체') filtered = filtered.filter(p => p.brand === currentTableBrandFilter);
+    /* PPL · 마이크로 공용 행 (표 구조 동일) */
+    function progressRowHtml(p, selCls, accent, showPkg) {
 
-      if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">등록된 PPL 진행 건이 없습니다.</td></tr>`;
-        return;
-      }
-
-      const rowFn = p => {
         let totalCost = (p.costs.branded||0) + (p.costs.ppl||0) + (p.costs.reuse||0) + (p.costs.microReels||0) + (p.costs.microPpl||0) + (p.costs.reels||0) + (p.costs.shorts||0) + (p.costs.ambassador||0) + (p.costs.sample||0);
         const typeBadges = [
           { on: p.types.branded, label: '브랜디드', cost: p.costs.branded, cls: 'bg-slate-50 text-slate-700 border-slate-200' },
@@ -9996,7 +9989,7 @@
         return `
           <tr class="hover:bg-pink-50/30 transition">
             <td class="py-3 px-3 align-top">
-              <input type="checkbox" class="ppl-select accent-pink-500 w-4 h-4 cursor-pointer" value="${p.id}">
+              <input type="checkbox" class="${selCls} accent-${accent}-500 w-4 h-4 cursor-pointer" value="${p.id}">
             </td>
             <td class="py-3 px-3 align-top w-[190px] min-w-[190px] max-w-[190px]">
               <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${brandBadgeClass}">${p.brand}</span>
@@ -10033,6 +10026,12 @@
             <td class="py-3 px-3 align-top">
               <div class="font-bold text-pink-600">${p.seedingCount}개 발송</div>
               <div class="text-[11px] text-slate-500 font-bold">합계: ${totalCost.toLocaleString()}원</div>
+              ${(() => { if (!showPkg) return ''; const k = packageOfPpl(p.id); if (!k) return ''; const st = pkgStats(k);
+                return `<div class="mt-1 text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 leading-tight">
+                  <i class="fa-solid fa-box-open"></i> ${tEsc(k.name)}<br>
+                  <span class="text-slate-900">이 건 ${st.unit.toLocaleString()}원</span><br>
+                  <span class="text-slate-500">패키지 ${st.assigned}/${st.cap || '-'}명 · 총 ${st.amount.toLocaleString()}원</span>
+                </div>`; })()}
             </td>
             <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
               <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
@@ -10043,7 +10042,20 @@
             </td>
           </tr>
         `;
-      };
+          }
+
+    function renderPplTable() {
+      const tbody = document.getElementById('pplTableBody');
+      let filtered = pplList.filter(p => !isFreeAmb(p) && !isMicro(p) && !isAmbPaid(p) && !isCreatorType(p) && !isSupporters(p));
+      if (currentTableBrandFilter !== '전체') filtered = filtered.filter(p => p.brand === currentTableBrandFilter);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">등록된 PPL 진행 건이 없습니다.</td></tr>`;
+        return;
+      }
+
+      const rowFn = p => progressRowHtml(p, 'ppl-select', 'pink', false);
+
       tbody.innerHTML = groupedTbodyHtml('ppl', filtered, 9, rowFn, '등록된 PPL 진행 건이 없습니다.');
     }
 
@@ -10068,77 +10080,13 @@
 
       const tbody = document.getElementById('microTableBody');
       if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400">마이크로 진행 건이 없습니다. 협업 형태에서 '마이크로 릴스' 또는 '마이크로 PPL'을 체크하면 여기로 들어옵니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">마이크로 진행 건이 없습니다. 협업 형태에서 '마이크로 릴스' 또는 '마이크로 PPL'을 체크하면 여기로 들어옵니다.</td></tr>`;
         return;
       }
 
-      const rowFn = p => {
-        const brandBadgeClass = p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
-        const prodNames = (p.productList && p.productList.length ? p.productList : [p.product]);
-        const totalCost = (p.costs.microReels||0) + (p.costs.microPpl||0);
+      const rowFn = p => progressRowHtml(p, 'micro-select', 'sky', true);
 
-        const typeChips = [
-          p.types.microReels ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">마이크로 릴스</span>' : '',
-          p.types.microPpl ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">마이크로 PPL</span>' : ''
-        ].filter(Boolean).join(' ');
-
-        const stepHtml = stepListHtml(p, 'sky');
-
-        const addrLine = (p.receiverName || p.receiverPhone || p.address)
-          ? `<div class="text-[11px] leading-relaxed text-slate-700">
-               <div class="font-bold text-slate-900">${p.receiverName || '수령인 미입력'}</div>
-               <div>${p.receiverPhone || '연락처 없음'}</div>
-               <div class="text-slate-500">${p.postalCode ? `(${p.postalCode}) ` : ''}${[p.address, p.addressDetail].filter(Boolean).join(' ') || '주소 없음'}</div>
-             </div>`
-          : '<span class="text-[11px] text-slate-400">배송정보 없음</span>';
-
-        return `
-          <tr class="hover:bg-sky-50/30 transition">
-            <td class="py-3 px-3 align-top">
-              <input type="checkbox" class="micro-select accent-sky-600 w-4 h-4 cursor-pointer" value="${p.id}">
-            </td>
-            <td class="py-3 px-3 align-top w-[190px] min-w-[190px] max-w-[190px]">
-              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${brandBadgeClass}">${p.brand}</span>
-              ${productCellHtml(p)}
-            </td>
-            <td class="py-3 px-3 align-top">
-              <div>${nameLinkHtml(p, '')}</div>
-              <div class="text-[11px] text-slate-500">${p.influencer || ''}</div>
-              <div class="text-[11px] text-slate-400">${p.followers ? `팔로워 ${p.followers}` : ''}</div>
-              ${p.category ? `<span class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded-full">${p.category}</span>` : ''}
-            </td>
-            <td class="py-3 px-3 align-top"><div class="flex flex-col gap-1 items-start">${typeChips}</div></td>
-            <td class="py-3 px-3 align-top max-w-[230px] min-w-[210px]">
-              <select onchange="updatePplStatus(${p.id}, this.value)" class="w-full mb-1.5 px-2 py-1 text-xs border border-slate-200 rounded-lg font-bold text-slate-700 bg-white">
-                ${STAGES.map(st => `<option value="${st}" ${p.status === st ? 'selected' : ''}>${st}</option>`).join('')}
-              </select>
-              <div class="max-h-[120px] overflow-y-auto custom-scrollbar pr-1">${stepHtml}</div>
-              <button onclick="openStepDateModal(${p.id})" class="mt-1 text-[11px] text-slate-600 font-semibold hover:underline"><i class="fa-solid fa-pen-to-square"></i> 단계별 일자 전체 관리</button>
-              <button onclick="openStepDateModal(${p.id})" class="mt-1 text-[11px] text-sky-700 font-semibold hover:underline">
-                <i class="fa-solid fa-pen-to-square"></i> 단계별 일자 전체 관리
-              </button>
-            </td>
-            <td class="py-3 px-3 align-top min-w-[170px]">${addrLine}</td>
-            <td class="py-3 px-3 align-top">
-              <div class="font-bold text-sky-700">${p.seedingCount || 0}개</div>
-              ${(() => { const k = packageOfPpl(p.id); return k
-                ? (() => { const st = pkgStats(k); return `<div class="mt-1 text-[10px] font-bold text-sky-800 bg-sky-50 border border-sky-200 rounded-lg px-2 py-1 leading-tight">
-                     <i class="fa-solid fa-box-open"></i> ${tEsc(k.name)}<br>
-                     <span class="text-sky-700">이 건에 잡히는 금액 ${st.unit.toLocaleString()}원</span><br>
-                     <span class="text-slate-500">패키지 ${st.assigned}/${st.cap || '-'}명 · 총 ${st.amount.toLocaleString()}원</span>
-                   </div>`; })()
-                : `<div class="text-[11px] text-slate-500 font-bold">${totalCost.toLocaleString()}원</div>`; })()}
-            </td>
-            <td class="py-3 px-3 align-top text-right space-x-1 whitespace-nowrap">
-              <button onclick="openUploadModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-chart-simple"></i> 업로드/결과</button>
-              <button onclick="openRankModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-ranking-star"></i> 상위노출</button>
-              ${guideBtnHtml(p)}
-              <button onclick="openStepDateModal(${p.id})" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]">수정</button>
-              <button onclick="deletePpl(${p.id})" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button>
-            </td>
-          </tr>`;
-      };
-      tbody.innerHTML = groupedTbodyHtml('micro', list, 8, rowFn, '마이크로 진행 건이 없습니다.');
+      tbody.innerHTML = groupedTbodyHtml('micro', list, 9, rowFn, '마이크로 진행 건이 없습니다.');
     }
 
     function toggleSelectAllFreeAmb(checked) {
