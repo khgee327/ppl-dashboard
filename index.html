@@ -4741,6 +4741,7 @@
                 <select onchange="updateTrialField(${t.id},'status',this.value)" class="px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 outline-none">
                   ${TRIAL_STATUSES.map(s => `<option ${t.status === s ? 'selected' : ''}>${s}</option>`).join('')}
                 </select>
+                ${/레뷰|revu/i.test(t.platform || '') ? `<button onclick="openRevuModal(${t.id})" title="레뷰 견적 계산" class="px-2.5 h-8 rounded-lg bg-violet-100 hover:bg-violet-200 text-violet-700 text-xs font-bold"><i class="fa-solid fa-calculator"></i> 견적</button>` : ''}
                 <button onclick="openTrialGuideModal(${t.id})" title="가이드라인 (링크 · 파일)" class="px-2.5 h-8 rounded-lg ${(t.guideUrl || (t.guideFiles || []).length) ? 'bg-blue-100 hover:bg-blue-200 text-blue-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-500'} text-xs font-bold"><i class="fa-solid fa-paperclip"></i> 가이드${(t.guideFiles || []).length ? ' ' + t.guideFiles.length : ''}</button>
                 <button onclick="openPayModal('trial', ${t.id})" title="입금 관리" class="w-8 h-8 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs"><i class="fa-solid fa-won-sign"></i></button>
                 <button onclick="recalcTrial(${t.id})" title="일정 다시 계산" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs"><i class="fa-solid fa-rotate"></i></button>
@@ -12480,11 +12481,15 @@
     ];
     const revuPriceKey = tier => tier.indexOf('premium') === 0 ? 'premium' : tier;
 
+    let revuScope = '';      // '' = 등록 폼, '2' = 기존 체험단 수정 모달
+    let revuTargetId = null;
+    const revuEl = id => document.getElementById(id + revuScope);
     function revuState() {
-      const pkg = (document.getElementById('revuPkg') || {}).value || 'allin300';
-      const tier = (document.getElementById('revuTier') || {}).value || 'naver';
-      const n = Number((document.getElementById('revuCount') || {}).value) || 0;
-      const opts = Array.from(document.querySelectorAll('.revu-opt:checked')).map(c => c.value);
+      const pkg = (revuEl('revuPkg') || {}).value || 'allin300';
+      const tier = (revuEl('revuTier') || {}).value || 'naver';
+      const n = Number((revuEl('revuCount') || {}).value) || 0;
+      const box = revuEl('revuOpts');
+      const opts = box ? Array.from(box.querySelectorAll('.revu-opt:checked')).map(c => c.value) : [];
       return { pkg, tier, n, opts };
     }
 
@@ -12512,13 +12517,13 @@
     }
 
     function revuRender() {
-      const box = document.getElementById('revuCalcBox');
+      const box = revuEl('revuCalcBox');
       if (!box || box.classList.contains('hidden')) return;
       const st = revuState();
       const pkgDef = REVU_PKGS.find(p => p.v === st.pkg) || {};
 
       // 옵션 목록 (선택한 등급에서 가능한 것만)
-      const optBox = document.getElementById('revuOpts');
+      const optBox = revuEl('revuOpts');
       const urgentOn = st.opts.includes('urgent');
       optBox.innerHTML = REVU_OPTS.filter(o => o.tiers.includes(st.tier) && (!o.allinOnly || pkgDef.allin)).map(o => {
         const on = st.opts.includes(o.v);
@@ -12530,7 +12535,7 @@
       }).join('') || '<span class="text-[11px] text-slate-400">이 등급에는 선택 가능한 옵션이 없습니다.</span>';
 
       const r = revuCalc(st);
-      const out = document.getElementById('revuResult');
+      const out = revuEl('revuResult');
       if (!r.ok) {
         out.innerHTML = '<div class="bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 text-rose-700 font-bold">' + r.reason + '</div>';
         return;
@@ -12552,14 +12557,65 @@
       const st = revuState();
       const r = revuCalc(st);
       if (!r.ok) { alert(r.reason); return; }
+
+      if (revuScope === '2') {
+        const t = trialList.find(x => x.id === revuTargetId);
+        if (!t) return;
+        t.cost = r.total;
+        if (t.payment && !(Number(t.payment.total) > 0)) t.payment.total = r.total;
+        if (!t.headcount) t.headcount = st.n;
+        t.revu = { pkg: st.pkg, tier: st.tier, opts: st.opts, count: st.n, total: r.total };
+        saveAll();
+        closeRevuModal();
+        renderTrialDashboard();
+        alert('진행 금액을 ' + r.total.toLocaleString() + '원으로 넣었습니다. (VAT 포함)');
+        return;
+      }
+
       document.getElementById('trialCost').value = r.total;
       const hc = document.getElementById('trialHeadcount');
       if (hc && !hc.value) hc.value = st.n;
       alert('진행 금액에 ' + r.total.toLocaleString() + '원을 넣었습니다. (VAT 포함)');
     }
 
+    /* ===== 기존 체험단 견적 계산 모달 ===== */
+    function openRevuModal(id) {
+      const t = trialList.find(x => x.id === id);
+      if (!t) return;
+      revuScope = '2';
+      revuTargetId = id;
+      setTxt('revuModalWho', (t.brand || '') + ' · ' + (t.platform || '') + ' · ' + (t.title || ''));
+
+      const ps = revuEl('revuPkg');
+      ps.innerHTML = REVU_PKGS.map(p => '<option value="' + p.v + '">' + p.label + '</option>').join('');
+      revuEl('revuTier').innerHTML = REVU_TIERS.map(x => '<option value="' + x.v + '">' + x.label + '</option>').join('');
+
+      const saved = t.revu || {};
+      ps.value = saved.pkg || 'allin300';
+      revuEl('revuTier').value = saved.tier || 'naver';
+      revuEl('revuCount').value = saved.count || t.headcount || 10;
+      revuEl('revuCalcBox').classList.remove('hidden');
+      revuRender();
+      // 저장해 둔 옵션 다시 체크
+      if ((saved.opts || []).length) {
+        const box = revuEl('revuOpts');
+        (saved.opts || []).forEach(v => {
+          const el = box.querySelector('.revu-opt[value="' + v + '"]');
+          if (el) el.checked = true;
+        });
+        revuRender();
+      }
+      openModalEl('revuModal');
+    }
+    function closeRevuModal() {
+      closeModalEl('revuModal');
+      revuScope = '';
+      revuTargetId = null;
+    }
+
     // 체험단 채널이 "레뷰" 일 때만 계산기를 보여 줍니다
     function revuToggle() {
+      revuScope = '';
       const box = document.getElementById('revuCalcBox');
       if (!box) return;
       const pf = (document.getElementById('trialPlatform') || {}).value || '';
@@ -13068,6 +13124,48 @@
       <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
         <button onclick="closeViralForm()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
         <button onclick="saveViral()" class="px-4 py-2 bg-slate-900 hover:bg-slate-700 text-white text-xs font-bold rounded-xl">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== 레뷰 견적 계산 (기존 체험단) ==================== -->
+  <div id="revuModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between z-10">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-calculator text-violet-600"></i> 레뷰 견적 계산</h3>
+          <p class="text-xs text-slate-500 mt-0.5"><span id="revuModalWho"></span></p>
+        </div>
+        <button onclick="closeRevuModal()" class="text-slate-400 hover:text-slate-700 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="p-6">
+        <div id="revuCalcBox2" class="bg-white border border-violet-200 rounded-2xl p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="text-xs font-black text-violet-800">레뷰코퍼레이션 단가표 기준 (VAT 별도)</p>
+            <button type="button" onclick="revuApply()" class="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold rounded-xl"><i class="fa-solid fa-check"></i> 진행 금액에 반영</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">패키지</label>
+              <select id="revuPkg2" onchange="revuRender()" class="w-full px-2.5 py-2 text-xs border border-violet-200 rounded-xl bg-white font-semibold"></select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">채널 · 등급</label>
+              <select id="revuTier2" onchange="revuRender()" class="w-full px-2.5 py-2 text-xs border border-violet-200 rounded-xl bg-white font-semibold"></select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">모집 인원 (명)</label>
+              <input id="revuCount2" type="number" min="1" oninput="revuRender()" class="w-full px-2.5 py-2 text-xs border border-violet-200 rounded-xl font-bold">
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1.5">추가 선택 옵션</label>
+            <div id="revuOpts2" class="flex flex-wrap gap-1.5"></div>
+          </div>
+          <div id="revuResult2" class="text-xs"></div>
+        </div>
       </div>
     </div>
   </div>
