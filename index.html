@@ -307,6 +307,7 @@
         <button onclick="setNavGroup('money')" id="navgrp-money" class="nav-grp"><i class="fa-solid fa-won-sign"></i> 정산 · 예산</button>
         <div id="navsub-money" class="nav-sub hidden">
           <button onclick="switchMainPage('pay')" id="nav-pay" class="nav-item"><i class="fa-solid fa-won-sign"></i> 입금 관리</button>
+          <button onclick="switchMainPage('cost')" id="nav-cost" class="nav-item"><i class="fa-solid fa-coins"></i> 비용 취합</button>
           <button onclick="openBudget('온살')" id="nav-budget-온살" class="nav-item"><i class="fa-solid fa-calculator"></i> 온살 예산</button>
           <button onclick="openBudget('루메아카이브')" id="nav-budget-루메아카이브" class="nav-item"><i class="fa-solid fa-calculator"></i> 루메 예산</button>
         </div>
@@ -2113,6 +2114,96 @@
       </div>
       <div id="trialChannelLegend" class="flex flex-wrap items-center gap-2 bg-white border border-slate-200 rounded-2xl px-4 py-2.5"></div>
       <div id="trialListContainer" class="space-y-4"></div>
+    </section>
+  </main>
+
+  <!-- ==================== PAGE: 마케팅 비용 취합 ==================== -->
+  <main data-page="1" id="page-cost" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
+
+    <section class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-slate-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-coins text-slate-500"></i> 마케팅 비용 취합
+          </h2>
+          <p class="text-xs text-slate-500">브랜드별 · 월별 · 제품별로 얼마를 썼는지 한 번에 봅니다. (PPL · 마이크로 · 앰버서더 · 크리에이터 · 체험단 · 바이럴 전부 포함)</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="costYear" onchange="renderCostPage()" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-bold"></select>
+          <select id="costBrand" onchange="renderCostPage()" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-bold">
+            <option value="전체">전체 브랜드</option>
+            <option value="온살">온살</option>
+            <option value="루메아카이브">루메아카이브</option>
+            <option value="공통">공통</option>
+          </select>
+          <button onclick="exportCostSummaryExcel()" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-arrow-down"></i> 엑셀 다운로드
+          </button>
+        </div>
+      </div>
+      <div id="costSummaryCards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+    </section>
+
+    <section class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
+        <i class="fa-solid fa-calendar-days text-slate-500"></i> 월별 집행 비용
+      </h2>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 text-slate-600 font-semibold border-y border-slate-200">
+            <tr>
+              <th class="py-3 px-3">월</th>
+              <th class="py-3 px-3 text-right">온살</th>
+              <th class="py-3 px-3 text-right">루메아카이브</th>
+              <th class="py-3 px-3 text-right">공통 · 기타</th>
+              <th class="py-3 px-3 text-right">합계</th>
+              <th class="py-3 px-3">비중</th>
+            </tr>
+          </thead>
+          <tbody id="costMonthBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
+        <i class="fa-solid fa-box text-slate-500"></i> 제품별 집행 비용
+        <span class="text-xs font-normal text-slate-400">여러 제품을 함께 진행한 건은 제품 수로 나눠서 잡습니다</span>
+      </h2>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 text-slate-600 font-semibold border-y border-slate-200">
+            <tr>
+              <th class="py-3 px-3">브랜드 / 제품</th>
+              <th class="py-3 px-3 text-center">건수</th>
+              <th class="py-3 px-3 text-right">집행 비용</th>
+              <th class="py-3 px-3">비중</th>
+            </tr>
+          </thead>
+          <tbody id="costProductBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
+        <i class="fa-solid fa-layer-group text-slate-500"></i> 구분별 집행 비용
+      </h2>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 text-slate-600 font-semibold border-y border-slate-200">
+            <tr>
+              <th class="py-3 px-3">구분</th>
+              <th class="py-3 px-3 text-center">건수</th>
+              <th class="py-3 px-3 text-right">온살</th>
+              <th class="py-3 px-3 text-right">루메아카이브</th>
+              <th class="py-3 px-3 text-right">합계</th>
+              <th class="py-3 px-3">비중</th>
+            </tr>
+          </thead>
+          <tbody id="costCatBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
     </section>
   </main>
 
@@ -4976,7 +5067,7 @@
 
     // 페이지 전환 (PPL / 시딩재고 / UTM)
     function switchMainPage(pageId) {
-      const pages = ['monthly', 'perf', 'report', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'etc', 'pay', 'utm', 'budget'];
+      const pages = ['monthly', 'perf', 'report', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'etc', 'pay', 'cost', 'utm', 'budget'];
       const activeClass = "nav-item nav-item-on";
       const idleClass = "nav-item";
 
@@ -5009,6 +5100,7 @@
       if (pageId === 'amb') { renderAmbTable(); renderFreeAmbTable(); renderUploadTables(); }
       if (pageId === 'creator') { renderCreatorTable(); renderInfluencerCards(); renderProposals(); renderUploadTables(); }
       if (pageId === 'pay') renderPayPage();
+      if (pageId === 'cost') renderCostPage();
       if (pageId === 'budget') { renderBudget(); renderLaunchBudgets(); }
       if (pageId === 'trial') renderTrialDashboard();
       if (pageId === 'utm') renderUtmDashboard();
@@ -9377,7 +9469,7 @@
     const NAV_GROUPS = {
       run: ['contact', 'ppl', 'micro', 'amb', 'sup', 'trial', 'etc', 'creator'],
       report: ['monthly', 'perf', 'report'],
-      money: ['pay', 'budget'],
+      money: ['pay', 'cost', 'budget'],
       ops: ['utm']
     };
     const GROUP_ACTIVE = 'nav-grp nav-grp-on';
@@ -12888,6 +12980,178 @@
         + '<input type="checkbox" ' + (pl.done ? 'checked' : '') + ' onchange="setPlan(' + p.id + ', \'done\', this.checked)" class="accent-emerald-600 w-4 h-4">업로드 완료</label>'
         + '<input type="date" value="' + tEsc(pl.uploadDate || '') + '" onchange="setPlan(' + p.id + ', \'uploadDate\', this.value)" class="px-1 py-0.5 text-[10px] border border-slate-200 rounded w-[112px]">'
         + '</div></div>';
+    }
+
+
+    /* ==================== 마케팅 비용 취합 ==================== */
+    function costEntriesOfMonth(ym) {
+      const out = [];
+      const saved = monthlyBrandFilter;
+      monthlyBrandFilter = '전체';
+      const rows = collectMonthlyRows(ym);
+      monthlyBrandFilter = saved;
+
+      const push = (brand, cat, prods, amount) => {
+        if (!amount) return;
+        const list = (prods && prods.length) ? prods : ['제품 미지정'];
+        const each = amount / list.length;
+        list.forEach(pn => out.push({ brand: brand || '공통', cat: cat, product: pn, amount: each }));
+      };
+
+      const seen = new Set();
+      rows.forEach(r => {
+        const key = (r.isTrial ? 't' : 'p') + r.pid;
+        if (seen.has(key)) return;
+        seen.add(key);
+        if (r.isTrial) {
+          const t = trialList.find(x => x.id === r.pid);
+          if (t) push(t.brand, '체험단', [t.product].filter(Boolean), trialCostOf(t));
+          return;
+        }
+        const p = pplList.find(x => x.id === r.pid);
+        if (!p || packageOfPpl(p.id)) return;
+        const plan = (p.monthlyPlan || {})[ym];
+        const prods = (plan && plan.products)
+          ? String(plan.products).split(',').map(x => x.trim()).filter(Boolean)
+          : prodNamesOf(p);
+        push(p.brand, catOfPpl(p), prods, costOfPpl(p));
+      });
+
+      microPackages.forEach(k => {
+        if ((k.month || '') !== ym) return;
+        const members = (k.memberIds || []).map(id => pplList.find(p => p.id === id)).filter(Boolean);
+        const prods = [];
+        members.forEach(m => prodNamesOf(m).forEach(pn => { if (!prods.includes(pn)) prods.push(pn); }));
+        push(k.brand, '마이크로 패키지', prods, Number(k.amount) || 0);
+      });
+
+      const cfg = getMissionCfg(ym, false);
+      pplList.filter(isSupporters).forEach(p => {
+        const pay = missionPayOf(p, ym, cfg);
+        if (!pay.total) return;
+        const plan = (p.monthlyPlan || {})[ym];
+        const prods = (plan && plan.products)
+          ? String(plan.products).split(',').map(x => x.trim()).filter(Boolean)
+          : prodNamesOf(p);
+        push(p.brand, '크리에이터 활동비', prods, pay.total);
+      });
+
+      return out;
+    }
+
+    function costYearData() {
+      const y = Number((document.getElementById('costYear') || {}).value) || new Date().getFullYear();
+      const bf = ((document.getElementById('costBrand') || {}).value) || '전체';
+      const months = [];
+      for (let m = 1; m <= 12; m++) {
+        const ym = y + '-' + String(m).padStart(2, '0');
+        let list = costEntriesOfMonth(ym);
+        if (bf !== '전체') list = list.filter(x => x.brand === bf);
+        months.push({ ym: ym, m: m, list: list });
+      }
+      return { y: y, bf: bf, months: months };
+    }
+
+    function renderCostPage() {
+      const yearSel = document.getElementById('costYear');
+      if (!yearSel) return;
+      if (!yearSel.options.length) {
+        const now = new Date().getFullYear();
+        let html = '';
+        for (let y = now + 1; y >= now - 3; y--) html += '<option value="' + y + '">' + y + '년</option>';
+        yearSel.innerHTML = html;
+        yearSel.value = now;
+      }
+
+      const d = costYearData();
+      const all = d.months.reduce((a, x) => a.concat(x.list), []);
+      const sum = arr => arr.reduce((a, x) => a + x.amount, 0);
+      const total = sum(all);
+      const won = v => Math.round(v).toLocaleString() + '원';
+
+      const card = (label, val, sub, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
+        + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
+        + '<div class="text-xl font-black text-' + color + '-600 mt-0.5">' + val + '</div>'
+        + '<div class="text-[11px] text-slate-500 font-semibold">' + sub + '</div></div>';
+      document.getElementById('costSummaryCards').innerHTML =
+        card(d.y + '년 총 집행', won(total), all.length + '건 기준', 'slate')
+        + card('온살', won(sum(all.filter(x => x.brand === '온살'))), '', 'pink')
+        + card('루메아카이브', won(sum(all.filter(x => x.brand === '루메아카이브'))), '', 'skyblue')
+        + card('월 평균', won(total / 12), d.y + '년 12개월 기준', 'slate');
+
+      const onT = sum(all.filter(x => x.brand === '온살'));
+      const luT = sum(all.filter(x => x.brand === '루메아카이브'));
+      document.getElementById('costMonthBody').innerHTML = d.months.map(x => {
+        const on = sum(x.list.filter(v => v.brand === '온살'));
+        const lu = sum(x.list.filter(v => v.brand === '루메아카이브'));
+        const etc = sum(x.list) - on - lu;
+        const tot = on + lu + etc;
+        const pct = total ? Math.round(tot / total * 100) : 0;
+        return '<tr class="hover:bg-slate-50/60">'
+          + '<td class="py-2.5 px-3 font-bold text-slate-800">' + x.m + '월</td>'
+          + '<td class="py-2.5 px-3 text-right">' + won(on) + '</td>'
+          + '<td class="py-2.5 px-3 text-right">' + won(lu) + '</td>'
+          + '<td class="py-2.5 px-3 text-right">' + won(etc) + '</td>'
+          + '<td class="py-2.5 px-3 text-right font-black text-slate-900">' + won(tot) + '</td>'
+          + '<td class="py-2.5 px-3"><div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-slate-700" style="width:' + pct + '%"></div></div>'
+          + '<span class="text-[11px] font-bold text-slate-600 w-9 text-right">' + pct + '%</span></div></td></tr>';
+      }).join('')
+        + '<tr class="bg-slate-50 font-black"><td class="py-2.5 px-3">합계</td>'
+        + '<td class="py-2.5 px-3 text-right">' + won(onT) + '</td>'
+        + '<td class="py-2.5 px-3 text-right">' + won(luT) + '</td>'
+        + '<td class="py-2.5 px-3 text-right">' + won(total - onT - luT) + '</td>'
+        + '<td class="py-2.5 px-3 text-right">' + won(total) + '</td><td></td></tr>';
+
+      const byProd = {};
+      all.forEach(x => {
+        const k = x.brand + '||' + x.product;
+        if (!byProd[k]) byProd[k] = { brand: x.brand, product: x.product, n: 0, amt: 0 };
+        byProd[k].n++; byProd[k].amt += x.amount;
+      });
+      const prodRows = Object.values(byProd).sort((a, b) => b.amt - a.amt);
+      document.getElementById('costProductBody').innerHTML = prodRows.length ? prodRows.map(r => {
+        const pct = total ? Math.round(r.amt / total * 100) : 0;
+        const cls = r.brand === '온살' ? 'bg-pink-100 text-pink-700' : (r.brand === '루메아카이브' ? 'bg-skyblue-100 text-skyblue-700' : 'bg-slate-200 text-slate-700');
+        return '<tr class="hover:bg-slate-50/60">'
+          + '<td class="py-2.5 px-3"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + cls + '">' + tEsc(r.brand) + '</span> '
+          + '<span class="font-bold text-slate-800">' + tEsc(r.product) + '</span></td>'
+          + '<td class="py-2.5 px-3 text-center font-bold text-slate-700">' + r.n + '</td>'
+          + '<td class="py-2.5 px-3 text-right font-black text-slate-900">' + won(r.amt) + '</td>'
+          + '<td class="py-2.5 px-3"><div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-slate-700" style="width:' + pct + '%"></div></div>'
+          + '<span class="text-[11px] font-bold text-slate-600 w-9 text-right">' + pct + '%</span></div></td></tr>';
+      }).join('') : '<tr><td colspan="4" class="py-8 text-center text-slate-400">집행 내역이 없습니다.</td></tr>';
+
+      const byCat = {};
+      all.forEach(x => {
+        if (!byCat[x.cat]) byCat[x.cat] = { n: 0, on: 0, lu: 0, amt: 0 };
+        byCat[x.cat].n++; byCat[x.cat].amt += x.amount;
+        if (x.brand === '온살') byCat[x.cat].on += x.amount;
+        if (x.brand === '루메아카이브') byCat[x.cat].lu += x.amount;
+      });
+      const catRows = Object.entries(byCat).sort((a, b) => b[1].amt - a[1].amt);
+      document.getElementById('costCatBody').innerHTML = catRows.length ? catRows.map(function (e) {
+        const cat = e[0], v = e[1];
+        const pct = total ? Math.round(v.amt / total * 100) : 0;
+        return '<tr class="hover:bg-slate-50/60">'
+          + '<td class="py-2.5 px-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + (CAT_STYLE[cat] || 'bg-slate-100 text-slate-700') + '">' + tEsc(cat) + '</span></td>'
+          + '<td class="py-2.5 px-3 text-center font-bold text-slate-700">' + v.n + '</td>'
+          + '<td class="py-2.5 px-3 text-right">' + won(v.on) + '</td>'
+          + '<td class="py-2.5 px-3 text-right">' + won(v.lu) + '</td>'
+          + '<td class="py-2.5 px-3 text-right font-black text-slate-900">' + won(v.amt) + '</td>'
+          + '<td class="py-2.5 px-3"><div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-slate-700" style="width:' + pct + '%"></div></div>'
+          + '<span class="text-[11px] font-bold text-slate-600 w-9 text-right">' + pct + '%</span></div></td></tr>';
+      }).join('') : '<tr><td colspan="6" class="py-8 text-center text-slate-400">집행 내역이 없습니다.</td></tr>';
+    }
+
+    function exportCostSummaryExcel() {
+      const d = costYearData();
+      const out = [];
+      d.months.forEach(x => x.list.forEach(v => out.push({
+        '연도': d.y, '월': x.m + '월', '브랜드': v.brand, '구분': v.cat,
+        '제품': v.product, '집행비용': Math.round(v.amount)
+      })));
+      if (!out.length) { alert('집행 내역이 없습니다.'); return; }
+      downloadSheet(out, '마케팅비용취합_' + d.y + (d.bf === '전체' ? '' : '_' + d.bf));
     }
 
     function exportToCSV() {
