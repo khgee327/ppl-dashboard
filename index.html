@@ -2041,6 +2041,24 @@
             <div id="revuOpts" class="flex flex-wrap gap-1.5"></div>
           </div>
 
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
+            <p class="text-[11px] font-black text-slate-700"><i class="fa-solid fa-box"></i> 제품 구매비 <span class="font-semibold text-slate-400">· 구매평 진행 시 실제 제품값이 따로 들어갑니다</span></p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div class="md:col-span-1">
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">제품</label>
+                <input id="revuProd" list="revuProdList" onchange="revuProdPick()" placeholder="제품 선택 · 직접 입력" class="w-full px-2.5 py-2 text-xs border border-slate-200 rounded-xl">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">개당 가격 (원)</label>
+                <input id="revuProdPrice" type="number" min="0" oninput="revuRender()" placeholder="0" class="w-full px-2.5 py-2 text-xs border border-slate-200 rounded-xl">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">수량 (비우면 인원수)</label>
+                <input id="revuProdQty" type="number" min="0" oninput="revuRender()" placeholder="인원수와 동일" class="w-full px-2.5 py-2 text-xs border border-slate-200 rounded-xl">
+              </div>
+            </div>
+          </div>
+
           <div id="revuResult" class="text-xs"></div>
         </div>
 
@@ -4612,6 +4630,8 @@
       fillTrialOptions('trialSnsOptions', trialSnsList);
       fillTrialOptions('trialTypeOptions', trialTypes);
 
+      const rl = document.getElementById('revuProdList');
+      if (rl) rl.innerHTML = (products || []).map(p => '<option value="' + tEsc(p.name) + '">').join('');
       const prodList = document.getElementById('trialProductList');
       if (prodList) prodList.innerHTML = (products || []).map(p => `<option value="${tEsc(p.name)}"></option>`).join('');
 
@@ -12490,7 +12510,11 @@
       const n = Number((revuEl('revuCount') || {}).value) || 0;
       const box = revuEl('revuOpts');
       const opts = box ? Array.from(box.querySelectorAll('.revu-opt:checked')).map(c => c.value) : [];
-      return { pkg, tier, n, opts };
+      const prod = ((revuEl('revuProd') || {}).value || '').trim();
+      const prodPrice = Number((revuEl('revuProdPrice') || {}).value) || 0;
+      const pq = revuEl('revuProdQty');
+      const prodQty = (pq && pq.value !== '') ? (Number(pq.value) || 0) : n;
+      return { pkg, tier, n, opts, prod, prodPrice, prodQty };
     }
 
     function revuCalc(st) {
@@ -12513,7 +12537,8 @@
 
       const sub = unit * st.n + flat;
       const vat = Math.round(sub * 0.1);
-      return { ok: true, unit, flat, sub, vat, total: sub + vat, lines };
+      const prodCost = (Number(st.prodPrice) || 0) * (Number(st.prodQty) || 0);
+      return { ok: true, unit, flat, sub, vat, prodCost, agency: sub + vat, total: sub + vat + prodCost, lines };
     }
 
     function revuRender() {
@@ -12548,9 +12573,26 @@
         + (r.flat ? '<div class="flex justify-between text-slate-600"><span>건당 추가</span><span class="font-bold">' + r.flat.toLocaleString() + '원</span></div>' : '')
         + '<div class="flex justify-between text-slate-600"><span>공급가액</span><span class="font-bold">' + r.sub.toLocaleString() + '원</span></div>'
         + '<div class="flex justify-between text-slate-600"><span>부가세 10%</span><span class="font-bold">' + r.vat.toLocaleString() + '원</span></div>'
-        + '<div class="flex justify-between border-t-2 border-slate-300 pt-1.5"><span class="font-black text-slate-900">최종 합계 (VAT 포함)</span>'
+        + '<div class="flex justify-between border-t border-slate-200 pt-1.5"><span class="font-bold text-slate-700">대행비 합계 (VAT 포함)</span>'
+        + '<span class="font-bold text-slate-900">' + r.agency.toLocaleString() + '원</span></div>'
+        + (r.prodCost
+            ? '<div class="flex justify-between text-slate-600"><span>제품 구매비 ' + (st.prod ? '(' + tEsc(st.prod) + ')' : '')
+              + ' ' + (Number(st.prodPrice) || 0).toLocaleString() + '원 × ' + (Number(st.prodQty) || 0) + '개</span>'
+              + '<span class="font-bold">' + r.prodCost.toLocaleString() + '원</span></div>'
+            : '')
+        + '<div class="flex justify-between border-t-2 border-slate-300 pt-1.5"><span class="font-black text-slate-900">최종 합계</span>'
         + '<span class="font-black text-violet-700 text-sm">' + r.total.toLocaleString() + '원</span></div>'
         + '</div>';
+    }
+
+    // 제품을 고르면 판매가를 자동으로 채웁니다
+    function revuProdPick() {
+      const nameEl = revuEl('revuProd');
+      const priceEl = revuEl('revuProdPrice');
+      if (!nameEl || !priceEl) return;
+      const hit = (products || []).find(x => x.name === nameEl.value.trim());
+      if (hit) priceEl.value = Number(hit.salePrice) || Number(hit.originalPrice) || 0;
+      revuRender();
     }
 
     function revuApply() {
@@ -12564,7 +12606,8 @@
         t.cost = r.total;
         if (t.payment && !(Number(t.payment.total) > 0)) t.payment.total = r.total;
         if (!t.headcount) t.headcount = st.n;
-        t.revu = { pkg: st.pkg, tier: st.tier, opts: st.opts, count: st.n, total: r.total };
+        t.revu = { pkg: st.pkg, tier: st.tier, opts: st.opts, count: st.n, total: r.total,
+                   prod: st.prod, prodPrice: st.prodPrice, prodQty: st.prodQty };
         saveAll();
         closeRevuModal();
         renderTrialDashboard();
@@ -12594,6 +12637,9 @@
       ps.value = saved.pkg || 'allin300';
       revuEl('revuTier').value = saved.tier || 'naver';
       revuEl('revuCount').value = saved.count || t.headcount || 10;
+      revuEl('revuProd').value = saved.prod || t.product || '';
+      revuEl('revuProdPrice').value = saved.prodPrice || '';
+      revuEl('revuProdQty').value = (saved.prodQty === 0 || saved.prodQty) ? saved.prodQty : '';
       revuEl('revuCalcBox').classList.remove('hidden');
       revuRender();
       // 저장해 둔 옵션 다시 체크
@@ -13130,6 +13176,7 @@
 
 
   <!-- ==================== 레뷰 견적 계산 (기존 체험단) ==================== -->
+  <datalist id="revuProdList"></datalist>
   <div id="revuModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs items-center justify-center z-50 hidden p-4">
     <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
       <div class="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between z-10">
@@ -13164,6 +13211,24 @@
             <label class="block text-[11px] font-bold text-slate-600 mb-1.5">추가 선택 옵션</label>
             <div id="revuOpts2" class="flex flex-wrap gap-1.5"></div>
           </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
+            <p class="text-[11px] font-black text-slate-700"><i class="fa-solid fa-box"></i> 제품 구매비 <span class="font-semibold text-slate-400">· 구매평 진행 시 실제 제품값이 따로 들어갑니다</span></p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div class="md:col-span-1">
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">제품</label>
+                <input id="revuProd2" list="revuProdList" onchange="revuProdPick()" placeholder="제품 선택 · 직접 입력" class="w-full px-2.5 py-2 text-xs border border-slate-200 rounded-xl">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">개당 가격 (원)</label>
+                <input id="revuProdPrice2" type="number" min="0" oninput="revuRender()" placeholder="0" class="w-full px-2.5 py-2 text-xs border border-slate-200 rounded-xl">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">수량 (비우면 인원수)</label>
+                <input id="revuProdQty2" type="number" min="0" oninput="revuRender()" placeholder="인원수와 동일" class="w-full px-2.5 py-2 text-xs border border-slate-200 rounded-xl">
+              </div>
+            </div>
+          </div>
+
           <div id="revuResult2" class="text-xs"></div>
         </div>
       </div>
