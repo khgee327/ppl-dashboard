@@ -819,13 +819,6 @@
               <input type="number" id="cost_ambassador" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
               <p class="text-[10px] text-indigo-700 leading-tight">체크 시 <b>앰버서더 관리</b> 페이지로 분리됩니다</p>
             </div>
-            <div class="bg-white p-2.5 rounded-xl border border-slate-300 space-y-1.5">
-              <label class="flex items-center gap-1.5 font-bold text-slate-800 cursor-pointer">
-                <input type="checkbox" id="type_viral" class="w-4 h-4 accent-slate-700 rounded"> 바이럴 / 기타
-              </label>
-              <input type="number" id="cost_viral" placeholder="단가 (원)" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg">
-              <p class="text-[10px] text-slate-500 leading-tight">카드뉴스 · 커뮤니티 바이럴 · 광고 집행 등 <b>대행사 건</b>. 체크 시 <b>바이럴/기타</b> 페이지로 분리됩니다</p>
-            </div>
             <div class="bg-teal-50 p-2.5 rounded-xl border border-teal-200 space-y-1.5">
               <label class="flex items-center gap-1.5 font-bold text-teal-800 cursor-pointer">
                 <input type="checkbox" id="type_freeAmb" class="w-4 h-4 accent-teal-600 rounded"> 무상앰버서더
@@ -1306,6 +1299,17 @@
         </div>
       </div>
 
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-black text-slate-700"><i class="fa-regular fa-calendar"></i> 이번 달 진행</span>
+          <button onclick="movePlanMonth(-1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 text-xs">&lsaquo;</button>
+          <span class="plan-month-label text-sm font-black text-slate-900 px-1"></span>
+          <button onclick="movePlanMonth(1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 text-xs">&rsaquo;</button>
+          <button onclick="movePlanMonth(0)" class="px-2.5 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 text-[11px] font-bold">이번 달</button>
+        </div>
+        <span class="text-[11px] text-slate-500">매월 진행되는 건이라 <b>월별로 이번 달 제품과 업로드 완료</b>를 체크합니다</span>
+      </div>
+
       <div class="overflow-x-auto custom-scrollbar">
         <table data-cols="std" class="w-full text-left text-xs">
           <thead class="bg-indigo-50/60 text-slate-600 font-semibold border-y border-indigo-100">
@@ -1314,8 +1318,8 @@
               <th class="py-3 px-3">브랜드 / 제품</th>
               <th class="py-3 px-3">인플루언서</th>
               <th class="py-3 px-3">협업 형태 / 단가</th>
-              <th class="py-3 px-3">진행 상태</th>
-              <th class="py-3 px-3">단계별 일자</th>
+              <th class="py-3 px-3">이번 달 제품 · 진행</th>
+              <th class="py-3 px-3">단계별 체크</th>
               <th class="py-3 px-3">업로드 / 결과</th>
               <th class="py-3 px-3">배송 정보</th>
               <th class="py-3 px-3 text-right">수정 / 삭제</th>
@@ -1460,6 +1464,17 @@
         </div>
       </div>
 
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-black text-slate-700"><i class="fa-regular fa-calendar"></i> 이번 달 진행</span>
+          <button onclick="movePlanMonth(-1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 text-xs">&lsaquo;</button>
+          <span class="plan-month-label text-sm font-black text-slate-900 px-1"></span>
+          <button onclick="movePlanMonth(1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 text-xs">&rsaquo;</button>
+          <button onclick="movePlanMonth(0)" class="px-2.5 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 text-[11px] font-bold">이번 달</button>
+        </div>
+        <span class="text-[11px] text-slate-500">매월 진행되는 건이라 <b>월별로 이번 달 제품과 업로드 완료</b>를 체크합니다</span>
+      </div>
+
       <div class="overflow-x-auto custom-scrollbar">
         <table data-cols="std" class="w-full text-left text-xs">
           <thead class="bg-cyan-50/60 text-slate-600 font-semibold border-y border-cyan-100">
@@ -1468,8 +1483,8 @@
               <th class="py-3 px-3">브랜드 / 제품</th>
               <th class="py-3 px-3">인플루언서</th>
               <th class="py-3 px-3">협업 형태 / 단가</th>
-              <th class="py-3 px-3">진행 상태</th>
-              <th class="py-3 px-3">단계별 일자</th>
+              <th class="py-3 px-3">이번 달 제품 · 진행</th>
+              <th class="py-3 px-3">단계별 체크</th>
               <th class="py-3 px-3">업로드 / 결과</th>
               <th class="py-3 px-3">배송 정보</th>
               <th class="py-3 px-3 text-right">수정 / 삭제</th>
@@ -1699,7 +1714,7 @@
 
     <div class="bg-slate-100 border border-slate-200 rounded-2xl px-5 py-3.5 text-xs text-slate-700">
       <b>바이럴 · 기타 집행 전용 페이지</b> · 카드뉴스 바이럴, 커뮤니티 바이럴, 광고 대행, 촬영 외주처럼 <b>인플루언서가 아닌 대행사 건</b>을 여기서 관리합니다.
-      등록은 <b>PPL &amp; 협찬 → 인플루언서 추가</b>에서 협업 형태 <b>바이럴 / 기타</b>를 체크하세요. (거래처명을 이름 칸에 넣으면 됩니다)
+      위 <b>바이럴 건 등록</b> 버튼으로 <b>건 단위</b>로 등록하세요. 입금 관리 · 월간 집행 비용 · 예산에 자동으로 반영됩니다.
     </div>
 
     <section class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
@@ -1711,9 +1726,14 @@
           </h2>
           <p class="text-xs text-slate-500">대행사 · 광고 집행 건입니다. 입금 관리와 월간 비용에 자동으로 반영됩니다.</p>
         </div>
-        <button onclick="exportShippingExcel('etc')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
-          <i class="fa-solid fa-file-arrow-down"></i> 내역 다운로드
-        </button>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="openViralForm()" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i> 바이럴 건 등록
+          </button>
+          <button onclick="exportShippingExcel('etc')" class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-arrow-down"></i> 내역 다운로드
+          </button>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1736,14 +1756,14 @@
           <thead class="bg-slate-50 text-slate-600 font-semibold border-y border-slate-200">
             <tr>
               <th class="py-3 px-3 w-8"><input type="checkbox" onchange="toggleSelectAllBy('etc-select', this.checked)" class="accent-slate-700 w-4 h-4 cursor-pointer"></th>
-              <th class="py-3 px-3">브랜드 / 제품</th>
-              <th class="py-3 px-3">거래처 / 담당</th>
-              <th class="py-3 px-3">형태 / 금액</th>
+              <th class="py-3 px-3">브랜드 / 거래처</th>
+              <th class="py-3 px-3">집행 유형 / 채널</th>
+              <th class="py-3 px-3 text-center">수량</th>
+              <th class="py-3 px-3">집행 기간</th>
+              <th class="py-3 px-3 text-right">금액</th>
               <th class="py-3 px-3">진행 상태</th>
-              <th class="py-3 px-3">단계별 일자</th>
-              <th class="py-3 px-3">결과 / 링크</th>
-              <th class="py-3 px-3">배송 정보</th>
-              <th class="py-3 px-3 text-right">수정 / 삭제</th>
+              <th class="py-3 px-3">담당 / 결과 링크</th>
+              <th class="py-3 px-3 text-right">관리</th>
             </tr>
           </thead>
           <tbody id="etcTableBody" class="divide-y divide-slate-100" data-empty="등록된 바이럴 · 기타 집행 건이 없습니다. PPL 등록 시 '바이럴 / 기타'를 체크하면 여기로 들어옵니다."></tbody>
@@ -2924,6 +2944,17 @@
         </div>
       </div>
 
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-black text-slate-700"><i class="fa-regular fa-calendar"></i> 이번 달 진행</span>
+          <button onclick="movePlanMonth(-1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 text-xs">&lsaquo;</button>
+          <span class="plan-month-label text-sm font-black text-slate-900 px-1"></span>
+          <button onclick="movePlanMonth(1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 text-xs">&rsaquo;</button>
+          <button onclick="movePlanMonth(0)" class="px-2.5 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 text-[11px] font-bold">이번 달</button>
+        </div>
+        <span class="text-[11px] text-slate-500">매월 진행되는 건이라 <b>월별로 이번 달 제품과 업로드 완료</b>를 체크합니다</span>
+      </div>
+
       <div class="overflow-x-auto custom-scrollbar">
         <table data-cols="std" class="w-full text-left text-xs">
           <thead class="bg-violet-50/60 text-slate-600 font-semibold border-y border-violet-100">
@@ -2932,8 +2963,8 @@
               <th class="py-3 px-3">브랜드 / 제품</th>
               <th class="py-3 px-3">인플루언서</th>
               <th class="py-3 px-3">협업 형태 / 단가</th>
-              <th class="py-3 px-3">진행 상태</th>
-              <th class="py-3 px-3">단계별 일자</th>
+              <th class="py-3 px-3">이번 달 제품 · 진행</th>
+              <th class="py-3 px-3">단계별 체크</th>
               <th class="py-3 px-3">업로드 / 결과</th>
               <th class="py-3 px-3">배송 정보</th>
               <th class="py-3 px-3 text-right">수정 / 삭제</th>
@@ -4840,6 +4871,9 @@
       renderCreatorTable();
       renderSupTable();
       renderEtcTable();
+      document.querySelectorAll('.plan-month-label').forEach(el => {
+        el.innerText = planMonthDate.getFullYear() + '년 ' + (planMonthDate.getMonth() + 1) + '월';
+      });
       renderRankTable();
       renderCreatorMissions();
       renderUploadTables();
@@ -5245,7 +5279,7 @@
         creator: document.getElementById('type_creator').checked,
         ambassador: document.getElementById('type_ambassador').checked,
         freeAmb: document.getElementById('type_freeAmb').checked,
-        viral: document.getElementById('type_viral').checked
+        viral: false
       };
 
       const costs = {
@@ -5260,7 +5294,7 @@
         creator: Number(document.getElementById('cost_creator').value) || 0,
         ambassador: Number(document.getElementById('cost_ambassador').value) || 0,
         freeAmb: 0,
-        viral: Number(document.getElementById('cost_viral').value) || 0
+        viral: 0
       };
 
       const contactDate = document.getElementById('contactDate').value || new Date().toISOString().slice(0, 10);
@@ -5470,9 +5504,8 @@
         + '<div class="text-[11px] text-slate-400">' + (p.followers ? '팔로워 ' + p.followers : '') + '</div></td>'
         + '<td class="py-3 px-3 align-top min-w-[110px]"><div class="flex flex-wrap">' + typeHtml + '</div>'
         + '<div class="text-[11px] text-slate-500 font-bold mt-1">합계: ' + totalCostOf(p).toLocaleString() + '원</div></td>'
-        + '<td class="py-3 px-3 align-top"><select onchange="updatePplStatus(' + p.id + ', this.value)" class="px-2 py-1 text-xs border border-slate-200 rounded-lg font-bold text-slate-700 bg-slate-50">'
-        + STAGES.map(st => '<option value="' + st + '"' + (p.status === st ? ' selected' : '') + '>' + st + '</option>').join('') + '</select></td>'
-        + '<td class="py-3 px-3 align-top max-w-[180px]"><div class="max-h-[90px] overflow-y-auto custom-scrollbar pr-1">' + (stepHtml || '<span class="text-slate-400 text-[11px]">일정 없음</span>') + '</div></td>'
+        + '<td class="py-3 px-3 align-top">' + planCellHtml(p) + '</td>'
+        + '<td class="py-3 px-3 align-top max-w-[210px]"><div class="max-h-[150px] overflow-y-auto custom-scrollbar pr-1">' + stageChecklistHtml(p) + '</div></td>'
         + '<td class="py-3 px-3 align-top max-w-[190px]">' + upHtml
         + '<button onclick="openUploadModal(' + p.id + ')" class="mt-1 block text-[11px] text-' + accent + '-700 font-semibold hover:underline"><i class="fa-solid fa-chart-simple"></i> 업로드/결과 입력</button>'
         + '<button onclick="openRankModal(' + p.id + ')" class="mt-0.5 block text-[11px] text-amber-700 font-semibold hover:underline"><i class="fa-solid fa-ranking-star"></i> 상위노출 기록'
@@ -5957,8 +5990,7 @@
       { key: 'supporters', label: '크리에이터' },
       { key: 'creator', label: '인플루언서' },
       { key: 'ambassador', label: '앰버서더' },
-      { key: 'freeAmb', label: '무상앰버서더' },
-      { key: 'viral', label: '바이럴 / 기타' }
+      { key: 'freeAmb', label: '무상앰버서더' }
     ];
 
     function copyText(t) {
@@ -6606,7 +6638,6 @@
       return !!(p.types && p.types.supporters) && !isFreeAmb(p) && !isAmbPaid(p);
     }
     function renderSupTable() { renderCatTable('sup', 'cyan', isSupporters); }
-    function renderEtcTable() { renderCatTable('etc', 'slate', isViral); }
 
     /* ==================== 상위노출 기록 ==================== */
     const RANK_PLATFORMS = ['네이버', '유튜브', '인스타', '구글', '쿠팡', '무신사', '올리브영', '기타'];
@@ -9919,14 +9950,7 @@
           p.types.microPpl ? '<span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">마이크로 PPL</span>' : ''
         ].filter(Boolean).join(' ');
 
-        const stepHtml = sortedStepEntries(p.stepDates).map(([st, info]) => {
-          const dt = typeof info === 'object' ? info.date : info;
-          const done = typeof info === 'object' ? info.done : false;
-          return `<div class="flex items-center gap-1.5 text-[11px] bg-slate-50 px-2 py-1 rounded border border-slate-200 mb-1">
-            <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleStepDateDone(${p.id}, '${st}', this.checked)" class="accent-sky-600 w-3.5 h-3.5 cursor-pointer">
-            <span class="font-bold ${done ? 'line-through text-slate-400' : 'text-slate-700'}">${st}: ${dt}</span>
-          </div>`;
-        }).join('');
+        const stepHtml = stageChecklistHtml(p);
 
         const addrLine = (p.receiverName || p.receiverPhone || p.address)
           ? `<div class="text-[11px] leading-relaxed text-slate-700">
@@ -9962,7 +9986,8 @@
               <select onchange="updatePplStatus(${p.id}, this.value)" class="w-full mb-1.5 px-2 py-1 text-xs border border-slate-200 rounded-lg font-bold text-slate-700 bg-white">
                 ${STAGES.map(st => `<option value="${st}" ${p.status === st ? 'selected' : ''}>${st}</option>`).join('')}
               </select>
-              <div class="max-h-[110px] overflow-y-auto custom-scrollbar pr-1">${stepHtml || '<span class="text-slate-400 text-[11px]">일정 없음</span>'}</div>
+              <div class="max-h-[190px] overflow-y-auto custom-scrollbar pr-1">${stepHtml}</div>
+              <button onclick="openStepDateModal(${p.id})" class="mt-1 text-[11px] text-slate-600 font-semibold hover:underline"><i class="fa-solid fa-pen-to-square"></i> 단계별 일자 전체 관리</button>
               <button onclick="openStepDateModal(${p.id})" class="mt-1 text-[11px] text-sky-700 font-semibold hover:underline">
                 <i class="fa-solid fa-pen-to-square"></i> 단계별 일자 전체 관리
               </button>
@@ -12408,6 +12433,198 @@
       }
     }
 
+
+    /* ==================== 바이럴 · 기타 (건 단위 관리) ==================== */
+    const VIRAL_STATUSES = ['준비중', '진행중', '집행완료', '정산완료'];
+
+    function openViralForm(id) {
+      const p = id ? pplList.find(x => x.id === id) : null;
+      const v = (p && p.viral) || {};
+      const set = (k, val) => { const el = document.getElementById(k); if (el) el.value = val == null ? '' : val; };
+      document.getElementById('viralFormTitle').innerText = p ? '바이럴 · 기타 집행 수정' : '바이럴 · 기타 집행 등록';
+      set('vfId', p ? p.id : '');
+      set('vfBrand', p ? p.brand : '온살');
+      set('vfCompany', p ? (p.realName || '') : '');
+      set('vfKind', p ? (p.category || '') : '');
+      set('vfChannel', v.channel);
+      set('vfQty', v.qty);
+      set('vfCost', p ? (p.costs && p.costs.viral) : '');
+      set('vfStart', v.start);
+      set('vfEnd', v.end);
+      set('vfManager', p ? (p.mcnAgentName || '') : '');
+      set('vfPhone', p ? (p.mcnAgentPhone || '') : '');
+      set('vfEmail', p ? (p.mcnAgentEmail || '') : '');
+      set('vfUrl', v.url);
+      set('vfMemo', p ? (p.notes || '') : '');
+      openModalEl('viralFormModal');
+    }
+    function closeViralForm() { closeModalEl('viralFormModal'); }
+
+    function saveViral() {
+      const g = k => (document.getElementById(k) || {}).value || '';
+      const company = g('vfCompany').trim();
+      if (!company) { alert('거래처(대행사)를 입력해 주세요.'); return; }
+
+      const cost = Number(g('vfCost')) || 0;
+      const id = Number(g('vfId')) || 0;
+      let p = id ? pplList.find(x => x.id === id) : null;
+
+      if (!p) {
+        p = {
+          id: Date.now(), brand: '온살', product: '', productList: [],
+          realName: '', influencer: '', category: '', channels: [], followers: '', email: '',
+          types: { viral: true }, costs: { viral: 0 },
+          status: '준비중', contactDate: todayStr(), targetDate: '', isCompleted: false,
+          stepDates: {}, collabLinks: [], uploads: [], resultNote: '',
+          mcnCompany: '', mcnAgentName: '', mcnAgentPhone: '', mcnAgentEmail: '',
+          receiverName: '', receiverPhone: '', postalCode: '', address: '', addressDetail: '',
+          guideUrl: '', notes: '', seedingCount: 0, stockDeducted: false
+        };
+        pplList.unshift(p);
+      }
+
+      p.brand = g('vfBrand');
+      p.realName = company;
+      p.mcnCompany = company;
+      p.category = g('vfKind').trim();
+      p.influencer = '';
+      p.types = Object.assign({}, p.types, { viral: true });
+      p.costs = Object.assign({}, p.costs, { viral: cost });
+      p.mcnAgentName = g('vfManager');
+      p.mcnAgentPhone = g('vfPhone');
+      p.mcnAgentEmail = g('vfEmail');
+      p.email = g('vfEmail');
+      p.notes = g('vfMemo');
+      p.viral = { channel: g('vfChannel').trim(), qty: Number(g('vfQty')) || 0, start: g('vfStart'), end: g('vfEnd'), url: g('vfUrl').trim() };
+
+      p.stepDates = p.stepDates || {};
+      if (p.viral.start) p.stepDates['집행 시작'] = { date: p.viral.start, done: false, sched: true, updatedAt: Date.now() };
+      if (p.viral.end) p.stepDates['집행 종료'] = { date: p.viral.end, done: false, sched: true, updatedAt: Date.now() };
+
+      if (p.payment) { p.payment.total = p.payment.total || cost; }
+
+      saveAll();
+      closeViralForm();
+      renderAll();
+    }
+
+    function updateViralStatus(id, v) {
+      const p = pplList.find(x => x.id === id);
+      if (!p) return;
+      p.status = v;
+      p.isCompleted = (v === '집행완료' || v === '정산완료');
+      saveAll();
+      renderEtcTable();
+    }
+
+    function renderEtcTable() {
+      const tbody = document.getElementById('etcTableBody');
+      if (!tbody) return;
+      const list = pplList.filter(isViral);
+      setTxt('etcTotal', list.length + '건');
+      setTxt('etcHeaderCount', list.length + '건');
+      setTxt('etcOnsal', list.filter(p => p.brand === '온살').length + '건');
+      setTxt('etcLume', list.filter(p => p.brand === '루메아카이브').length + '건');
+
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="py-10 text-center text-slate-400">등록된 바이럴 · 기타 집행 건이 없습니다.<br>위 <b>바이럴 건 등록</b> 버튼으로 추가해 보세요.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.slice().sort((a, b) => ((b.viral || {}).start || '').localeCompare((a.viral || {}).start || '')).map(p => {
+        const v = p.viral || {};
+        const cost = (p.costs && p.costs.viral) || 0;
+        const brandCls = p.brand === '온살' ? 'bg-pink-100 text-pink-700'
+          : (p.brand === '루메아카이브' ? 'bg-skyblue-100 text-skyblue-700' : 'bg-slate-200 text-slate-700');
+        const remain = payRemainOf(p, false);
+        const period = (v.start || '-') + (v.end ? ' ~ ' + v.end : '');
+
+        return '<tr class="hover:bg-slate-50/60 transition">'
+          + '<td class="py-3 px-3 align-top"><input type="checkbox" class="etc-select accent-slate-700 w-4 h-4 cursor-pointer" value="' + p.id + '"></td>'
+          + '<td class="py-3 px-3 align-top"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandCls + '">' + tEsc(p.brand) + '</span>'
+          + '<button onclick="openViralForm(' + p.id + ')" class="block text-left font-black text-slate-900 hover:underline decoration-dotted mt-1">' + tEsc(p.realName || '거래처 미지정') + '</button></td>'
+          + '<td class="py-3 px-3 align-top"><div class="font-bold text-slate-700">' + tEsc(p.category || '유형 미지정') + '</div>'
+          + '<div class="text-[11px] text-slate-500">' + tEsc(v.channel || '-') + '</div></td>'
+          + '<td class="py-3 px-3 align-top text-center font-bold text-slate-700">' + (v.qty ? v.qty + '건' : '-') + '</td>'
+          + '<td class="py-3 px-3 align-top text-slate-600 whitespace-nowrap">' + tEsc(period) + '</td>'
+          + '<td class="py-3 px-3 align-top text-right"><div class="font-black text-slate-900">' + cost.toLocaleString() + '원</div>'
+          + '<div class="text-[10px] font-bold ' + (remain ? 'text-rose-600' : 'text-emerald-600') + '">' + (remain ? '미지급 ' + remain.toLocaleString() + '원' : '지급 완료') + '</div></td>'
+          + '<td class="py-3 px-3 align-top"><select onchange="updateViralStatus(' + p.id + ', this.value)" class="px-2 py-1 text-xs border border-slate-200 rounded-lg font-bold text-slate-700 bg-white">'
+          + VIRAL_STATUSES.map(st => '<option value="' + st + '"' + (p.status === st ? ' selected' : '') + '>' + st + '</option>').join('') + '</select></td>'
+          + '<td class="py-3 px-3 align-top max-w-[200px]">'
+          + (p.mcnAgentName || p.mcnAgentPhone ? '<div class="text-[11px] text-slate-700">' + tEsc(p.mcnAgentName || '') + ' ' + tEsc(p.mcnAgentPhone || '') + '</div>' : '')
+          + (v.url ? '<a href="' + tEsc(v.url) + '" target="_blank" rel="noopener" class="text-[11px] text-slate-700 underline break-all">결과 링크</a>' : '')
+          + (p.notes ? '<div class="text-[10px] text-slate-400 truncate" title="' + tEsc(p.notes) + '">' + tEsc(p.notes) + '</div>' : '') + '</td>'
+          + '<td class="py-3 px-3 align-top text-right whitespace-nowrap">'
+          + '<button onclick="openPayModal(\'ppl\', ' + p.id + ')" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]"><i class="fa-solid fa-won-sign"></i> 입금</button> '
+          + '<button onclick="openViralForm(' + p.id + ')" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg text-[11px]">수정</button> '
+          + '<button onclick="deletePpl(' + p.id + ')" class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fa-solid fa-trash"></i></button></td>'
+          + '</tr>';
+      }).join('');
+    }
+
+
+    /* ===== 주요 단계 체크리스트 (시딩제품전달 → 업로드) ===== */
+    const FLOW_STAGES = ['시딩제품전달', '가이드전달', '기획안전달', '촬영', '초안전달', '최종본전달', '업로드'];
+    function setStepDate(id, stage, v) {
+      const p = pplList.find(x => x.id === id);
+      if (!p) return;
+      p.stepDates = p.stepDates || {};
+      const prev = p.stepDates[stage] || {};
+      p.stepDates[stage] = { date: v, done: !!prev.done, sched: prev.sched !== undefined ? prev.sched : true, updatedAt: Date.now() };
+      saveAll();
+      renderAll();
+    }
+    function stageChecklistHtml(p) {
+      return '<div class="space-y-0.5">' + FLOW_STAGES.map(st => {
+        const info = (p.stepDates || {})[st];
+        const dt = info ? (typeof info === 'object' ? info.date : info) : '';
+        const done = info && typeof info === 'object' ? info.done : false;
+        return '<div class="flex items-center gap-1.5 text-[11px] px-1.5 py-0.5 rounded ' + (done ? 'bg-emerald-50' : '') + '">'
+          + '<input type="checkbox" ' + (done ? 'checked' : '') + ' onchange="toggleStepDateDone(' + p.id + ', \'' + st + '\', this.checked)" class="accent-emerald-600 w-3.5 h-3.5 cursor-pointer">'
+          + '<span class="font-bold w-[74px] shrink-0 ' + (done ? 'line-through text-slate-400' : 'text-slate-700') + '">' + st + '</span>'
+          + '<input type="date" value="' + tEsc(dt || '') + '" onchange="setStepDate(' + p.id + ', \'' + st + '\', this.value)" class="px-1 py-0.5 text-[10px] border border-slate-200 rounded w-[112px]">'
+          + '</div>';
+      }).join('') + '</div>';
+    }
+
+    /* ===== 월별 진행 (앰버서더 · 크리에이터 · 인플루언서) ===== */
+    let planMonthDate = new Date();
+    function planYm() { return planMonthDate.getFullYear() + '-' + String(planMonthDate.getMonth() + 1).padStart(2, '0'); }
+    function movePlanMonth(dir) {
+      if (dir === 0) planMonthDate = new Date();
+      else planMonthDate = new Date(planMonthDate.getFullYear(), planMonthDate.getMonth() + dir, 1);
+      renderAll();
+    }
+    function planOf(p) {
+      p.monthlyPlan = p.monthlyPlan || {};
+      return p.monthlyPlan[planYm()] || { products: '', done: false, uploadDate: '', memo: '' };
+    }
+    function setPlan(id, field, v) {
+      const p = pplList.find(x => x.id === id);
+      if (!p) return;
+      p.monthlyPlan = p.monthlyPlan || {};
+      const ym = planYm();
+      p.monthlyPlan[ym] = Object.assign({ products: '', done: false, uploadDate: '', memo: '' }, p.monthlyPlan[ym]);
+      p.monthlyPlan[ym][field] = v;
+      if (field === 'done' && v && !p.monthlyPlan[ym].uploadDate) p.monthlyPlan[ym].uploadDate = todayStr();
+      saveAll();
+      renderAll();
+    }
+    function planCellHtml(p) {
+      const pl = planOf(p);
+      const opts = products.filter(x => x.brand === p.brand).map(x => '<option value="' + tEsc(x.name) + '">').join('');
+      return '<div class="space-y-1 min-w-[200px]">'
+        + '<input list="planProd_' + p.id + '" value="' + tEsc(pl.products || '') + '" placeholder="이번 달 제품 (쉼표로 여러 개)" '
+        + 'onchange="setPlan(' + p.id + ', \'products\', this.value)" class="w-full px-2 py-1 text-[11px] border ' + (pl.products ? 'border-slate-200' : 'border-amber-300 bg-amber-50/40') + ' rounded-lg">'
+        + '<datalist id="planProd_' + p.id + '">' + opts + '</datalist>'
+        + '<div class="flex items-center gap-1.5">'
+        + '<label class="flex items-center gap-1 text-[11px] font-bold ' + (pl.done ? 'text-emerald-700' : 'text-slate-500') + ' cursor-pointer">'
+        + '<input type="checkbox" ' + (pl.done ? 'checked' : '') + ' onchange="setPlan(' + p.id + ', \'done\', this.checked)" class="accent-emerald-600 w-4 h-4">업로드 완료</label>'
+        + '<input type="date" value="' + tEsc(pl.uploadDate || '') + '" onchange="setPlan(' + p.id + ', \'uploadDate\', this.value)" class="px-1 py-0.5 text-[10px] border border-slate-200 rounded w-[112px]">'
+        + '</div></div>';
+    }
+
     function exportToCSV() {
       let csv = '\uFEFF브랜드,제품명,인플루언서본명,계정,진행상태,컨택일자,시딩수량\n';
       pplList.forEach(p => {
@@ -12590,6 +12807,107 @@
   <!-- 보기 전용 뷰어 / 인쇄 영역 -->
   <div id="rptViewer" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8"></div>
   <div id="rptPrintArea" class="hidden"></div>
+
+
+  <!-- ==================== 바이럴 · 기타 등록 모달 ==================== -->
+  <div id="viralFormModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-3xl w-full max-w-3xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between z-10">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-bullseye text-slate-500"></i> <span id="viralFormTitle">바이럴 · 기타 집행 등록</span></h3>
+          <p class="text-xs text-slate-500 mt-0.5">인플루언서가 아닌 <b>대행사 · 광고 집행 건</b>을 건 단위로 등록합니다.</p>
+        </div>
+        <button onclick="closeViralForm()" class="text-slate-400 hover:text-slate-700 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <input type="hidden" id="vfId">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">브랜드</label>
+            <select id="vfBrand" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-semibold">
+              <option value="온살">온살</option>
+              <option value="루메아카이브">루메아카이브</option>
+              <option value="공통">공통 (온살 + 루메)</option>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">거래처 (대행사)</label>
+            <input id="vfCompany" placeholder="예) 주식회사 피드코퍼레이션" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">집행 유형</label>
+            <input id="vfKind" list="viralKindList" placeholder="카드뉴스 바이럴" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+            <datalist id="viralKindList">
+              <option value="카드뉴스 바이럴"></option><option value="커뮤니티 바이럴"></option>
+              <option value="블로그 바이럴"></option><option value="광고 집행"></option>
+              <option value="촬영 외주"></option><option value="디자인 외주"></option><option value="기타"></option>
+            </datalist>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">채널 · 매체</label>
+            <input id="vfChannel" list="viralChannelList" placeholder="인스타그램" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+            <datalist id="viralChannelList">
+              <option value="인스타그램"></option><option value="네이버 블로그"></option><option value="네이버 카페"></option>
+              <option value="유튜브"></option><option value="메타 광고"></option><option value="네이버 광고"></option><option value="기타"></option>
+            </datalist>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">수량 (건)</label>
+            <input id="vfQty" type="number" min="0" placeholder="10" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-emerald-700 mb-1"><i class="fa-solid fa-won-sign"></i> 집행 금액 (원)</label>
+            <input id="vfCost" type="number" min="0" placeholder="2376000" class="w-full px-3 py-2 text-xs border border-emerald-200 rounded-xl bg-emerald-50/30 font-bold">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">집행 시작일</label>
+            <input id="vfStart" type="date" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">집행 종료일</label>
+            <input id="vfEnd" type="date" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">담당자</label>
+            <input id="vfManager" placeholder="담당자 이름" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">연락처</label>
+            <input id="vfPhone" placeholder="010-0000-0000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">이메일</label>
+            <input id="vfEmail" placeholder="agency@company.com" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">결과 · 소재 링크 (선택)</label>
+          <input id="vfUrl" type="url" placeholder="https://..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">내용 · 메모</label>
+          <textarea id="vfMemo" rows="3" placeholder="예) 온살 / 루메아카이브 신제품 출시에 따라 인스타그램 카드뉴스 바이럴 광고 집행 및 광고비 결제" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></textarea>
+        </div>
+      </div>
+
+      <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+        <button onclick="closeViralForm()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+        <button onclick="saveViral()" class="px-4 py-2 bg-slate-900 hover:bg-slate-700 text-white text-xs font-bold rounded-xl">저장하기</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
