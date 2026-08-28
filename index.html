@@ -13455,6 +13455,14 @@
       renderAmbMonth();
     }
 
+    /* 사람 단위 속성 저장 (월별 아님 — 계약 조건) */
+    function ambmSetProp(id, field, val) {
+      const p = pplList.find(x => x.id === id); if (!p) return;
+      p[field] = val;
+      saveAll();
+      renderAmbMonth();
+    }
+
     function ambmIsSubmitted(p) {
       const pl = ambmPlan(p);
       return !!(pl.submitted || pl.feedUrl);
@@ -13620,6 +13628,21 @@
             '<label class="flex items-center gap-1.5 text-xs font-semibold ' + (pl['story' + n] ? 'text-violet-700' : 'text-slate-500') + ' cursor-pointer">' +
             '<input type="checkbox" ' + (pl['story' + n] ? 'checked' : '') + ' onchange="ambmSet(' + p.id + ', \'story' + n + '\', this.checked)" class="accent-violet-600 w-4 h-4">' + n + '회</label>'
           ).join('') + '</div>') +
+
+        // 2차 활용 (계약 조건 — 사람 단위)
+        ambmRow('2차 활용',
+          '<div class="flex flex-wrap items-center gap-3 pt-1.5">' +
+          '<label class="flex items-center gap-1.5 text-xs font-semibold ' + (p.ambReuseOk ? 'text-orange-700' : 'text-slate-500') + ' cursor-pointer">' +
+          '<input type="checkbox" ' + (p.ambReuseOk ? 'checked' : '') + ' onchange="ambmSetProp(' + p.id + ', \'ambReuseOk\', this.checked)" class="accent-orange-500 w-4 h-4">2차 활용 가능 계약</label>' +
+          (p.ambReuseOk ?
+            '<select onchange="ambmSetProp(' + p.id + ', \'ambReuseMonths\', this.value)" class="px-2 py-1 text-[11px] border border-slate-200 rounded-lg bg-white">' +
+            ['3', '6', '12', '24', 'perm'].map(v =>
+              '<option value="' + v + '"' + (String(p.ambReuseMonths || '6') === v ? ' selected' : '') + '>' +
+              (v === 'perm' ? '기간 제한 없음' : v + '개월') + '</option>').join('') +
+            '</select>' +
+            '<span class="text-[10px] text-orange-700/70">2차 활용 대시보드 목록에 표시됩니다</span>'
+            : '<span class="text-[10px] text-slate-400">계약에 2차 활용이 포함된 경우에만 켜 주세요</span>') +
+          '</div>') +
 
         // 상태 체크
         ambmRow('진행 상태',
