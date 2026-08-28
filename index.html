@@ -1271,6 +1271,174 @@
       <b>앰버서더 전용 페이지</b> · PPL 등록 시 <b>앰버서더</b> 또는 <b>무상앰버서더</b>를 체크하면 이 페이지로 분리됩니다. (PPL 목록에서는 빠져요)
     </div>
 
+    <!-- ==================== 앰버서더 월간 발송 관리 (NEW) ==================== -->
+    <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
+
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-violet-100 pb-3">
+        <div class="flex items-center gap-2">
+          <button onclick="ambmMoveMonth(-1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 text-xs hover:bg-slate-50">&#9664;</button>
+          <span id="ambmMonthLabel" class="text-sm font-black text-slate-900 px-2 py-1 bg-slate-100 rounded-lg whitespace-nowrap">발송</span>
+          <button onclick="ambmMoveMonth(1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 text-xs hover:bg-slate-50">&#9654;</button>
+          <button onclick="ambmMoveMonth(0)" class="px-2.5 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 text-[11px] font-bold hover:bg-slate-50">이번 달</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="ambmOpenBulk()" class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-excel"></i> 엑셀 일괄 등록
+          </button>
+          <button onclick="ambPublishAll()" class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-paper-plane"></i> 링크 일괄 발행
+          </button>
+          <button id="ambPullBtn" onclick="ambPullInbox()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-inbox"></i> 제출 내역 가져오기
+          </button>
+          <button onclick="ambmOpenAdd()" class="px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i> 앰버서더 추가
+          </button>
+          <button onclick="ambCfgOpen()" title="입력 링크 설정" class="px-3 py-2 bg-white hover:bg-slate-50 text-slate-500 border border-slate-200 text-xs font-bold rounded-xl transition">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 상태 요약 카드 (클릭하면 필터) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <button onclick="ambmSetFilter('submitted')" id="ambmCard-submitted" class="text-left p-4 rounded-xl border transition">
+          <span class="text-[11px] text-slate-500 font-semibold">제출 완료</span>
+          <div class="mt-0.5"><span id="ambmCntSubmitted" class="text-2xl font-black">0</span><span class="text-xs font-bold text-slate-400 ml-1">명</span></div>
+        </button>
+        <button onclick="ambmSetFilter('pending')" id="ambmCard-pending" class="text-left p-4 rounded-xl border transition">
+          <span class="text-[11px] text-slate-500 font-semibold"><i class="fa-solid fa-triangle-exclamation"></i> 미제출</span>
+          <div class="mt-0.5"><span id="ambmCntPending" class="text-2xl font-black">0</span><span class="text-xs font-bold text-slate-400 ml-1">명</span></div>
+        </button>
+        <button onclick="ambmSetFilter('shipped')" id="ambmCard-shipped" class="text-left p-4 rounded-xl border transition">
+          <span class="text-[11px] text-slate-500 font-semibold">발송 완료</span>
+          <div class="mt-0.5"><span id="ambmCntShipped" class="text-2xl font-black">0</span><span class="text-xs font-bold text-slate-400 ml-1">명</span></div>
+        </button>
+      </div>
+
+      <!-- 브랜드 탭 + 유형 탭 -->
+      <div class="flex flex-wrap items-center gap-4">
+        <div id="ambmBrandTabs" class="flex flex-wrap gap-1 p-1 bg-slate-100 rounded-xl text-xs font-bold w-fit"></div>
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] text-slate-400 font-semibold">유형</span>
+          <div id="ambmTypeTabs" class="flex flex-wrap gap-3 text-xs font-bold"></div>
+        </div>
+      </div>
+
+      <!-- 마스터 · 디테일 -->
+      <div class="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-4">
+        <div class="border border-slate-200 rounded-2xl overflow-hidden">
+          <div class="px-3 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <span id="ambmListTitle" class="text-xs font-black text-slate-700">앰버서더</span>
+            <span id="ambmListCount" class="text-[11px] font-bold text-slate-500">0명</span>
+          </div>
+          <div id="ambmList" class="max-h-[620px] overflow-y-auto custom-scrollbar divide-y divide-slate-100"></div>
+        </div>
+        <div id="ambmDetail" class="border border-slate-200 rounded-2xl p-5 min-h-[400px]"></div>
+      </div>
+    </section>
+
+    <!-- 앰버서더 추가 모달 -->
+    <div id="ambmAddModal" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <h3 class="text-base font-bold text-slate-800"><i class="fa-solid fa-plus text-violet-600"></i> 앰버서더 추가</h3>
+        <div class="space-y-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-slate-500">브랜드</label>
+            <select id="ambmAddBrand" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg mt-1">
+              <option value="온살">온살</option><option value="루메아카이브">루메아카이브</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-slate-500">유형</label>
+            <select id="ambmAddType" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg mt-1">
+              <option value="free">무상 앰버서더</option><option value="paid">계약(유상) 앰버서더</option>
+            </select>
+          </div>
+          <div><label class="text-[11px] font-bold text-slate-500">이름</label><input id="ambmAddName" placeholder="양동혁" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg mt-1"></div>
+          <div><label class="text-[11px] font-bold text-slate-500">대표 계정</label><input id="ambmAddAccount" placeholder="@dongyee__" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg mt-1"></div>
+          <div><label class="text-[11px] font-bold text-slate-500">프로필 URL (선택)</label><input id="ambmAddUrl" placeholder="https://instagram.com/..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg mt-1"></div>
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="text-[11px] font-bold text-slate-500">팔로워 (선택)</label><input id="ambmAddFollowers" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg mt-1"></div>
+            <div><label class="text-[11px] font-bold text-slate-500">단가 (유상만)</label><input id="ambmAddCost" type="number" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg mt-1"></div>
+          </div>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button onclick="ambmCloseAdd()" class="flex-1 py-2.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl">취소</button>
+          <button onclick="ambmSubmitAdd()" class="flex-1 py-2.5 bg-violet-600 text-white text-xs font-bold rounded-xl">등록하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 엑셀 일괄 등록 모달 -->
+    <div id="ambmBulkModal" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <h3 class="text-base font-bold text-slate-800"><i class="fa-solid fa-file-excel text-emerald-600"></i> 엑셀 일괄 등록</h3>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[11px] text-slate-600 leading-relaxed">
+          엑셀에서 <b>제목 행 없이</b> 범위를 복사해 아래에 붙여넣으세요. 열 순서는 이렇게 맞춰 주세요.<br>
+          <b class="text-slate-800">이름 &nbsp;·&nbsp; 계정 &nbsp;·&nbsp; 프로필URL &nbsp;·&nbsp; 팔로워 &nbsp;·&nbsp; 이메일 &nbsp;·&nbsp; 수령인 &nbsp;·&nbsp; 연락처 &nbsp;·&nbsp; 주소</b><br>
+          이름만 있어도 등록됩니다. 나머지는 비워도 돼요.
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[11px] font-bold text-slate-500">브랜드</label>
+            <select id="ambmBulkBrand" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg mt-1">
+              <option value="온살">온살</option><option value="루메아카이브">루메아카이브</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-slate-500">유형</label>
+            <select id="ambmBulkType" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg mt-1">
+              <option value="free">무상 앰버서더</option><option value="paid">계약(유상) 앰버서더</option>
+            </select>
+          </div>
+        </div>
+        <textarea id="ambmBulkText" rows="10" placeholder="양동혁&#9;@dongyee__&#9;https://instagram.com/dongyee__&#9;1.2만&#9;a@b.com&#9;양동혁&#9;010-0000-0000&#9;서울시 ..." class="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-xl font-mono"></textarea>
+        <div id="ambmBulkPreview" class="text-[11px] text-slate-500"></div>
+        <div class="flex gap-2">
+          <button onclick="ambmCloseBulk()" class="flex-1 py-2.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl">취소</button>
+          <button onclick="ambmSubmitBulk()" class="flex-1 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl">일괄 등록하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 입력 링크 설정 모달 -->
+    <div id="ambCfgModal" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <h3 class="text-base font-bold text-slate-800"><i class="fa-solid fa-gear text-violet-600"></i> 앰버서더 입력 링크 설정</h3>
+        <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-[11px] text-amber-900 leading-relaxed">
+          앰버서더 전용 <b>앱스스크립트</b>를 새 프로젝트로 배포한 뒤, 나온 <b>/exec 주소</b>와 코드 맨 위의 <b>ADMIN_KEY</b>를 그대로 넣어 주세요.
+          기존 대시보드 동기화 스크립트와는 별개입니다.
+        </div>
+        <div>
+          <label class="text-[11px] font-bold text-slate-500">앱스스크립트 웹앱 주소 (/exec)</label>
+          <div class="flex gap-1.5 mt-1">
+            <input id="ambCfgApi" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg">
+            <button onclick="ambCfgTest()" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 whitespace-nowrap">연결 확인</button>
+          </div>
+        </div>
+        <div>
+          <label class="text-[11px] font-bold text-slate-500">관리 키 (ADMIN_KEY)</label>
+          <input id="ambCfgKey" placeholder="스크립트에 적은 값과 똑같이" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg mt-1">
+        </div>
+        <div class="grid grid-cols-1 gap-2">
+          <div>
+            <label class="text-[11px] font-bold text-slate-500">온살 스마트스토어 주소 (선택)</label>
+            <input id="ambCfgStoreOnsal" placeholder="https://smartstore.naver.com/..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg mt-1">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-slate-500">루메아카이브 스마트스토어 주소 (선택)</label>
+            <input id="ambCfgStoreLume" placeholder="https://smartstore.naver.com/..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg mt-1">
+          </div>
+          <p class="text-[10px] text-slate-400">입력 폼의 "전체 제품 보러가기" 링크로 쓰입니다.</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="ambCfgClose()" class="flex-1 py-2.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl">취소</button>
+          <button onclick="ambCfgSave()" class="flex-1 py-2.5 bg-violet-600 text-white text-xs font-bold rounded-xl">저장</button>
+        </div>
+      </div>
+    </div>
+
     <section class="bg-white p-5 rounded-2xl border border-indigo-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-indigo-100 pb-3">
         <div>
@@ -5088,6 +5256,7 @@
       renderMicroTable();
       renderFreeAmbTable();
       renderAmbTable();
+      renderAmbMonth();
       renderCreatorTable();
       renderSupTable();
       renderEtcTable();
@@ -5756,7 +5925,7 @@
         tbody.dataset.empty || '등록된 건이 없습니다.');
     }
 
-    function renderAmbTable() { renderCatTable('amb', 'indigo', isAmbPaid); }
+    function renderAmbTable() { renderCatTable('amb', 'indigo', p => isAmbPaid(p) && !p.ambListed); }
     function renderCreatorTable() { renderCatTable('creator', 'violet', isCreatorType); }
 
     /* ==================== 업로드 / 결과 기록 ==================== */
@@ -10306,7 +10475,7 @@
     }
 
     function renderFreeAmbTable() {
-      let list = pplList.filter(isFreeAmb);
+      let list = pplList.filter(p => isFreeAmb(p) && !p.ambListed);
       if (freeAmbBrand !== '전체') list = list.filter(p => p.brand === freeAmbBrand);
 
       document.getElementById('freeAmbTotal').innerText = list.length + '명';
@@ -12993,6 +13162,649 @@
           + '<input type="date" value="' + tEsc(dt || '') + '" onchange="setStepDate(' + p.id + ', \'' + st + '\', this.value)" class="px-1 py-0.5 text-[10px] border border-slate-200 rounded w-[112px]">'
           + '</div>';
       }).join('') + '</div>';
+    }
+
+
+    /* ==================== 앰버서더 입력 링크 · 제출 수신 (NEW) ==================== */
+    const AMB_FORM_BASE = location.origin + location.pathname.replace(/[^/]*$/, '') + 'ambassador-input.html';
+    const AMB_LINK_DAYS = 90;
+
+    let ambCfg = { api: '', key: '', storeOnsal: '', storeLume: '' };
+    try { ambCfg = Object.assign(ambCfg, JSON.parse(localStorage.getItem('onsal_ambCfg') || '{}')); } catch (e) { }
+
+    function ambCfgSave() {
+      ambCfg.api = document.getElementById('ambCfgApi').value.trim().replace(/\s/g, '');
+      ambCfg.key = document.getElementById('ambCfgKey').value.trim();
+      ambCfg.storeOnsal = document.getElementById('ambCfgStoreOnsal').value.trim();
+      ambCfg.storeLume = document.getElementById('ambCfgStoreLume').value.trim();
+      localStorage.setItem('onsal_ambCfg', JSON.stringify(ambCfg));
+      ambCfgClose();
+      renderAmbMonth();
+      alert('저장했습니다.');
+    }
+    function ambCfgOpen() {
+      document.getElementById('ambCfgApi').value = ambCfg.api || '';
+      document.getElementById('ambCfgKey').value = ambCfg.key || '';
+      document.getElementById('ambCfgStoreOnsal').value = ambCfg.storeOnsal || '';
+      document.getElementById('ambCfgStoreLume').value = ambCfg.storeLume || '';
+      const m = document.getElementById('ambCfgModal');
+      m.classList.remove('hidden'); m.classList.add('flex');
+    }
+    function ambCfgClose() {
+      const m = document.getElementById('ambCfgModal');
+      m.classList.add('hidden'); m.classList.remove('flex');
+    }
+    function ambCfgReady() { return !!(ambCfg.api && ambCfg.key); }
+
+    async function ambCfgTest() {
+      const url = document.getElementById('ambCfgApi').value.trim();
+      if (!url) { alert('주소를 먼저 넣어 주세요.'); return; }
+      try {
+        const r = await fetch(url + '?action=ping&t=' + Date.now());
+        const j = await r.json();
+        alert(j.ok ? '연결에 성공했습니다.' : '응답이 이상합니다: ' + (j.error || ''));
+      } catch (e) {
+        alert('연결하지 못했습니다.\n· 배포 시 액세스 권한을 "모든 사용자"로 하셨는지\n· /exec 로 끝나는 주소인지 확인해 주세요.');
+      }
+    }
+
+    function ambStoreUrl(brand) {
+      return brand === '온살' ? (ambCfg.storeOnsal || '') : (ambCfg.storeLume || '');
+    }
+    function ambTokenOf(p) {
+      if (!p.ambToken) {
+        p.ambToken = 'amb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      }
+      return p.ambToken;
+    }
+    function ambLinkUrl(p) {
+      const exp = Math.floor(Date.now() / 1000) + AMB_LINK_DAYS * 86400;
+      return AMB_FORM_BASE + '?id=' + encodeURIComponent(ambTokenOf(p)) +
+        '&exp=' + exp + '&month=' + encodeURIComponent(ambmYm());
+    }
+    function ambLinkExpiry(p) {
+      const ym = ambmYm();
+      const e = (p.ambLinkExp || {})[ym];
+      if (!e) return null;
+      return new Date(e * 1000);
+    }
+
+    /* 이번 달 미션을 서버에 올리고 링크 확정 */
+    async function ambPublish(p, silent) {
+      if (!ambCfgReady()) { if (!silent) { alert('먼저 [입력 링크 설정]에서 스크립트 주소와 관리 키를 넣어 주세요.'); ambCfgOpen(); } return false; }
+      const pl = ambmPlan(p);
+      const ym = ambmYm();
+      const exp = Math.floor(Date.now() / 1000) + AMB_LINK_DAYS * 86400;
+      const mission = {
+        token: ambTokenOf(p), month: ym, exp: exp,
+        name: p.realName || '', brand: p.brand || '',
+        adProduct: pl.adProduct || '', guide: pl.guide || '',
+        freeOptions: products.filter(x => x.brand === p.brand).map(x => x.name),
+        storeUrl: ambStoreUrl(p.brand),
+        receiverName: p.receiverName || '', receiverPhone: p.receiverPhone || '',
+        postalCode: p.postalCode || '', address: p.address || '', addressDetail: p.addressDetail || ''
+      };
+      try {
+        const r = await fetch(ambCfg.api, {
+          method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'publish', key: ambCfg.key, missions: [mission] })
+        });
+        const j = await r.json();
+        if (!j.ok) throw new Error(j.error || 'publish failed');
+        p.ambLinkExp = p.ambLinkExp || {};
+        p.ambLinkExp[ym] = exp;
+        saveAll();
+        return true;
+      } catch (e) {
+        if (!silent) alert('링크 발행에 실패했습니다.\n' + e.message);
+        return false;
+      }
+    }
+
+    async function ambCopyLink(id) {
+      const p = pplList.find(x => x.id === id); if (!p) return;
+      const ok = await ambPublish(p);
+      if (!ok) return;
+      ambmCopyText(ambLinkUrl(p), '입력 링크를 복사했습니다. (' + AMB_LINK_DAYS + '일 유효)');
+      renderAmbMonth();
+    }
+
+    async function ambCopyKakaoLink(id) {
+      const p = pplList.find(x => x.id === id); if (!p) return;
+      const ok = await ambPublish(p);
+      if (!ok) return;
+      const pl = ambmPlan(p);
+      const mm = (ambmDate.getMonth() + 1) + '월';
+      const lines = [];
+      lines.push('안녕하세요 ' + (p.realName || '') + '님, ' + p.brand + '입니다 :)');
+      lines.push(mm + ' 앰버서더 정보 입력 안내드립니다.');
+      lines.push('');
+      if (pl.adProduct) { lines.push('[' + mm + ' 광고 제품]'); lines.push('· ' + pl.adProduct); lines.push(''); }
+      lines.push('아래 링크에서 업로드 예정일 · 무상 제품 · 배송지를 입력해 주세요.');
+      lines.push(ambLinkUrl(p));
+      lines.push('');
+      lines.push('· 무상 제품은 2개까지 선택 가능하고, 같은 제품으로 2개 신청하셔도 됩니다.');
+      lines.push('· 제출해주시면 확인 후 3~7 영업일 내 발송해 드려요.');
+      lines.push('· 게시물에는 "광고" 또는 "유료광고 포함" 표기를 꼭 부탁드립니다.');
+      lines.push('');
+      lines.push('감사합니다!');
+      ambmCopyText(lines.join('\n'), '카톡 안내 문구를 복사했습니다.');
+      renderAmbMonth();
+    }
+
+    /* 여러 명 한 번에 발행 */
+    async function ambPublishAll() {
+      if (!ambCfgReady()) { alert('먼저 [입력 링크 설정]을 완료해 주세요.'); ambCfgOpen(); return; }
+      const list = ambmPool();
+      if (!list.length) { alert('발행할 앰버서더가 없습니다.'); return; }
+      if (!confirm('현재 목록 ' + list.length + '명의 ' + ambmYm() + ' 미션을 한 번에 발행할까요?\n각자의 입력 링크가 활성화됩니다.')) return;
+      let ok = 0;
+      for (const p of list) { if (await ambPublish(p, true)) ok++; }
+      renderAmbMonth();
+      alert(ok + '명 발행 완료' + (ok < list.length ? ' (' + (list.length - ok) + '명 실패)' : '') + '.');
+    }
+
+    /* 제출 내역 받아와 반영 */
+    async function ambPullInbox() {
+      if (!ambCfgReady()) { alert('먼저 [입력 링크 설정]을 완료해 주세요.'); ambCfgOpen(); return; }
+      const btn = document.getElementById('ambPullBtn');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 가져오는 중...'; }
+      try {
+        const r = await fetch(ambCfg.api + '?action=inbox&key=' + encodeURIComponent(ambCfg.key) + '&t=' + Date.now());
+        const j = await r.json();
+        if (!j.ok) throw new Error(j.error || 'inbox failed');
+
+        let applied = 0, unknown = 0;
+        const acks = [];
+        (j.submissions || []).forEach(s => {
+          const p = pplList.find(x => x.ambToken === s.token);
+          if (!p) { unknown++; return; }
+          const prev = (p.monthlyPlan || {})[s.month];
+          if (prev && prev.submittedAt && prev.submittedAt === s.submittedAt) { applied++; return; }
+          p.monthlyPlan = p.monthlyPlan || {};
+          const cur = Object.assign({ products: '', done: false, uploadDate: '', memo: '' }, p.monthlyPlan[s.month]);
+          cur.freeProduct1 = s.freeProduct1 || cur.freeProduct1 || '';
+          cur.freeProduct2 = s.freeProduct2 || cur.freeProduct2 || '';
+          cur.plannedDate = s.uploadDate || '';
+          cur.submitted = true;
+          cur.submittedAt = s.submittedAt || '';
+          cur.ambMemo = String(s.memo || '');
+          const merged = [cur.adProduct, cur.freeProduct1, cur.freeProduct2].filter(Boolean);
+          cur.products = merged.join(', ');
+          p.monthlyPlan[s.month] = cur;
+
+          if (s.receiverName) p.receiverName = s.receiverName;
+          if (s.receiverPhone) p.receiverPhone = s.receiverPhone;
+          if (s.postalCode) p.postalCode = s.postalCode;
+          if (s.address) p.address = s.address;
+          if (s.addressDetail) p.addressDetail = s.addressDetail;
+
+          if (!s.ack) acks.push({ token: s.token, month: s.month });
+          applied++;
+        });
+
+        saveAll(); renderAll();
+
+        if (acks.length) {
+          fetch(ambCfg.api, {
+            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'ack', key: ambCfg.key, items: acks })
+          }).catch(() => { });
+        }
+        alert('제출 ' + applied + '건을 반영했습니다.'
+          + (acks.length ? '\n새로 들어온 제출: ' + acks.length + '건' : '\n새로 들어온 제출은 없습니다.')
+          + (unknown ? '\n\n대시보드에 없는 제출 ' + unknown + '건은 건너뛰었습니다.' : ''));
+      } catch (e) {
+        alert('제출 내역을 가져오지 못했습니다.\n' + e.message);
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-inbox"></i> 제출 내역 가져오기'; }
+      }
+    }
+
+    /* 상세 패널에 들어갈 링크 박스 */
+    function ambLinkBoxHtml(p) {
+      const ym = ambmYm();
+      const exp = ambLinkExpiry(p);
+      const live = exp && exp.getTime() > Date.now();
+      const pl = ambmPlan(p);
+
+      let status;
+      if (pl.submitted) {
+        status = '<span class="text-[11px] font-bold text-emerald-700"><i class="fa-solid fa-circle-check"></i> 제출 완료'
+          + (pl.submittedAt ? ' · ' + String(pl.submittedAt).slice(0, 10) : '') + '</span>';
+      } else if (live) {
+        status = '<span class="text-[11px] font-bold text-violet-700"><i class="fa-solid fa-link"></i> 링크 발행됨 · '
+          + (exp.getMonth() + 1) + '/' + exp.getDate() + '까지 유효</span>';
+      } else {
+        status = '<span class="text-[11px] font-bold text-slate-400"><i class="fa-regular fa-circle"></i> 아직 발행 전</span>';
+      }
+
+      return '<div class="mt-3 bg-violet-50/70 border border-violet-200 rounded-xl px-4 py-3 space-y-2">' +
+        '<div class="flex flex-wrap items-center justify-between gap-2">' +
+        '<div>' +
+        '<div class="text-[11px] font-black text-violet-900"><i class="fa-solid fa-paper-plane"></i> 앰버서더 입력 링크</div>' +
+        '<div class="text-[10px] text-violet-700/70 mt-0.5">' + ym + ' 미션 · 무상제품 · 배송지를 앰버서더가 직접 입력합니다 (' + AMB_LINK_DAYS + '일 유효)</div>' +
+        '</div>' +
+        '<div class="flex gap-1.5 flex-wrap">' +
+        '<button onclick="ambCopyLink(' + p.id + ')" class="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-violet-200 text-[11px] font-bold rounded-lg"><i class="fa-solid fa-link"></i> 링크 복사</button>' +
+        '<button onclick="ambCopyKakaoLink(' + p.id + ')" class="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold rounded-lg"><i class="fa-regular fa-comment-dots"></i> 카톡 문구 복사</button>' +
+        '</div></div>' +
+        '<div class="flex items-center justify-between gap-2 pt-0.5 border-t border-violet-100">' +
+        '<div class="pt-1.5">' + status + '</div>' +
+        (live ? '<a href="' + tEsc(ambLinkUrl(p)) + '" target="_blank" class="pt-1.5 text-[11px] font-bold text-violet-700 hover:underline">미리보기 <i class="fa-solid fa-arrow-up-right-from-square"></i></a>' : '') +
+        '</div>' +
+        (pl.plannedDate ? '<div class="text-[11px] text-slate-600 pt-0.5 border-t border-violet-100"><span class="font-bold">IG 업로드 예정일</span> · ' + tEsc(pl.plannedDate) + '</div>' : '') +
+        '</div>';
+    }
+
+
+    /* ==================== 앰버서더 월간 발송 관리 (NEW) ==================== */
+    let ambmDate = new Date();
+    let ambmBrand = '온살';
+    let ambmType = 'free';       // paid | free | creator | listed
+    let ambmFilter = 'all';      // all | submitted | pending | shipped
+    let ambmSel = null;
+    let ambGuideTpl = {};
+    try { ambGuideTpl = JSON.parse(localStorage.getItem('onsal_ambGuideTpl') || '{}'); } catch (e) { ambGuideTpl = {}; }
+
+    const AMBM_TYPES = [
+      { key: 'paid', label: '계약', color: 'indigo' },
+      { key: 'free', label: '무상', color: 'teal' },
+      { key: 'creator', label: '크리에이터(N페이)', color: 'amber' },
+      { key: 'listed', label: '리스트업', color: 'slate' }
+    ];
+
+    function ambmYm() { return ambmDate.getFullYear() + '-' + String(ambmDate.getMonth() + 1).padStart(2, '0'); }
+    function ambmMoveMonth(d) {
+      if (d === 0) ambmDate = new Date();
+      else ambmDate = new Date(ambmDate.getFullYear(), ambmDate.getMonth() + d, 1);
+      renderAmbMonth();
+    }
+    function ambmSetBrand(b) { ambmBrand = b; ambmSel = null; renderAmbMonth(); }
+    function ambmSetType(t) { ambmType = t; ambmSel = null; renderAmbMonth(); }
+    function ambmSetFilter(f) { ambmFilter = (ambmFilter === f) ? 'all' : f; ambmSel = null; renderAmbMonth(); }
+    function ambmSelect(id) { ambmSel = id; renderAmbMonth(); }
+
+    const AMBM_BASE = {
+      products: '', done: false, uploadDate: '', memo: '',
+      adProduct: '', guide: '', freeProduct1: '', freeProduct2: '',
+      feedUrl: '', story1: false, story2: false, story3: false,
+      submitted: false, shipped: false
+    };
+
+    function ambmPlan(p) {
+      p.monthlyPlan = p.monthlyPlan || {};
+      return Object.assign({}, AMBM_BASE, p.monthlyPlan[ambmYm()] || {});
+    }
+    function ambmSet(id, field, val) {
+      const p = pplList.find(x => x.id === id); if (!p) return;
+      p.monthlyPlan = p.monthlyPlan || {};
+      const ym = ambmYm();
+      p.monthlyPlan[ym] = Object.assign({ products: '', done: false, uploadDate: '', memo: '' }, p.monthlyPlan[ym]);
+      p.monthlyPlan[ym][field] = val;
+      if (field === 'feedUrl' && val) p.monthlyPlan[ym].submitted = true;
+      if (field === 'adProduct') {
+        const merged = [val, p.monthlyPlan[ym].freeProduct1, p.monthlyPlan[ym].freeProduct2].filter(Boolean);
+        p.monthlyPlan[ym].products = merged.join(', ');
+      }
+      if (field === 'freeProduct1' || field === 'freeProduct2') {
+        const merged = [p.monthlyPlan[ym].adProduct, p.monthlyPlan[ym].freeProduct1, p.monthlyPlan[ym].freeProduct2].filter(Boolean);
+        p.monthlyPlan[ym].products = merged.join(', ');
+      }
+      saveAll();
+      renderAmbMonth();
+    }
+
+    function ambmIsSubmitted(p) {
+      const pl = ambmPlan(p);
+      return !!(pl.submitted || pl.feedUrl);
+    }
+
+    // 이 화면에 나올 수 있는 전체 후보 (필터 적용 전)
+    function ambmPool() {
+      let list;
+      if (ambmType === 'listed') {
+        list = pplList.filter(p => p.ambListed);
+      } else {
+        list = pplList.filter(p => !p.ambListed);
+        if (ambmType === 'paid') list = list.filter(isAmbPaid);
+        else if (ambmType === 'free') list = list.filter(isFreeAmb);
+        else if (ambmType === 'creator') list = list.filter(isCreatorType);
+      }
+      if (ambmBrand !== '전체') list = list.filter(p => p.brand === ambmBrand);
+      return list;
+    }
+
+    function renderAmbMonth() {
+      const listEl = document.getElementById('ambmList');
+      if (!listEl) return;
+
+      document.getElementById('ambmMonthLabel').innerText =
+        (ambmDate.getMonth() + 1) + '월 발송';
+
+      const pool = ambmPool();
+
+      // ----- 상태 카드 -----
+      const nSub = pool.filter(ambmIsSubmitted).length;
+      const nPen = pool.length - nSub;
+      const nShip = pool.filter(p => ambmPlan(p).shipped).length;
+      document.getElementById('ambmCntSubmitted').innerText = nSub;
+      document.getElementById('ambmCntPending').innerText = nPen;
+      document.getElementById('ambmCntShipped').innerText = nShip;
+
+      const cardStyles = {
+        submitted: ['bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200', 'bg-white border-slate-200 hover:border-emerald-200', 'text-emerald-700'],
+        pending: ['bg-amber-50 border-amber-300 ring-2 ring-amber-200', 'bg-amber-50/40 border-amber-200 hover:border-amber-300', 'text-amber-600'],
+        shipped: ['bg-sky-50 border-sky-300 ring-2 ring-sky-200', 'bg-white border-slate-200 hover:border-sky-200', 'text-sky-700']
+      };
+      Object.keys(cardStyles).forEach(k => {
+        const el = document.getElementById('ambmCard-' + k);
+        const s = cardStyles[k];
+        el.className = 'text-left p-4 rounded-xl border transition ' + (ambmFilter === k ? s[0] : s[1]);
+        const num = el.querySelector('.text-2xl');
+        num.className = 'text-2xl font-black ' + s[2];
+      });
+
+      // ----- 브랜드 탭 -----
+      document.getElementById('ambmBrandTabs').innerHTML = ['온살', '루메아카이브', '전체'].map(b =>
+        '<button onclick="ambmSetBrand(\'' + b + '\')" class="px-4 py-1.5 rounded-lg transition ' +
+        (ambmBrand === b ? 'bg-white text-violet-700 shadow-xs' : 'text-slate-500 hover:text-slate-800') + '">' + b + '</button>'
+      ).join('');
+
+      // ----- 유형 탭 -----
+      document.getElementById('ambmTypeTabs').innerHTML = AMBM_TYPES.map(t =>
+        '<button onclick="ambmSetType(\'' + t.key + '\')" class="pb-1 border-b-2 transition ' +
+        (ambmType === t.key ? 'border-violet-600 text-violet-700' : 'border-transparent text-slate-400 hover:text-slate-700') + '">' + t.label + '</button>'
+      ).join('');
+
+      // ----- 좌측 리스트 -----
+      let list = pool.slice();
+      if (ambmFilter === 'submitted') list = list.filter(ambmIsSubmitted);
+      else if (ambmFilter === 'pending') list = list.filter(p => !ambmIsSubmitted(p));
+      else if (ambmFilter === 'shipped') list = list.filter(p => ambmPlan(p).shipped);
+
+      const typeLabel = (AMBM_TYPES.find(t => t.key === ambmType) || {}).label || '';
+      document.getElementById('ambmListTitle').innerText = typeLabel + ' 앰버서더';
+      document.getElementById('ambmListCount').innerText = list.length + '명';
+
+      if (!list.length) {
+        listEl.innerHTML = '<div class="py-10 px-4 text-center text-[11px] text-slate-400 leading-relaxed">해당 조건의 앰버서더가 없습니다.<br>위 <b>앰버서더 추가</b>로 등록해 주세요.</div>';
+      } else {
+        if (!list.some(p => p.id === ambmSel)) ambmSel = list[0].id;
+        listEl.innerHTML = list.map(p => {
+          const on = p.id === ambmSel;
+          const sub = ambmIsSubmitted(p);
+          return '<button onclick="ambmSelect(' + p.id + ')" class="w-full text-left px-3.5 py-3 transition ' +
+            (on ? 'bg-violet-50 border-l-[3px] border-violet-500' : 'hover:bg-slate-50 border-l-[3px] border-transparent') + '">' +
+            '<div class="flex items-center gap-1.5">' +
+            '<span class="text-xs font-black ' + (on ? 'text-violet-800' : 'text-slate-800') + '">' + tEsc(p.realName || '이름 없음') + '</span>' +
+            (sub ? '<i class="fa-solid fa-circle-check text-emerald-500 text-[10px]"></i>' : '<i class="fa-solid fa-circle text-amber-400 text-[7px]"></i>') +
+            '</div>' +
+            '<div class="text-[11px] text-slate-400 mt-0.5">' + tEsc(p.influencer || '') + '</div>' +
+            '</button>';
+        }).join('');
+      }
+
+      renderAmbmDetail();
+    }
+
+    function renderAmbmDetail() {
+      const box = document.getElementById('ambmDetail');
+      const p = pplList.find(x => x.id === ambmSel);
+      if (!p) {
+        box.innerHTML = '<div class="h-full flex items-center justify-center text-[11px] text-slate-400">왼쪽에서 앰버서더를 선택하세요.</div>';
+        return;
+      }
+      const pl = ambmPlan(p);
+      const opts = (sel) => '<option value="">제품 선택...</option>' +
+        products.filter(x => x.brand === p.brand).map(x =>
+          '<option value="' + tEsc(x.name) + '"' + (sel === x.name ? ' selected' : '') + '>' + tEsc(x.name) + '</option>').join('');
+
+      const guidePlaceholder = '예시)\n1. 저분자 히알루론산 2% 함유로 즉각적인 수분 채움감\n2. 1회 사용 직후로 증명한 피부 채워짐 효과\n3. 저자극 인체적용시험 완료 — 민감 피부도 매일 사용 가능\n\n핵심 소구포인트 2~3개를 번호로 간단히 적어 주세요. 상세페이지의 모든 수치를 다 넣기보다, 가장 임팩트 있는 것 위주로 추려 주세요.';
+
+      box.innerHTML =
+        // 헤더
+        '<div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">' +
+        '<div class="flex items-center gap-2">' +
+        '<h3 class="text-base font-black text-slate-800">' + tEsc(p.realName || '이름 없음') + '</h3>' +
+        '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + (p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-sky-100 text-sky-700') + '">' + tEsc(p.brand) + '</span>' +
+        '</div>' +
+        '<div class="flex items-center gap-1.5">' +
+        (p.ambListed
+          ? '<button onclick="ambmRestore(' + p.id + ')" class="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-[11px] font-bold rounded-lg"><i class="fa-solid fa-rotate-left"></i> 진행 목록으로 복귀</button>'
+          : '<button onclick="ambmToList(' + p.id + ')" class="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-[11px] font-bold rounded-lg"><i class="fa-solid fa-rotate-left"></i> 리스트로 돌리기</button>') +
+        '<button onclick="ambmDelete(' + p.id + ')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-[11px] font-bold rounded-lg"><i class="fa-solid fa-trash"></i> 완전 삭제</button>' +
+        '</div></div>' +
+
+        // 입력 링크 · 안내 문구
+        ambLinkBoxHtml(p) +
+
+        // 이번달 현황
+        '<div class="mt-4 text-xs font-black text-slate-700 flex items-center gap-1.5"><i class="fa-regular fa-clock text-violet-600"></i> 이번달 현황 <span class="text-[11px] font-bold text-slate-400">' + ambmYm() + '</span></div>' +
+
+        '<div class="mt-3 space-y-3">' +
+
+        // 광고제품
+        ambmRow('광고제품',
+          '<select onchange="ambmSet(' + p.id + ', \'adProduct\', this.value)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white">' + opts(pl.adProduct) + '</select>') +
+
+        // 광고 가이드
+        ambmRow('광고 가이드',
+          '<div class="border border-violet-200 rounded-lg overflow-hidden">' +
+          '<div class="px-3 py-1.5 bg-violet-50 text-[11px] text-violet-800 font-semibold"><i class="fa-regular fa-lightbulb"></i> 핵심 소구포인트 2~3개만 번호로 적어주세요</div>' +
+          '<textarea onchange="ambmSet(' + p.id + ', \'guide\', this.value)" rows="8" placeholder="' + tEsc(guidePlaceholder) + '" class="w-full px-3 py-2.5 text-[11px] leading-relaxed border-0 focus:ring-0 resize-y">' + tEsc(pl.guide) + '</textarea>' +
+          '</div>' +
+          '<div class="flex justify-end gap-1.5 mt-1.5">' +
+          '<button onclick="ambmLoadTpl(' + p.id + ')" class="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-[11px] font-bold rounded-lg"><i class="fa-solid fa-download"></i> 템플릿 불러오기</button>' +
+          '<button onclick="ambmSaveTpl(' + p.id + ')" class="px-2.5 py-1 bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold rounded-lg"><i class="fa-solid fa-floppy-disk"></i> 템플릿으로 저장</button>' +
+          '</div>' +
+          '<div class="text-[10px] text-slate-400 text-right mt-1">불러오기 = 이 제품에 저장해 둔 가이드를 다시 채우기 · 저장 = 지금 내용을 이 제품 기본값으로 저장</div>') +
+
+        // 무상제품 1 / 2
+        ambmRow('무상제품 1',
+          '<select onchange="ambmSet(' + p.id + ', \'freeProduct1\', this.value)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white">' + opts(pl.freeProduct1) + '</select>') +
+        ambmRow('무상제품 2',
+          '<select onchange="ambmSet(' + p.id + ', \'freeProduct2\', this.value)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white">' + opts(pl.freeProduct2) + '</select>') +
+
+        // 피드 업로드
+        ambmRow('피드 업로드',
+          '<div class="flex gap-1.5">' +
+          '<input value="' + tEsc(pl.feedUrl) + '" onchange="ambmSet(' + p.id + ', \'feedUrl\', this.value)" placeholder="https://instagram.com/p/..." class="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg">' +
+          (pl.feedUrl ? '<a href="' + tEsc(pl.feedUrl) + '" target="_blank" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 text-[11px] font-bold whitespace-nowrap"><i class="fa-solid fa-arrow-up-right-from-square"></i> 열기</a>' : '') +
+          '</div>') +
+
+        // 스토리 업로드
+        ambmRow('스토리 업로드',
+          '<div class="flex items-center gap-4 pt-1.5">' +
+          [1, 2, 3].map(n =>
+            '<label class="flex items-center gap-1.5 text-xs font-semibold ' + (pl['story' + n] ? 'text-violet-700' : 'text-slate-500') + ' cursor-pointer">' +
+            '<input type="checkbox" ' + (pl['story' + n] ? 'checked' : '') + ' onchange="ambmSet(' + p.id + ', \'story' + n + '\', this.checked)" class="accent-violet-600 w-4 h-4">' + n + '회</label>'
+          ).join('') + '</div>') +
+
+        // 상태 체크
+        ambmRow('진행 상태',
+          '<div class="flex flex-wrap items-center gap-4 pt-1.5">' +
+          '<label class="flex items-center gap-1.5 text-xs font-semibold ' + (pl.shipped ? 'text-sky-700' : 'text-slate-500') + ' cursor-pointer">' +
+          '<input type="checkbox" ' + (pl.shipped ? 'checked' : '') + ' onchange="ambmSet(' + p.id + ', \'shipped\', this.checked)" class="accent-sky-600 w-4 h-4">제품 발송 완료</label>' +
+          '<label class="flex items-center gap-1.5 text-xs font-semibold ' + (pl.submitted ? 'text-emerald-700' : 'text-slate-500') + ' cursor-pointer">' +
+          '<input type="checkbox" ' + (pl.submitted ? 'checked' : '') + ' onchange="ambmSet(' + p.id + ', \'submitted\', this.checked)" class="accent-emerald-600 w-4 h-4">업로드 제출 완료</label>' +
+          '<label class="flex items-center gap-1.5 text-xs font-semibold ' + (pl.done ? 'text-emerald-700' : 'text-slate-500') + ' cursor-pointer">' +
+          '<input type="checkbox" ' + (pl.done ? 'checked' : '') + ' onchange="ambmSet(' + p.id + ', \'done\', this.checked)" class="accent-emerald-600 w-4 h-4">월간 진행 완료</label>' +
+          '<input type="date" value="' + tEsc(pl.uploadDate || '') + '" onchange="ambmSet(' + p.id + ', \'uploadDate\', this.value)" class="px-2 py-1 text-[11px] border border-slate-200 rounded-lg">' +
+          '</div>') +
+
+        // 앰버서더가 남긴 말씀 (읽기 전용)
+        (pl.ambMemo ? ambmRow('앰버서더 요청',
+          '<div class="px-3 py-2.5 text-[11px] leading-relaxed bg-amber-50 border border-amber-200 rounded-lg text-amber-900 whitespace-pre-wrap">' + tEsc(pl.ambMemo) + '</div>') : '') +
+
+        // 메모
+        ambmRow('담당자 메모',
+          '<textarea onchange="ambmSet(' + p.id + ', \'memo\', this.value)" rows="2" placeholder="이번 달 특이사항" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg">' + tEsc(pl.memo) + '</textarea>') +
+
+        '</div>';
+    }
+
+    function ambmRow(label, html) {
+      return '<div class="grid grid-cols-1 sm:grid-cols-[110px_1fr] gap-2 sm:gap-3 items-start">' +
+        '<div class="text-[11px] font-bold text-slate-500 pt-2">' + label + '</div>' +
+        '<div>' + html + '</div></div>';
+    }
+
+    /* ----- 가이드 템플릿 ----- */
+    function ambmSaveTpl(id) {
+      const p = pplList.find(x => x.id === id); if (!p) return;
+      const pl = ambmPlan(p);
+      const key = pl.adProduct || '(제품 미지정)';
+      if (!pl.guide.trim()) { alert('저장할 가이드 내용이 없습니다.'); return; }
+      ambGuideTpl[key] = pl.guide;
+      localStorage.setItem('onsal_ambGuideTpl', JSON.stringify(ambGuideTpl));
+      alert('“' + key + '” 기본 가이드로 저장했습니다.');
+    }
+    function ambmLoadTpl(id) {
+      const p = pplList.find(x => x.id === id); if (!p) return;
+      const pl = ambmPlan(p);
+      const key = pl.adProduct || '(제품 미지정)';
+      const tpl = ambGuideTpl[key];
+      if (!tpl) { alert('“' + key + '”에 저장된 가이드 템플릿이 없습니다.\n먼저 [템플릿으로 저장]을 눌러 주세요.'); return; }
+      if (pl.guide.trim() && !confirm('지금 적힌 가이드를 템플릿 내용으로 덮어쓸까요?')) return;
+      ambmSet(id, 'guide', tpl);
+    }
+
+    /* ----- 문구 복사 ----- */
+    function ambmCopyText(txt, msg) {
+      const done = () => alert(msg || '복사했습니다.');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(done).catch(() => ambmFallbackCopy(txt, done));
+      } else ambmFallbackCopy(txt, done);
+    }
+    function ambmFallbackCopy(txt, cb) {
+      const ta = document.createElement('textarea');
+      ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); cb(); } catch (e) { alert('복사에 실패했습니다. 직접 선택해서 복사해 주세요.'); }
+      document.body.removeChild(ta);
+    }
+    function ambmCopyGuide(id) {
+      const p = pplList.find(x => x.id === id); if (!p) return;
+      const g = ambmPlan(p).guide;
+      if (!g.trim()) { alert('복사할 가이드 내용이 없습니다.'); return; }
+      ambmCopyText(g, '가이드를 복사했습니다.');
+    }
+    /* ----- 리스트로 돌리기 / 삭제 ----- */
+    function ambmToList(id) {
+      const p = pplList.find(x => x.id === id); if (!p) return;
+      if (!confirm((p.realName || '') + ' 님을 리스트업으로 옮길까요?\n앰버서더 관리 목록에서 숨겨지고, 리스트업 탭에서 다시 복귀시킬 수 있어요.')) return;
+      p.ambListed = true;
+      ambmSel = null;
+      saveAll(); renderAll();
+    }
+    function ambmRestore(id) {
+      const p = pplList.find(x => x.id === id); if (!p) return;
+      p.ambListed = false;
+      ambmSel = null;
+      saveAll(); renderAll();
+    }
+    function ambmDelete(id) {
+      const p = pplList.find(x => x.id === id); if (!p) return;
+      if (!confirm((p.realName || '') + ' 님을 완전히 삭제할까요?\n이번 달뿐 아니라 지난 달 기록까지 모두 사라지고 되돌릴 수 없습니다.')) return;
+      pplList = pplList.filter(x => x.id !== id);
+      ambmSel = null;
+      saveAll(); renderAll();
+    }
+
+    /* ----- 앰버서더 추가 ----- */
+    function ambmOpenAdd() {
+      document.getElementById('ambmAddBrand').value = (ambmBrand === '전체') ? '온살' : ambmBrand;
+      document.getElementById('ambmAddType').value = (ambmType === 'paid') ? 'paid' : 'free';
+      ['ambmAddName', 'ambmAddAccount', 'ambmAddUrl', 'ambmAddFollowers', 'ambmAddCost'].forEach(k => document.getElementById(k).value = '');
+      const m = document.getElementById('ambmAddModal');
+      m.classList.remove('hidden'); m.classList.add('flex');
+    }
+    function ambmCloseAdd() {
+      const m = document.getElementById('ambmAddModal');
+      m.classList.add('hidden'); m.classList.remove('flex');
+    }
+    function ambmMakeEntry(o) {
+      const paid = o.type === 'paid';
+      const cost = Number(o.cost) || 0;
+      return {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        brand: o.brand, product: '', productList: [],
+        realName: o.name, influencer: o.account || '', category: '앰버서더',
+        channels: o.url ? [{ type: '인스타', account: o.account || '', url: o.url }] : [],
+        followers: o.followers || '', email: o.email || '',
+        types: { branded: false, ppl: false, reuse: false, microReels: false, microPpl: false, reels: false, shorts: false, supporters: false, creator: false, ambassador: paid, freeAmb: !paid, viral: false },
+        costs: { branded: 0, ppl: 0, reuse: 0, microReels: 0, microPpl: 0, reels: 0, shorts: 0, supporters: 0, creator: 0, ambassador: paid ? cost : 0, freeAmb: 0, viral: 0 },
+        status: '진행확정', contactDate: todayStr(), targetDate: '', isCompleted: false,
+        stepDates: { '진행확정': { date: todayStr(), done: true, sched: false } },
+        collabLinks: [], uploads: [], resultNote: '',
+        mcnCompany: '', mcnAgentName: '', mcnAgentPhone: '', mcnAgentEmail: '',
+        receiverName: o.receiverName || '', receiverPhone: o.receiverPhone || '',
+        postalCode: '', address: o.address || '', addressDetail: '',
+        guideUrl: '', notes: '', seedingCount: 0, stockDeducted: false, ytStats: null,
+        monthlyPlan: {}
+      };
+    }
+    function ambmSubmitAdd() {
+      const name = document.getElementById('ambmAddName').value.trim();
+      if (!name) { alert('이름을 입력해 주세요.'); return; }
+      const type = document.getElementById('ambmAddType').value;
+      const entry = ambmMakeEntry({
+        brand: document.getElementById('ambmAddBrand').value,
+        type: type,
+        name: name,
+        account: document.getElementById('ambmAddAccount').value.trim(),
+        url: document.getElementById('ambmAddUrl').value.trim(),
+        followers: document.getElementById('ambmAddFollowers').value.trim(),
+        cost: document.getElementById('ambmAddCost').value
+      });
+      pplList.push(entry);
+      ambmBrand = entry.brand;
+      ambmType = type;
+      ambmSel = entry.id;
+      ambmCloseAdd();
+      saveAll(); renderAll();
+    }
+
+    /* ----- 엑셀 일괄 등록 ----- */
+    function ambmOpenBulk() {
+      document.getElementById('ambmBulkBrand').value = (ambmBrand === '전체') ? '온살' : ambmBrand;
+      document.getElementById('ambmBulkType').value = (ambmType === 'paid') ? 'paid' : 'free';
+      document.getElementById('ambmBulkText').value = '';
+      document.getElementById('ambmBulkPreview').innerText = '';
+      const m = document.getElementById('ambmBulkModal');
+      m.classList.remove('hidden'); m.classList.add('flex');
+    }
+    function ambmCloseBulk() {
+      const m = document.getElementById('ambmBulkModal');
+      m.classList.add('hidden'); m.classList.remove('flex');
+    }
+    function ambmParseBulk(raw) {
+      return raw.split('\n').map(l => l.replace(/\r$/, '')).filter(l => l.trim())
+        .map(l => l.split('\t').map(c => c.trim()))
+        .filter(c => c[0])
+        .filter(c => !/^(이름|성함|name)$/i.test(c[0]));
+    }
+    function ambmSubmitBulk() {
+      const raw = document.getElementById('ambmBulkText').value;
+      const rows = ambmParseBulk(raw);
+      if (!rows.length) { alert('붙여넣은 내용이 없습니다.'); return; }
+      const brand = document.getElementById('ambmBulkBrand').value;
+      const type = document.getElementById('ambmBulkType').value;
+      if (!confirm(rows.length + '명을 ' + brand + ' ' + (type === 'paid' ? '계약' : '무상') + ' 앰버서더로 등록할까요?')) return;
+      rows.forEach((c, i) => {
+        const e = ambmMakeEntry({
+          brand: brand, type: type,
+          name: c[0], account: c[1] || '', url: c[2] || '', followers: c[3] || '',
+          email: c[4] || '', receiverName: c[5] || '', receiverPhone: c[6] || '', address: c[7] || ''
+        });
+        e.id = Date.now() + i;
+        pplList.push(e);
+      });
+      ambmBrand = brand; ambmType = type; ambmSel = null;
+      ambmCloseBulk();
+      saveAll(); renderAll();
+      alert(rows.length + '명을 등록했습니다.');
     }
 
     /* ===== 월별 진행 (앰버서더 · 크리에이터 · 인플루언서) ===== */
