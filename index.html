@@ -9188,21 +9188,89 @@
     }
 
     /* ==================== 제품 출시 예산 ==================== */
+    const LAUNCH_VAT = [
+      { v: 'excl', label: 'VAT 별도' },
+      { v: 'incl', label: 'VAT 포함' },
+      { v: 'none', label: '부가세 없음' }
+    ];
+    const LAUNCH_DEFAULT_REVU = [
+      { name: '블로그 구매평', tier: 'naver', opts: ['review'], n: 10 },
+      { name: '블로그',       tier: 'naver', opts: [],         n: 10 },
+      { name: '인스타',       tier: 'insta', opts: [],         n: 10 }
+    ];
     const LAUNCH_DEFAULT_ITEMS = [
-      { label: '체험단 (플랫폼)', qty: 1, unit: 0, memo: '레뷰 / 글로우픽 / 파우더룸' },
-      { label: '체험단 제품 원가', qty: 50, unit: 0, memo: '모집 인원 × 제품 원가' },
-      { label: '마이크로 패키지', qty: 1, unit: 0, memo: '10인 묶음 등' },
-      { label: 'PPL', qty: 3, unit: 0, memo: '' },
-      { label: '앰버서더', qty: 1, unit: 0, memo: '' },
-      { label: '크리에이터 활동비', qty: 10, unit: 30000, memo: '월 활동비 × 인원' },
-      { label: '콘텐츠 촬영 / 제작', qty: 1, unit: 0, memo: '상세페이지, 누끼컷 등' },
-      { label: '광고 집행', qty: 1, unit: 0, memo: '메타 / 네이버' },
-      { label: '배송비 · 부자재', qty: 1, unit: 0, memo: '' }
+      { label: '마이크로 유튜브',  qty: 5, unit: 1000000, vat: 'none', units: 5,  ships: 5, memo: '인당 100만' },
+      { label: '릴스 인플루언서',  qty: 6, unit: 370000,  vat: 'none', units: 6,  ships: 6, memo: '인당 37만' },
+      { label: '카드뉴스 바이럴',  qty: 2, unit: 475200,  vat: 'incl', units: 2,  ships: 2, memo: '5개 237.6만 ÷ 5' },
+      { label: '촬영 · 상세페이지 · 사내 샘플 · 예비', qty: 1, unit: 0, vat: 'none', units: 20, ships: 2, memo: '' }
     ];
 
-    function launchTotalOf(L) {
-      return (L.items || []).reduce((a, it) => a + (Number(it.qty) || 0) * (Number(it.unit) || 0), 0);
+    const launchWon = v => Math.round(Number(v) || 0).toLocaleString() + '원';
+    const launchMan = v => ((Number(v) || 0) / 10000).toLocaleString('ko-KR', { maximumFractionDigits: 1 });
+    function launchRid() { return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+    // 예전 형식({label,qty,unit,memo})도 그대로 열리도록 기본값을 채워 줍니다
+    function launchNorm(L) {
+      if (!L) return L;
+      if (!L.pkg) L.pkg = 'allin500';
+      if (L.unitCost == null) L.unitCost = 3500;
+      if (L.shipCost == null) L.shipCost = 3000;
+      if (!Array.isArray(L.revu)) L.revu = [];
+      L.revu.forEach(r => { if (!r.id) r.id = launchRid(); if (!Array.isArray(r.opts)) r.opts = []; });
+      if (!Array.isArray(L.items)) L.items = [];
+      L.items.forEach(it => {
+        if (!it.vat) it.vat = 'none';
+        if (it.units == null) it.units = 0;
+        if (it.ships == null) it.ships = 0;
+      });
+      return L;
     }
+
+    function launchRevuUnit(pkg, tier, opts) {
+      const base = (REVU_UNIT[pkg] || {})[revuPriceKey(tier)];
+      if (!base) return null;
+      let u = base;
+      (opts || []).forEach(v => {
+        const d = REVU_OPTS.find(x => x.v === v);
+        if (!d || d.flat) return;             // 긴급 진행(회당 과금)은 출시 예산에서 제외
+        if (d.v === 'combine') u *= 2; else u += (d.add || 0);
+      });
+      return u;
+    }
+
+    function launchCalc(L) {
+      launchNorm(L);
+      const revu = (L.revu || []).map(r => {
+        const u = launchRevuUnit(L.pkg, r.tier, r.opts);
+        const supply = (u === null) ? 0 : u * (Number(r.n) || 0);
+        const vat = Math.round(supply * 0.1);
+        return { r: r, unit: u, supply: supply, vat: vat, total: supply + vat, ok: u !== null };
+      });
+      const revuTotal = revu.reduce((a, x) => a + x.total, 0);
+      const revuSupply = revu.reduce((a, x) => a + x.supply, 0);
+
+      const items = (L.items || []).map(it => {
+        const raw = (Number(it.qty) || 0) * (Number(it.unit) || 0);
+        const supply = (it.vat === 'incl') ? Math.round(raw / 1.1) : raw;
+        const vat = (it.vat === 'none') ? 0 : (it.vat === 'incl' ? raw - supply : Math.round(raw * 0.1));
+        return { it: it, total: supply + vat };
+      });
+      const itemsTotal = items.reduce((a, x) => a + x.total, 0);
+
+      const units = revu.reduce((a, x) => a + (Number(x.r.units) || 0), 0)
+        + (L.items || []).reduce((a, it) => a + (Number(it.units) || 0), 0);
+      const ships = revu.reduce((a, x) => a + (Number(x.r.ships) || 0), 0)
+        + (L.items || []).reduce((a, it) => a + (Number(it.ships) || 0), 0);
+
+      const spend = revuTotal + itemsTotal;
+      const product = units * (Number(L.unitCost) || 0);
+      const shipping = ships * (Number(L.shipCost) || 0);
+      return { revu, revuTotal, revuSupply, items, itemsTotal, units, ships, spend, product, shipping, total: spend + product + shipping };
+    }
+    function launchTotalOf(L) { return launchCalc(L).total; }   // B안 (제품+택배 포함)
+    function launchSpendOf(L) { return launchCalc(L).spend; }   // A안 (제품비 제외)
+
+    /* ---- 표 만들기 · 삭제 ---- */
     function addLaunchBudget() {
       const name = document.getElementById('launchName').value.trim();
       if (!name) { alert('출시 제품 / 캠페인명을 입력해 주세요.'); return; }
@@ -9212,7 +9280,11 @@
         name: name,
         date: document.getElementById('launchDate').value,
         memo: '',
-        items: LAUNCH_DEFAULT_ITEMS.map(it => ({ label: it.label, qty: it.qty, unit: it.unit, memo: it.memo }))
+        pkg: 'allin500',
+        unitCost: 3500,
+        shipCost: 3000,
+        revu: LAUNCH_DEFAULT_REVU.map(r => ({ id: launchRid(), name: r.name, tier: r.tier, opts: r.opts.slice(), n: r.n, units: r.n, ships: r.n })),
+        items: LAUNCH_DEFAULT_ITEMS.map(it => Object.assign({}, it))
       });
       document.getElementById('launchName').value = '';
       saveAll();
@@ -9224,24 +9296,76 @@
       saveAll();
       renderLaunchBudgets();
     }
+    function duplicateLaunchBudget(id) {
+      const L = launchBudgets.find(x => x.id === id);
+      if (!L) return;
+      const copy = JSON.parse(JSON.stringify(L));
+      copy.id = Date.now();
+      copy.name = L.name + ' (복사본)';
+      (copy.revu || []).forEach(r => { r.id = launchRid(); });
+      launchBudgets.unshift(copy);
+      saveAll();
+      renderLaunchBudgets();
+    }
     function updateLaunchField(id, field, value) {
       const L = launchBudgets.find(x => x.id === id);
       if (!L) return;
-      L[field] = value;
+      L[field] = (field === 'unitCost' || field === 'shipCost') ? (Number(value) || 0) : value;
       saveAll();
       renderLaunchBudgets();
     }
-    function updateLaunchItem(id, i, field, value) {
+
+    /* ---- 레뷰 행 ---- */
+    function addLaunchRevu(id) {
       const L = launchBudgets.find(x => x.id === id);
-      if (!L || !L.items[i]) return;
-      L.items[i][field] = (field === 'qty' || field === 'unit') ? (Number(value) || 0) : value;
+      if (!L) return;
+      launchNorm(L);
+      L.revu.push({ id: launchRid(), name: '새 항목', tier: 'naver', opts: [], n: 10, units: 10, ships: 10 });
       saveAll();
       renderLaunchBudgets();
     }
+    function deleteLaunchRevu(id, rid) {
+      const L = launchBudgets.find(x => x.id === id);
+      if (!L) return;
+      L.revu = (L.revu || []).filter(r => r.id !== rid);
+      saveAll();
+      renderLaunchBudgets();
+    }
+    function updateLaunchRevu(id, rid, field, value) {
+      const L = launchBudgets.find(x => x.id === id);
+      if (!L) return;
+      const r = (L.revu || []).find(x => x.id === rid);
+      if (!r) return;
+      if (field === 'n') {
+        const v = Number(value) || 0;
+        r.n = v; r.units = v; r.ships = v;      // 인원을 바꾸면 제품·배송도 같이 따라옵니다
+      } else if (field === 'units' || field === 'ships') {
+        r[field] = Number(value) || 0;
+      } else if (field === 'tier') {
+        r.tier = value; r.opts = [];            // 등급이 바뀌면 옵션은 초기화
+      } else {
+        r[field] = value;
+      }
+      saveAll();
+      renderLaunchBudgets();
+    }
+    function toggleLaunchRevuOpt(id, rid, opt) {
+      const L = launchBudgets.find(x => x.id === id);
+      if (!L) return;
+      const r = (L.revu || []).find(x => x.id === rid);
+      if (!r) return;
+      r.opts = r.opts || [];
+      r.opts = r.opts.includes(opt) ? r.opts.filter(o => o !== opt) : r.opts.concat([opt]);
+      saveAll();
+      renderLaunchBudgets();
+    }
+
+    /* ---- 그 외 항목 행 ---- */
     function addLaunchItem(id) {
       const L = launchBudgets.find(x => x.id === id);
       if (!L) return;
-      L.items.push({ label: '', qty: 1, unit: 0, memo: '' });
+      launchNorm(L);
+      L.items.push({ label: '', qty: 1, unit: 0, vat: 'none', units: 0, ships: 0, memo: '' });
       saveAll();
       renderLaunchBudgets();
     }
@@ -9252,98 +9376,221 @@
       saveAll();
       renderLaunchBudgets();
     }
-    function duplicateLaunchBudget(id) {
+    function updateLaunchItem(id, i, field, value) {
       const L = launchBudgets.find(x => x.id === id);
-      if (!L) return;
-      launchBudgets.unshift(Object.assign({}, L, {
-        id: Date.now(), name: L.name + ' (복사본)',
-        items: (L.items || []).map(it => Object.assign({}, it))
-      }));
+      if (!L || !L.items[i]) return;
+      L.items[i][field] = ['qty', 'unit', 'units', 'ships'].includes(field) ? (Number(value) || 0) : value;
       saveAll();
       renderLaunchBudgets();
     }
 
+    /* ---- 렌더 ---- */
     function renderLaunchBudgets() {
       const box = document.getElementById('launchList');
       if (!box) return;
 
       const mine = launchBudgets.filter(L => L.brand === budgetBrand);
+      mine.forEach(launchNorm);
       setTxt('launchHeaderCount', mine.length + '건');
 
       const sum = document.getElementById('launchSummary');
       if (sum) {
+        const spend = mine.reduce((a, L) => a + launchSpendOf(L), 0);
         const total = mine.reduce((a, L) => a + launchTotalOf(L), 0);
-        const avg = mine.length ? Math.round(total / mine.length) : 0;
-        const card = (label, val, sub, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
-          + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
-          + '<div class="text-xl font-black text-' + color + '-600 mt-0.5">' + val.toLocaleString() + '원</div>'
-          + '<div class="text-[11px] text-slate-500 font-semibold">' + sub + '</div></div>';
-        sum.innerHTML = card(budgetBrand + ' 출시 예상 비용 합계', total, mine.length + '건', 'pink')
-          + card('출시 1건당 평균', avg, '', 'slate');
+        sum.innerHTML =
+          '<div class="bg-white p-4 rounded-2xl border-2 border-slate-300">'
+          + '<span class="text-[11px] text-slate-500 font-semibold">A안 · 제품비 제외 (순수 집행비)</span>'
+          + '<div class="text-2xl font-black text-slate-900 mt-0.5">' + launchMan(spend) + '<span class="text-sm font-bold text-slate-400 ml-1">만원</span></div>'
+          + '<div class="text-[11px] text-slate-500 font-semibold">' + launchWon(spend) + ' · ' + mine.length + '건 합계</div></div>'
+          + '<div class="bg-white p-4 rounded-2xl border-2 border-pink-300">'
+          + '<span class="text-[11px] text-slate-500 font-semibold">B안 · 제품 + 택배비 포함</span>'
+          + '<div class="text-2xl font-black text-pink-600 mt-0.5">' + launchMan(total) + '<span class="text-sm font-bold text-slate-400 ml-1">만원</span></div>'
+          + '<div class="text-[11px] text-slate-500 font-semibold">' + launchWon(total) + ' · 제품비 ' + launchWon(total - spend) + ' 포함</div></div>';
       }
 
       if (!mine.length) {
-        box.innerHTML = '<p class="text-xs text-slate-400 text-center py-8">' + budgetBrand + ' 출시 예산표가 아직 없습니다. 위에서 제품명을 넣고 만들어 보세요.</p>';
+        box.innerHTML = '<p class="text-xs text-slate-400 text-center py-8">' + tEsc(budgetBrand) + ' 출시 예산표가 아직 없습니다. 위에서 제품명을 넣고 만들어 보세요.</p>';
         return;
       }
 
       box.innerHTML = mine.map(L => {
-        const total = launchTotalOf(L);
+        const c = launchCalc(L);
         const brandBadgeClass = L.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
-        const rows = (L.items || []).map((it, i) => {
-          const sub = (Number(it.qty) || 0) * (Number(it.unit) || 0);
-          const pct = total ? Math.round(sub / total * 100) : 0;
+
+        /* --- 레뷰 표 --- */
+        const revuRows = c.revu.map(x => {
+          const r = x.r;
+          const avail = REVU_OPTS.filter(o => !o.flat && o.tiers.includes(r.tier) && (!o.allinOnly || String(L.pkg).indexOf('allin') === 0));
+          const optHtml = avail.length
+            ? avail.map(o => {
+                const on = (r.opts || []).includes(o.v);
+                return '<button type="button" onclick="toggleLaunchRevuOpt(' + L.id + ', \'' + tArg(r.id) + '\', \'' + o.v + '\')" '
+                  + 'class="text-[10px] px-2 py-0.5 rounded-lg border mr-1 mb-1 ' + (on ? 'border-pink-300 bg-pink-50 text-pink-700 font-bold' : 'border-slate-200 text-slate-400 hover:border-slate-300') + '">'
+                  + tEsc(o.label) + '</button>';
+              }).join('')
+            : '<span class="text-[10px] text-slate-300">해당 없음</span>';
+
+          return '<tr class="hover:bg-pink-50/30 align-top">'
+            + '<td class="py-1.5 px-2"><input value="' + tEsc(r.name || '') + '" onchange="updateLaunchRevu(' + L.id + ', \'' + tArg(r.id) + '\', \'name\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold"></td>'
+            + '<td class="py-1.5 px-2"><select onchange="updateLaunchRevu(' + L.id + ', \'' + tArg(r.id) + '\', \'tier\', this.value)" class="w-full px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg bg-white">'
+            + REVU_TIERS.map(t => '<option value="' + t.v + '"' + (r.tier === t.v ? ' selected' : '') + '>' + tEsc(t.label) + '</option>').join('')
+            + '</select></td>'
+            + '<td class="py-1.5 px-2"><div class="flex flex-wrap">' + optHtml + '</div></td>'
+            + '<td class="py-1.5 px-2"><input type="number" min="0" value="' + (Number(r.n) || 0) + '" onchange="updateLaunchRevu(' + L.id + ', \'' + tArg(r.id) + '\', \'n\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg text-right"></td>'
+            + '<td class="py-1.5 px-2 text-right text-slate-500">' + (x.ok ? launchWon(x.unit) : '<span class="text-rose-600 font-bold text-[11px]">패키지 불가</span>') + '</td>'
+            + '<td class="py-1.5 px-2 text-right font-black text-slate-900">' + launchWon(x.total) + '</td>'
+            + '<td class="py-1.5 px-2 bg-amber-50/60"><input type="number" min="0" value="' + (Number(r.units) || 0) + '" onchange="updateLaunchRevu(' + L.id + ', \'' + tArg(r.id) + '\', \'units\', this.value)" class="w-full px-2 py-1.5 text-xs border border-amber-200 rounded-lg text-right"></td>'
+            + '<td class="py-1.5 px-2 bg-amber-50/60"><input type="number" min="0" value="' + (Number(r.ships) || 0) + '" onchange="updateLaunchRevu(' + L.id + ', \'' + tArg(r.id) + '\', \'ships\', this.value)" class="w-full px-2 py-1.5 text-xs border border-amber-200 rounded-lg text-right"></td>'
+            + '<td class="py-1.5 px-2 text-right"><button onclick="deleteLaunchRevu(' + L.id + ', \'' + tArg(r.id) + '\')" class="text-slate-300 hover:text-rose-600"><i class="fa-solid fa-trash text-[11px]"></i></button></td>'
+            + '</tr>';
+        }).join('');
+
+        /* --- 그 외 항목 표 --- */
+        const itemRows = c.items.map((x, i) => {
+          const it = x.it;
           return '<tr class="hover:bg-pink-50/30">'
             + '<td class="py-1.5 px-2"><input value="' + tEsc(it.label || '') + '" placeholder="항목명" onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'label\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg font-semibold"></td>'
-            + '<td class="py-1.5 px-2"><input type="number" value="' + (Number(it.qty) || '') + '" placeholder="1" onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'qty\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg text-right"></td>'
-            + '<td class="py-1.5 px-2"><input type="number" value="' + (Number(it.unit) || '') + '" placeholder="0" onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'unit\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg text-right"></td>'
-            + '<td class="py-1.5 px-2 text-right font-black text-slate-900 whitespace-nowrap">' + sub.toLocaleString() + '원'
-            + '<div class="text-[10px] font-bold text-slate-400">' + pct + '%</div></td>'
+            + '<td class="py-1.5 px-2"><input type="number" min="0" value="' + (Number(it.qty) || 0) + '" onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'qty\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg text-right"></td>'
+            + '<td class="py-1.5 px-2"><input type="number" min="0" value="' + (Number(it.unit) || 0) + '" onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'unit\', this.value)" class="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg text-right"></td>'
+            + '<td class="py-1.5 px-2"><select onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'vat\', this.value)" class="w-full px-1.5 py-1.5 text-[11px] border border-slate-200 rounded-lg bg-white">'
+            + LAUNCH_VAT.map(v => '<option value="' + v.v + '"' + (it.vat === v.v ? ' selected' : '') + '>' + v.label + '</option>').join('')
+            + '</select></td>'
+            + '<td class="py-1.5 px-2 text-right font-black text-slate-900">' + launchWon(x.total) + '</td>'
+            + '<td class="py-1.5 px-2 bg-amber-50/60"><input type="number" min="0" value="' + (Number(it.units) || 0) + '" onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'units\', this.value)" class="w-full px-2 py-1.5 text-xs border border-amber-200 rounded-lg text-right"></td>'
+            + '<td class="py-1.5 px-2 bg-amber-50/60"><input type="number" min="0" value="' + (Number(it.ships) || 0) + '" onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'ships\', this.value)" class="w-full px-2 py-1.5 text-xs border border-amber-200 rounded-lg text-right"></td>'
             + '<td class="py-1.5 px-2"><input value="' + tEsc(it.memo || '') + '" placeholder="메모" onchange="updateLaunchItem(' + L.id + ', ' + i + ', \'memo\', this.value)" class="w-full px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg"></td>'
             + '<td class="py-1.5 px-2 text-right"><button onclick="deleteLaunchItem(' + L.id + ', ' + i + ')" class="text-slate-300 hover:text-rose-600"><i class="fa-solid fa-trash text-[11px]"></i></button></td>'
             + '</tr>';
         }).join('');
 
         return '<div class="bg-white rounded-2xl border border-pink-200 overflow-hidden">'
+
+          /* 헤더 */
           + '<div class="px-4 py-3 bg-gradient-to-r from-pink-50/70 to-white border-b border-pink-100 flex flex-wrap items-center justify-between gap-3">'
           + '<div class="min-w-0">'
           + '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + brandBadgeClass + '">' + tEsc(L.brand) + '</span>'
           + (L.date ? ' <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-white">' + tEsc(L.date) + ' 출시</span>' : '')
           + '<input value="' + tEsc(L.name) + '" onchange="updateLaunchField(' + L.id + ', \'name\', this.value)" class="block mt-1 px-2 py-1 text-sm font-black text-slate-900 bg-transparent border border-transparent hover:border-slate-200 focus:border-pink-300 rounded-lg outline-none w-full max-w-[380px]">'
           + '</div>'
-          + '<div class="flex items-center gap-2">'
-          + '<div class="text-right"><div class="text-[10px] text-slate-500 font-semibold">총 예상 비용</div>'
-          + '<div class="text-lg font-black text-pink-600">' + total.toLocaleString() + '원</div></div>'
+          + '<div class="flex items-center gap-3">'
+          + '<div class="text-right"><div class="text-[10px] text-slate-500 font-semibold">A안 · 제품비 제외</div>'
+          + '<div class="text-base font-black text-slate-800">' + launchWon(c.spend) + '</div></div>'
+          + '<div class="text-right border-l border-pink-200 pl-3"><div class="text-[10px] text-slate-500 font-semibold">B안 · 제품+택배 포함</div>'
+          + '<div class="text-lg font-black text-pink-600">' + launchWon(c.total) + '</div></div>'
           + '<button onclick="duplicateLaunchBudget(' + L.id + ')" title="복제" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs"><i class="fa-regular fa-copy"></i></button>'
           + '<button onclick="deleteLaunchBudget(' + L.id + ')" title="삭제" class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>'
           + '</div></div>'
-          + '<div class="px-4 py-3 overflow-x-auto custom-scrollbar">'
-          + '<table class="w-full text-left text-xs min-w-[720px]">'
+
+          /* 설정 바 */
+          + '<div class="px-4 py-3 bg-slate-50 border-b border-slate-100 flex flex-wrap items-end gap-x-5 gap-y-2.5">'
+          + '<div><label class="block text-[10px] font-bold text-slate-500 mb-1">레뷰 패키지</label>'
+          + '<select onchange="updateLaunchField(' + L.id + ', \'pkg\', this.value)" class="px-2.5 py-2 text-xs border border-slate-200 rounded-xl bg-white font-semibold">'
+          + REVU_PKGS.map(p => '<option value="' + p.v + '"' + (L.pkg === p.v ? ' selected' : '') + '>' + tEsc(p.label) + '</option>').join('')
+          + '</select></div>'
+          + '<div><label class="block text-[10px] font-bold text-slate-500 mb-1">제품 원가 (원/개)</label>'
+          + '<input type="number" min="0" value="' + (Number(L.unitCost) || 0) + '" onchange="updateLaunchField(' + L.id + ', \'unitCost\', this.value)" class="w-28 px-2.5 py-2 text-xs border border-amber-200 rounded-xl text-right font-bold"></div>'
+          + '<div><label class="block text-[10px] font-bold text-slate-500 mb-1">택배 단가 (원/건)</label>'
+          + '<input type="number" min="0" value="' + (Number(L.shipCost) || 0) + '" onchange="updateLaunchField(' + L.id + ', \'shipCost\', this.value)" class="w-28 px-2.5 py-2 text-xs border border-amber-200 rounded-xl text-right font-bold"></div>'
+          + '<div class="text-xs text-slate-600"><div class="text-[10px] font-bold text-slate-500 mb-1">발송 합계</div>'
+          + '제품 <b class="text-slate-900">' + (c.units).toLocaleString() + '</b>개 · 배송 <b class="text-slate-900">' + (c.ships).toLocaleString() + '</b>건</div>'
+          + '<div class="flex-1 min-w-[200px]"><label class="block text-[10px] font-bold text-slate-500 mb-1">메모</label>'
+          + '<input value="' + tEsc(L.memo || '') + '" placeholder="예) 레뷰는 500만 올인원 패키지 기준" onchange="updateLaunchField(' + L.id + ', \'memo\', this.value)" class="w-full px-2.5 py-2 text-[11px] border border-slate-200 rounded-xl"></div>'
+          + '</div>'
+
+          /* 레뷰 표 */
+          + '<div class="px-4 pt-3">'
+          + '<div class="flex items-baseline justify-between mb-1.5">'
+          + '<h4 class="text-xs font-black text-slate-700"><i class="fa-solid fa-users-rectangle text-pink-500"></i> 레뷰 체험단 '
+          + '<span class="font-semibold text-slate-400">· 인원만 넣으면 견적서 단가로 자동 계산 (공급가 ' + launchWon(c.revuSupply) + ' + VAT)</span></h4>'
+          + '<span class="text-sm font-black text-slate-900">' + launchWon(c.revuTotal) + '</span></div>'
+          + '<div class="overflow-x-auto custom-scrollbar"><table class="w-full text-left text-xs min-w-[900px]">'
           + '<thead class="text-slate-500 font-bold border-b border-slate-100"><tr>'
-          + '<th class="py-2 px-2 min-w-[160px]">항목</th><th class="py-2 px-2 w-[90px] text-right">수량</th>'
-          + '<th class="py-2 px-2 w-[120px] text-right">단가 (원)</th><th class="py-2 px-2 w-[120px] text-right">소계</th>'
-          + '<th class="py-2 px-2">메모</th><th class="py-2 px-2 w-8"></th></tr></thead>'
-          + '<tbody class="divide-y divide-slate-50">' + rows + '</tbody>'
-          + '<tfoot><tr class="border-t-2 border-pink-200 bg-pink-50/50 font-black">'
-          + '<td class="py-2.5 px-2 text-slate-800" colspan="3">합계</td>'
-          + '<td class="py-2.5 px-2 text-right text-pink-600">' + total.toLocaleString() + '원</td>'
-          + '<td colspan="2"></td></tr></tfoot></table>'
-          + '<button onclick="addLaunchItem(' + L.id + ')" class="mt-3 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg"><i class="fa-solid fa-plus"></i> 항목 추가</button>'
-          + '</div></div>';
+          + '<th class="py-2 px-2 w-[130px]">항목</th><th class="py-2 px-2 w-[210px]">채널 · 등급</th><th class="py-2 px-2">추가 옵션</th>'
+          + '<th class="py-2 px-2 w-[70px] text-right">인원</th><th class="py-2 px-2 w-[90px] text-right">인당</th>'
+          + '<th class="py-2 px-2 w-[110px] text-right">합계(VAT포함)</th>'
+          + '<th class="py-2 px-2 w-[70px] text-right bg-amber-50">제품(개)</th><th class="py-2 px-2 w-[70px] text-right bg-amber-50">배송(건)</th><th class="py-2 px-2 w-8"></th>'
+          + '</tr></thead><tbody class="divide-y divide-slate-50">'
+          + (revuRows || '<tr><td colspan="9" class="py-5 text-center text-slate-400">레뷰 항목이 없습니다.</td></tr>')
+          + '</tbody></table></div>'
+          + '<button onclick="addLaunchRevu(' + L.id + ')" class="mt-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold rounded-lg"><i class="fa-solid fa-plus"></i> 레뷰 항목 추가</button>'
+          + '</div>'
+
+          /* 그 외 항목 표 */
+          + '<div class="px-4 pt-4">'
+          + '<div class="flex items-baseline justify-between mb-1.5">'
+          + '<h4 class="text-xs font-black text-slate-700"><i class="fa-solid fa-bullhorn text-pink-500"></i> 인플루언서 · 바이럴 · 내부</h4>'
+          + '<span class="text-sm font-black text-slate-900">' + launchWon(c.itemsTotal) + '</span></div>'
+          + '<div class="overflow-x-auto custom-scrollbar"><table class="w-full text-left text-xs min-w-[860px]">'
+          + '<thead class="text-slate-500 font-bold border-b border-slate-100"><tr>'
+          + '<th class="py-2 px-2 min-w-[170px]">항목</th><th class="py-2 px-2 w-[70px] text-right">수량</th>'
+          + '<th class="py-2 px-2 w-[110px] text-right">단가 (원)</th><th class="py-2 px-2 w-[100px]">부가세</th>'
+          + '<th class="py-2 px-2 w-[110px] text-right">합계</th>'
+          + '<th class="py-2 px-2 w-[70px] text-right bg-amber-50">제품(개)</th><th class="py-2 px-2 w-[70px] text-right bg-amber-50">배송(건)</th>'
+          + '<th class="py-2 px-2 min-w-[130px]">메모</th><th class="py-2 px-2 w-8"></th>'
+          + '</tr></thead><tbody class="divide-y divide-slate-50">'
+          + (itemRows || '<tr><td colspan="9" class="py-5 text-center text-slate-400">항목이 없습니다.</td></tr>')
+          + '</tbody></table></div>'
+          + '<button onclick="addLaunchItem(' + L.id + ')" class="mt-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold rounded-lg"><i class="fa-solid fa-plus"></i> 항목 추가</button>'
+          + '</div>'
+
+          /* 정산 */
+          + '<div class="px-4 py-4">'
+          + '<table class="w-full text-xs">'
+          + '<tbody>'
+          + '<tr class="border-b border-slate-100"><td class="py-2 text-slate-600">레뷰 체험단</td><td class="py-2 text-right font-bold">' + launchWon(c.revuTotal) + '</td><td class="py-2 text-right w-24 text-slate-400">' + launchMan(c.revuTotal) + '만원</td></tr>'
+          + '<tr class="border-b border-slate-100"><td class="py-2 text-slate-600">인플루언서 · 바이럴</td><td class="py-2 text-right font-bold">' + launchWon(c.itemsTotal) + '</td><td class="py-2 text-right text-slate-400">' + launchMan(c.itemsTotal) + '만원</td></tr>'
+          + '<tr class="border-b-2 border-slate-300"><td class="py-2 font-black text-slate-800">A안 · 제품비 제외</td><td class="py-2 text-right font-black text-slate-900">' + launchWon(c.spend) + '</td><td class="py-2 text-right font-black text-slate-500">' + launchMan(c.spend) + '만원</td></tr>'
+          + '<tr class="border-b border-slate-100"><td class="py-2 text-slate-600">제품 원가 · ' + (c.units).toLocaleString() + '개 × ' + launchWon(L.unitCost) + '</td><td class="py-2 text-right">' + launchWon(c.product) + '</td><td class="py-2 text-right text-slate-400">' + launchMan(c.product) + '만원</td></tr>'
+          + '<tr class="border-b-2 border-slate-200"><td class="py-2 text-slate-600">택배비 · ' + (c.ships).toLocaleString() + '건 × ' + launchWon(L.shipCost) + '</td><td class="py-2 text-right">' + launchWon(c.shipping) + '</td><td class="py-2 text-right text-slate-400">' + launchMan(c.shipping) + '만원</td></tr>'
+          + '<tr><td class="py-2 font-black text-pink-700">B안 · 제품 + 택배 포함</td><td class="py-2 text-right font-black text-pink-600">' + launchWon(c.total) + '</td><td class="py-2 text-right font-black text-pink-600">' + launchMan(c.total) + '만원</td></tr>'
+          + '</tbody></table></div>'
+
+          + '</div>';
       }).join('');
     }
 
+    /* ---- 엑셀 다운로드 (A안 · B안 함께) ---- */
     function exportLaunchExcel() {
       const list = launchBudgets.filter(L => L.brand === budgetBrand);
       if (!list.length) { alert(budgetBrand + ' 출시 예산표가 없습니다.'); return; }
       const out = [];
       list.forEach(L => {
-        const total = launchTotalOf(L);
-        (L.items || []).forEach(it => out.push({
+        const c = launchCalc(L);
+        const pkgLabel = (REVU_PKGS.find(p => p.v === L.pkg) || {}).label || '';
+        c.revu.forEach(x => {
+          const r = x.r;
+          const tier = (REVU_TIERS.find(t => t.v === r.tier) || {}).label || '';
+          const opts = (r.opts || []).map(v => ((REVU_OPTS.find(o => o.v === v) || {}).label || v)).join(', ');
+          out.push({
+            '브랜드': L.brand, '출시명': L.name, '출시일': L.date || '',
+            '구분': '레뷰 체험단', '항목': r.name || '',
+            '채널·등급': tier, '옵션': opts, '패키지': pkgLabel,
+            '수량': Number(r.n) || 0, '단가': x.ok ? x.unit : '',
+            '부가세': 'VAT 별도(10% 가산)', '소계': x.total,
+            '제품(개)': Number(r.units) || 0, '배송(건)': Number(r.ships) || 0, '메모': ''
+          });
+        });
+        c.items.forEach(x => {
+          const it = x.it;
+          out.push({
+            '브랜드': L.brand, '출시명': L.name, '출시일': L.date || '',
+            '구분': '인플루언서·바이럴', '항목': it.label || '',
+            '채널·등급': '', '옵션': '', '패키지': '',
+            '수량': Number(it.qty) || 0, '단가': Number(it.unit) || 0,
+            '부가세': ((LAUNCH_VAT.find(v => v.v === it.vat) || {}).label || ''), '소계': x.total,
+            '제품(개)': Number(it.units) || 0, '배송(건)': Number(it.ships) || 0, '메모': it.memo || ''
+          });
+        });
+        const line = (name, qty, unit, amt) => out.push({
           '브랜드': L.brand, '출시명': L.name, '출시일': L.date || '',
-          '항목': it.label || '', '수량': Number(it.qty) || 0, '단가': Number(it.unit) || 0,
-          '소계': (Number(it.qty) || 0) * (Number(it.unit) || 0), '메모': it.memo || '', '출시총액': total
-        }));
+          '구분': '합계', '항목': name, '채널·등급': '', '옵션': '', '패키지': '',
+          '수량': qty, '단가': unit, '부가세': '', '소계': amt,
+          '제품(개)': '', '배송(건)': '', '메모': L.memo || ''
+        });
+        line('A안 · 제품비 제외', '', '', c.spend);
+        line('제품 원가', c.units, Number(L.unitCost) || 0, c.product);
+        line('택배비', c.ships, Number(L.shipCost) || 0, c.shipping);
+        line('B안 · 제품+택배 포함', '', '', c.total);
       });
       downloadSheet(out, budgetBrand + '_제품출시예산_' + todayStr());
     }
