@@ -1932,28 +1932,25 @@
             <button onclick="setCreFilter('제출')" id="cref-제출" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">제출</button>
             <button onclick="setCreFilter('미제출')" id="cref-미제출" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">미제출</button>
             <button onclick="setCreFilter('미지급')" id="cref-미지급" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">미지급</button>
+            <button onclick="setCreFilter('이탈·주의')" id="cref-이탈·주의" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">이탈·주의</button>
+            <button onclick="setCreFilter('카페 미가입')" id="cref-카페 미가입" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">카페 미가입</button>
           </div>
           <button onclick="openCreImport()" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-file-import"></i> 가져오기</button>
           <button onclick="exportCre()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-file-arrow-down"></i> 다운로드</button>
         </div>
       </div>
 
-      <div id="creSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      <div id="creSummary" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
 
-      <div class="flex flex-wrap items-center gap-3 bg-emerald-50/40 border border-emerald-100 rounded-xl px-3 py-2">
-        <span class="text-[11px] font-bold text-slate-700">기본 단가</span>
-        <input id="creRateBase" type="number" onchange="setCreRate()" class="w-24 px-2 py-1 text-xs border border-slate-200 rounded-lg">
-        <span class="text-[11px] font-bold text-slate-700">상위노출 보너스</span>
-        <input id="creRateBonus" type="number" onchange="setCreRate()" class="w-24 px-2 py-1 text-xs border border-slate-200 rounded-lg">
-        <span class="text-[11px] text-slate-400">지급액 = 기본 + 상위노출 건수 x 보너스</span>
-        <button onclick="copyUnpaidPhones()" class="ml-auto px-3 py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold rounded-lg"><i class="fa-regular fa-copy"></i> 미지급자 연락처 복사</button>
-      </div>
+      <div id="creRateBar" class="flex flex-wrap items-center gap-3 bg-emerald-50/40 border border-emerald-100 rounded-xl px-3 py-2"></div>
 
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left text-xs">
           <thead class="bg-emerald-50/60 text-slate-600 font-semibold border-y border-emerald-100">
             <tr>
               <th class="py-3 px-3 whitespace-nowrap">이름</th>
+              <th class="py-3 px-3 whitespace-nowrap">상태</th>
+              <th class="py-3 px-3 whitespace-nowrap text-center">카페</th>
               <th class="py-3 px-3 whitespace-nowrap">유형</th>
               <th class="py-3 px-3">채널명</th>
               <th class="py-3 px-3 whitespace-nowrap">연락처</th>
@@ -1989,6 +1986,15 @@
             <p class="text-[11px] text-slate-500 mb-1">열 순서: <b>이름 · 계정 · 업로드일 · 미션1 · 미션2 · 상위노출수 · 키워드</b></p>
             <textarea id="creMissionPaste" rows="4" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-mono"></textarea>
             <button onclick="importCreMission()" class="mt-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl">미션 인증 불러오기</button>
+          </div>
+          <div class="border-t border-slate-100 pt-4">
+            <label class="block text-xs font-bold text-slate-700 mb-1">③ 네이버 카페 회원 명단 <span class="font-normal text-slate-400">(제목 행 없이 한 줄에 한 명)</span></label>
+            <p class="text-[11px] text-slate-500 mb-1">카페에서 회원 목록을 복사해 넣으세요. <b>이름 · 닉네임 · 계정</b> 중 아무거나 인식합니다.</p>
+            <textarea id="creCafePaste" rows="4" placeholder="권혜림&#10;문서윤&#10;happylim_zip" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-mono"></textarea>
+            <label class="flex items-center gap-1.5 mt-2 text-[11px] text-slate-600 cursor-pointer">
+              <input type="checkbox" id="creCafeRest" class="accent-rose-600 w-3.5 h-3.5"> 명단에 없는 나머지를 <b class="text-rose-600">미가입</b>으로 표시
+            </label>
+            <button onclick="importCreCafe()" class="mt-2 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl">카페 가입 반영</button>
           </div>
           <p class="text-[11px] text-slate-400">이름 + 계정으로 매칭합니다. 명단에 없는 사람은 건너뛰고 결과에 알려드려요.</p>
         </div>
@@ -4795,7 +4801,7 @@
     // 크리에이터 월간 미션 설정 [{ month:'2026-08', m1, m2, baseFee, bonusFee, keywordGoal, rankLimit }]
     let creatorMissions = JSON.parse(localStorage.getItem('onsal_creatorMissions')) || [];
     let creRoster = JSON.parse(localStorage.getItem('onsal_creRoster')) || [];
-    let creRate = Object.assign({ base: 20000, bonus: 10000 }, JSON.parse(localStorage.getItem('onsal_creRate') || '{}'));
+    let creRate = Object.assign({ base: 20000, bonus: 10000, m1: 30000, m2: 20000, newFrom: '2026-09' }, JSON.parse(localStorage.getItem('onsal_creRate') || '{}'));
 
     // 마이크로 패키지 [{ id, brand, name, month, headcount, amount, memo, memberIds:[] }]
     let microPackages = JSON.parse(localStorage.getItem('onsal_microPackages')) || [];
@@ -9148,16 +9154,75 @@
       return creMonthSel;
     }
     function creM(c, ym) { return ((c.months || {})[ym]) || null; }
-    function creAmount(m) {
+
+    /* 사람 상태: '' 진행중 · watch 주의 · out 이탈(연락두절) · end 활동종료 */
+    const CRE_STATES = [['', '진행중'], ['skip', '이번 달 미진행'], ['watch', '주의'], ['out', '이탈·연락두절'], ['end', '활동 종료']];
+    const CRE_STATE_STYLE = {
+      '': 'bg-slate-100 text-slate-600', skip: 'bg-amber-100 text-amber-700',
+      watch: 'bg-orange-100 text-orange-700', out: 'bg-rose-100 text-rose-700', end: 'bg-slate-200 text-slate-500'
+    };
+    /* 카페 가입: '' 미확인 · y 가입 · n 미가입(진행 대상 아님) */
+    const CRE_CAFE = [['', '미확인'], ['y', '가입'], ['n', '미가입']];
+    const CRE_CAFE_STYLE = { '': 'bg-slate-100 text-slate-500', y: 'bg-emerald-100 text-emerald-700', n: 'bg-rose-100 text-rose-700' };
+    function setCreCafe(id, v) {
+      const c = creRoster.find(x => x.id === id); if (!c) return;
+      c.cafe = v; c.cafeAt = v === 'y' ? todayStr() : '';
+      saveAll(); renderCre();
+    }
+    function creLive(c) { return c.active !== false && c.state !== 'out' && c.state !== 'end' && c.cafe !== 'n'; }
+    function creEffState(c, ym) {
+      if (c.state === 'out' || c.state === 'end' || c.state === 'watch') return c.state;
+      const m = creM(c, ym);
+      return (m && m.skip) ? 'skip' : '';
+    }
+    /* 제출도 미진행 표시도 없이 넘어간 달 수 (연속) */
+    function creMissStreak(c) {
+      const ms = Object.keys(c.months || {}).concat([creCurMonth()]);
+      const uniq = Array.from(new Set(ms)).sort();
+      let n = 0;
+      for (let i = uniq.length - 1; i >= 0; i--) {
+        const m = creM(c, uniq[i]);
+        if (m && (m.m1 || m.m2)) break;
+        if (m && m.skip) continue;
+        n++;
+      }
+      return n;
+    }
+    function setCreState(id, v) {
+      const c = creRoster.find(x => x.id === id); if (!c) return;
+      const ym = creCurMonth();
+      if (v === 'skip') {
+        c.months = c.months || {}; c.months[ym] = c.months[ym] || {};
+        c.months[ym].skip = true;
+        if (c.state === 'skip') c.state = '';
+        const note = prompt('사유를 남겨 주세요 (선택)', c.months[ym].note || '');
+        if (note !== null) c.months[ym].note = note.trim();
+      } else {
+        if (c.months && c.months[ym]) c.months[ym].skip = false;
+        c.state = v;
+        if (v === 'out' || v === 'end') {
+          const note = prompt('사유를 남겨 주세요 (선택)\n예) 연락두절 3주차 / 제품 회수 필요', c.stateNote || '');
+          if (note !== null) c.stateNote = note.trim();
+          c.stateAt = todayStr();
+        } else { c.stateNote = ''; c.stateAt = ''; }
+      }
+      saveAll(); renderCre();
+    }
+    /* 9월(creRate.newFrom)부터 상위노출 보너스 폐지 → 미션1 3만 + 미션2 2만 방식 */
+    function creNewRule(ym) { return String(ym || '') >= String(creRate.newFrom || '2026-09'); }
+    function creAmount(m, ym) {
       if (!m) return 0;
       if (m.paid && Number(m.paidAmount) > 0) return Number(m.paidAmount);
+      if (creNewRule(ym || creCurMonth())) {
+        return (m.m1 ? (Number(creRate.m1) || 0) : 0) + (m.m2 ? (Number(creRate.m2) || 0) : 0);
+      }
       return (Number(creRate.base) || 0) + (Number(m.top) || 0) * (Number(creRate.bonus) || 0);
     }
     function creSubmitted(m) { return !!(m && (m.m1 || m.m2)); }
 
     function setCreFilter(f) {
       creFilter = f;
-      ['전체', '제출', '미제출', '미지급'].forEach(x => {
+      ['전체', '제출', '미제출', '미지급', '이탈·주의', '카페 미가입'].forEach(x => {
         const el = document.getElementById('cref-' + x);
         if (el) el.className = (x === f)
           ? 'px-3 py-1.5 rounded-lg bg-white text-emerald-700 shadow-xs'
@@ -9166,8 +9231,14 @@
       renderCre();
     }
     function setCreRate() {
-      creRate.base = Number(document.getElementById('creRateBase').value) || 0;
-      creRate.bonus = Number(document.getElementById('creRateBonus').value) || 0;
+      const g = id => { const e = document.getElementById(id); return e ? (Number(e.value) || 0) : null; };
+      if (creNewRule(creCurMonth())) {
+        const a = g('creRateM1'), b = g('creRateM2');
+        if (a !== null) creRate.m1 = a; if (b !== null) creRate.m2 = b;
+      } else {
+        const a = g('creRateBase'), b = g('creRateBonus');
+        if (a !== null) creRate.base = a; if (b !== null) creRate.bonus = b;
+      }
       saveAll(); renderCre();
     }
     function toggleCrePaid(id, on) {
@@ -9175,7 +9246,7 @@
       const ym = creCurMonth();
       c.months = c.months || {}; c.months[ym] = c.months[ym] || {};
       const m = c.months[ym];
-      if (on) { m.paidAmount = creAmount(m); m.paid = true; m.paidAt = todayStr(); }
+      if (on) { m.paidAmount = creAmount(m, ym); m.paid = true; m.paidAt = todayStr(); }
       else { m.paid = false; m.paidAt = ''; delete m.paidAmount; }
       saveAll(); renderCre();
     }
@@ -9191,8 +9262,10 @@
       const ym = creCurMonth();
       let list = creRoster.filter(c => c.active !== false);
       if (creFilter === '제출') list = list.filter(c => creSubmitted(creM(c, ym)));
-      else if (creFilter === '미제출') list = list.filter(c => !creSubmitted(creM(c, ym)));
+      else if (creFilter === '미제출') list = list.filter(c => creLive(c) && !creSubmitted(creM(c, ym)) && !(creM(c, ym) || {}).skip);
       else if (creFilter === '미지급') list = list.filter(c => { const m = creM(c, ym); return creSubmitted(m) && !m.paid; });
+      else if (creFilter === '이탈·주의') list = list.filter(c => ['out', 'end', 'watch'].indexOf(c.state) >= 0 || creMissStreak(c) >= 2);
+      else if (creFilter === '카페 미가입') list = list.filter(c => c.cafe !== 'y');
       return list.sort((a, b) => {
         const ma = creM(a, ym), mb = creM(b, ym);
         const sa = creSubmitted(ma) ? (ma.paid ? 2 : 1) : 0;
@@ -9209,15 +9282,29 @@
       const sel = document.getElementById('creMonth');
       if (sel) sel.innerHTML = creMonths().map(m => '<option value="' + m + '"' + (m === ym ? ' selected' : '') + '>'
         + m.slice(0, 4) + '년 ' + Number(m.slice(5)) + '월</option>').join('');
-      const rb = document.getElementById('creRateBase'), rn = document.getElementById('creRateBonus');
-      if (rb) rb.value = creRate.base; if (rn) rn.value = creRate.bonus;
+      const bar = document.getElementById('creRateBar');
+      if (bar) {
+        const inp = (id, v) => '<input id="' + id + '" type="number" value="' + (Number(v) || 0) + '" onchange="setCreRate()" class="w-24 px-2 py-1 text-xs border border-slate-200 rounded-lg">';
+        const lab = t => '<span class="text-[11px] font-bold text-slate-700">' + t + '</span>';
+        const copyBtn = '<button onclick="copyUnpaidPhones()" class="ml-auto px-3 py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold rounded-lg"><i class="fa-regular fa-copy"></i> 미지급자 연락처 복사</button>';
+        bar.innerHTML = creNewRule(ym)
+          ? lab('미션 1 진행') + inp('creRateM1', creRate.m1) + lab('미션 2 추가') + inp('creRateM2', creRate.m2)
+            + '<span class="text-[11px] text-slate-400">둘 다 진행 시 ' + ((Number(creRate.m1) || 0) + (Number(creRate.m2) || 0)).toLocaleString() + '원 · 상위노출 보너스 없음</span>'
+          : lab('기본 단가') + inp('creRateBase', creRate.base) + lab('상위노출 보너스') + inp('creRateBonus', creRate.bonus)
+            + '<span class="text-[11px] text-slate-400">지급액 = 기본 + 상위노출 건수 x 보너스 <b>(' + (creRate.newFrom || '2026-09') + ' 이전 방식)</b></span>';
+        bar.innerHTML += copyBtn;
+      }
 
       const all = creRoster.filter(c => c.active !== false);
+      const live = all.filter(creLive);
       const sub = all.filter(c => creSubmitted(creM(c, ym)));
       const paid = sub.filter(c => creM(c, ym).paid);
       const due = sub.filter(c => !creM(c, ym).paid);
-      const dueAmt = due.reduce((a, c) => a + creAmount(creM(c, ym)), 0);
-      setTxt('creCount', all.length + '명');
+      const dueAmt = due.reduce((a, c) => a + creAmount(creM(c, ym), ym), 0);
+      const skipN = live.filter(c => (creM(c, ym) || {}).skip && !creSubmitted(creM(c, ym))).length;
+      const risk = all.filter(c => ['out', 'end', 'watch'].indexOf(c.state) >= 0 || creMissStreak(c) >= 2).length;
+      const noCafe = all.filter(c => c.cafe !== 'y').length;
+      setTxt('creCount', live.length + '명');
 
       const sum = document.getElementById('creSummary');
       if (sum) {
@@ -9225,18 +9312,21 @@
           + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
           + '<div class="text-2xl font-black text-' + color + '-600 mt-0.5">' + val + '</div>'
           + '<div class="text-[10px] text-slate-400 font-semibold">' + sub2 + '</div></div>';
-        sum.innerHTML = card('전체 명단', all.length + '명', '진행불가 제외', 'slate')
-          + card('이번 달 제출', sub.length + '명', '미제출 ' + (all.length - sub.length) + '명', 'emerald')
-          + card('지급 완료', paid.length + '명', '/ 제출 ' + sub.length + '명', 'sky')
-          + card('지급 예정액', dueAmt.toLocaleString() + '원', due.length + '명 미지급', 'rose');
+        const pending = live.length - sub.length - skipN;
+        sum.innerHTML = card('진행 대상', live.length + '명', '이탈 · 종료 제외', 'slate')
+          + card('이번 달 제출', sub.length + '명', '미제출 ' + (pending < 0 ? 0 : pending) + '명 · 미진행 ' + skipN + '명', 'emerald')
+          + card('지급 예정액', dueAmt.toLocaleString() + '원', due.length + '명 미지급 / 완료 ' + paid.length + '명', 'sky')
+          + card('이탈 · 주의', risk + '명', '2개월 이상 무응답 포함', 'rose')
+          + (noCafe ? card('카페 미가입', noCafe + '명', '미확인 포함 · 진행 대상 제외', 'amber') : '');
       }
 
       const rows = creRows();
       if (!rows.length) {
-        body.innerHTML = '<tr><td colspan="10" class="py-10 text-center text-slate-400">해당하는 크리에이터가 없습니다.<br>위 <b>가져오기</b>에서 명단을 먼저 넣어 주세요.</td></tr>';
+        body.innerHTML = '<tr><td colspan="12" class="py-10 text-center text-slate-400">해당하는 크리에이터가 없습니다.<br>위 <b>가져오기</b>에서 명단을 먼저 넣어 주세요.</td></tr>';
         return;
       }
 
+      const newRule = creNewRule(ym);
       body.innerHTML = rows.map(c => {
         const m = creM(c, ym) || {};
         const link = (u, label) => u
@@ -9248,18 +9338,36 @@
         const nameCell = c.url
           ? '<a href="' + tEsc(c.url) + '" target="_blank" rel="noopener" class="font-bold text-slate-900 hover:text-emerald-700 hover:underline">' + tEsc(c.name || '') + '</a>'
           : '<span class="font-bold text-slate-900">' + tEsc(c.name || '') + '</span>';
-        const amt = creAmount(m);
+        const amt = creAmount(m, ym);
 
-        return '<tr class="' + (m.paid ? 'bg-sky-50/40' : (same ? 'bg-amber-50/40' : '')) + ' hover:bg-emerald-50/30 transition">'
+        const st = creEffState(c, ym);
+        const streak = creMissStreak(c);
+        const dead = (c.state === 'out' || c.state === 'end');
+        const rowCls = (dead || c.cafe === 'n') ? 'bg-rose-50/40 opacity-70'
+          : (m.paid ? 'bg-sky-50/40' : (st === 'watch' || streak >= 2 ? 'bg-orange-50/40' : (same ? 'bg-amber-50/40' : '')));
+        const note = dead ? (c.stateNote || '') : ((m.skip && m.note) ? m.note : '');
+
+        return '<tr class="' + rowCls + ' hover:bg-emerald-50/30 transition">'
           + '<td class="py-2.5 px-3 whitespace-nowrap">' + nameCell
-            + (same ? ' <span class="text-[9px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-700">동일 URL</span>' : '') + '</td>'
+            + (same ? ' <span class="text-[9px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-700">동일 URL</span>' : '')
+            + (!dead && streak >= 2 ? ' <span class="text-[9px] font-bold px-1 py-0.5 rounded bg-orange-100 text-orange-700">' + streak + '개월 무응답</span>' : '')
+            + (note ? '<div class="text-[9px] text-slate-400 truncate max-w-[150px]">' + tEsc(note) + '</div>' : '') + '</td>'
+          + '<td class="py-2.5 px-3 whitespace-nowrap"><select onchange="setCreState(' + c.id + ', this.value)" class="text-[10px] font-bold px-1.5 py-1 rounded-lg border-0 cursor-pointer ' + (CRE_STATE_STYLE[st] || CRE_STATE_STYLE['']) + '">'
+            + CRE_STATES.map(function (o) { return '<option value="' + o[0] + '"' + (st === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('')
+            + '</select>'
+            + (dead && c.stateAt ? '<div class="text-[9px] text-slate-400 mt-0.5">' + tEsc(c.stateAt.slice(5)) + '</div>' : '') + '</td>'
+          + '<td class="py-2.5 px-3 text-center whitespace-nowrap"><select onchange="setCreCafe(' + c.id + ', this.value)" class="text-[10px] font-bold px-1.5 py-1 rounded-lg border-0 cursor-pointer ' + (CRE_CAFE_STYLE[c.cafe || ''] || CRE_CAFE_STYLE['']) + '">'
+            + CRE_CAFE.map(function (o) { return '<option value="' + o[0] + '"' + ((c.cafe || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('')
+            + '</select></td>'
           + '<td class="py-2.5 px-3 whitespace-nowrap"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + typeColor + '">' + tEsc(c.type || '-') + '</span></td>'
           + '<td class="py-2.5 px-3 text-slate-600">' + tEsc(c.acct || '') + '</td>'
           + '<td class="py-2.5 px-3 text-slate-600 whitespace-nowrap">' + tEsc(c.phone || '') + '</td>'
           + '<td class="py-2.5 px-3 text-slate-600 whitespace-nowrap">' + tEsc(m.date || '') + '</td>'
           + '<td class="py-2.5 px-3 text-center">' + link(m.m1, '미션1') + '</td>'
           + '<td class="py-2.5 px-3 text-center">' + link(m.m2, '미션2') + '</td>'
-          + '<td class="py-2.5 px-3 text-center"><input type="number" min="0" value="' + (Number(m.top) || 0) + '" onchange="setCreTop(' + c.id + ', this.value)" class="w-14 px-1 py-0.5 text-[11px] text-center border border-slate-200 rounded-lg"></td>'
+          + '<td class="py-2.5 px-3 text-center">' + (newRule
+              ? '<span class="text-slate-300" title="9월부터 상위노출 보너스 미적용">—</span>'
+              : '<input type="number" min="0" value="' + (Number(m.top) || 0) + '" onchange="setCreTop(' + c.id + ', this.value)" class="w-14 px-1 py-0.5 text-[11px] text-center border border-slate-200 rounded-lg">') + '</td>'
           + '<td class="py-2.5 px-3 text-right font-bold ' + (creSubmitted(m) ? 'text-slate-800' : 'text-slate-300') + ' whitespace-nowrap">' + (creSubmitted(m) ? amt.toLocaleString() + '원' : '-') + '</td>'
           + '<td class="py-2.5 px-3 text-center">'
             + (creSubmitted(m)
@@ -9272,10 +9380,10 @@
 
     function copyUnpaidPhones() {
       const ym = creCurMonth();
-      const due = creRoster.filter(c => c.active !== false)
+      const due = creRoster.filter(creLive)
         .filter(c => { const m = creM(c, ym); return creSubmitted(m) && !m.paid; });
       if (!due.length) { alert('미지급자가 없습니다.'); return; }
-      const txt = due.map(c => c.name + '\t' + c.phone + '\t' + creAmount(creM(c, ym))).join('\n');
+      const txt = due.map(c => c.name + '\t' + c.phone + '\t' + creAmount(creM(c, ym), ym)).join('\n');
       ambmCopyText(txt, due.length + '명의 이름 · 연락처 · 지급액을 복사했습니다.');
     }
 
@@ -9334,6 +9442,26 @@
         + (miss.length ? '\n\n명단에 없어 건너뜀 (' + miss.length + '명):\n' + miss.slice(0, 15).join('\n') : ''));
     }
 
+    function importCreCafe() {
+      if (!creRoster.length) { alert('명단을 먼저 불러와 주세요.'); return; }
+      const txt = document.getElementById('creCafePaste').value;
+      const keys = String(txt || '').split(/[\r\n\t,]+/).map(x => creNorm(x)).filter(Boolean);
+      if (!keys.length) { alert('붙여넣은 내용이 없습니다.'); return; }
+      const set = new Set(keys);
+      const rest = document.getElementById('creCafeRest').checked;
+      let y = 0, n = 0;
+      const unmatched = new Set(keys);
+      creRoster.forEach(c => {
+        const a = creNorm(c.acct), nm = creNorm(c.name), nk = creNorm(c.nick);
+        const hit = (a && set.has(a)) || (nm && set.has(nm)) || (nk && set.has(nk));
+        if (hit) { c.cafe = 'y'; c.cafeAt = todayStr(); y++; unmatched.delete(a); unmatched.delete(nm); unmatched.delete(nk); }
+        else if (rest) { c.cafe = 'n'; c.cafeAt = ''; n++; }
+      });
+      saveAll(); renderCre(); closeCreImport();
+      alert('카페 가입 반영 완료\n가입 ' + y + '명' + (rest ? ' / 미가입 ' + n + '명' : '')
+        + (unmatched.size ? '\n\n명단에서 못 찾은 카페 회원 ' + unmatched.size + '건 (닉네임이 다를 수 있어요)' : ''));
+    }
+
     function exportCre() {
       const ym = creCurMonth();
       const rows = creRows();
@@ -9344,8 +9472,12 @@
           '이름': c.name || '', '유형': c.type || '', '채널명': c.acct || '', '연락처': c.phone || '',
           '업로드일': m.date || '', '미션1': m.m1 || '', '미션2': m.m2 || '',
           '상위노출': Number(m.top) || 0, '키워드': m.kw || '',
-          '지급액': creSubmitted(m) ? creAmount(m) : 0,
-          '지급여부': m.paid ? 'O' : '', '지급일': m.paidAt || ''
+          '지급액': creSubmitted(m) ? creAmount(m, ym) : 0,
+          '지급여부': m.paid ? 'O' : '', '지급일': m.paidAt || '',
+          '상태': (CRE_STATES.find(function (o) { return o[0] === creEffState(c, ym); }) || ['', ''])[1],
+          '상태메모': (c.state === 'out' || c.state === 'end') ? (c.stateNote || '') : ((m.skip && m.note) ? m.note : ''),
+          '연속무응답(개월)': creMissStreak(c),
+          '카페가입': (CRE_CAFE.find(function (o) { return o[0] === (c.cafe || ''); }) || ['', ''])[1]
         };
       }), '크리에이터_' + ym);
     }
