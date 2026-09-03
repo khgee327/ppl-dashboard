@@ -1637,6 +1637,43 @@
 
 
     <!-- 업로드 일자 & 링크 표 -->
+    <!-- 앰버서더 월별 셀 상태 입력 -->
+    <div id="ambCellModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs items-center justify-center z-50 hidden p-4">
+      <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-calendar-check text-violet-600"></i> <span id="ambCellWho"></span></h3>
+          <button onclick="closeAmbCell()" class="text-slate-400 hover:text-slate-700 text-xl leading-none px-2">&times;</button>
+        </div>
+        <div class="p-6 space-y-3">
+          <p id="ambCellNote" class="text-[11px] text-slate-500 bg-slate-50 rounded-xl px-3 py-2"></p>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">이번 달 상태</label>
+            <select id="ambCellState" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-semibold">
+              <option value="">미정 (기본)</option>
+              <option value="skip">미진행 희망 (본인 사유)</option>
+              <option value="due">제출 예정 (기한 지정)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">제출 기한</label>
+            <input type="date" id="ambCellDue" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+            <p class="text-[10px] text-slate-400 mt-1">기한이 지나면 표에서 붉게 표시됩니다.</p>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">메모</label>
+            <input id="ambCellMemo" placeholder="예) 출산 휴식 / 10월 복귀 예정" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-slate-100 flex justify-between gap-2">
+          <button onclick="clearAmbCell()" class="px-4 py-2 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 text-xs font-bold rounded-xl">기록 지우기</button>
+          <div class="flex gap-2">
+            <button onclick="closeAmbCell()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+            <button onclick="saveAmbCell()" class="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl"><i class="fa-solid fa-check"></i> 저장</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ==================== 앰버서더 월별 활동 현황판 ==================== -->
     <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-violet-100 pb-3">
@@ -1645,7 +1682,7 @@
             <i class="fa-solid fa-calendar-check text-violet-600"></i> 월별 활동 현황판
             <span id="ambGridCount" class="text-xs font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">0명</span>
           </h2>
-          <p class="text-xs text-slate-500">누가 어느 달에 업로드했는지 한눈에 봅니다. 이름을 누르면 채널로, 제품 배지를 누르면 게시물로 이동해요.</p>
+          <p class="text-xs text-slate-500">누가 어느 달에 업로드했는지 한눈에 봅니다. 이름을 누르면 채널로, 제품 배지를 누르면 게시물로 이동해요. <b>빈 칸을 누르면</b> 미진행 희망 · 제출 기한을 기록할 수 있습니다.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <div class="flex p-1 bg-violet-50 rounded-xl border border-violet-100 text-xs font-bold">
@@ -1667,7 +1704,7 @@
           <tbody id="ambGridBody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
-      <p class="text-[11px] text-slate-400">2026년 8월부터 집계합니다. 업로드 기록에 <b>날짜가 없는 건</b>은 어느 달에도 잡히지 않으니, 인증 취합 시 날짜를 꼭 채워 주세요.</p>
+      <p class="text-[11px] text-slate-400"><b>온살은 2026년 8월</b>, <b>루메아카이브는 2026년 9월</b>부터 집계합니다. 시작 전 달은 회색 점(·)으로 표시돼요. 업로드 기록에 <b>날짜가 없는 건</b>은 어느 달에도 잡히지 않으니 인증 취합 시 날짜를 꼭 채워 주세요.</p>
     </section>
 
     <section class="bg-white p-5 rounded-2xl border border-indigo-200 shadow-sm space-y-4">
@@ -6168,18 +6205,25 @@
     }
 
     /* ==================== 앰버서더 월별 활동 현황판 ==================== */
-    const AMB_GRID_START = '2026-08';
+    const AMB_GRID_START = { '온살': '2026-08', '루메아카이브': '2026-09' };
+    const AMB_GRID_FALLBACK = '2026-08';
     let ambGridBrand = '전체';
 
+    function ambStartOf(brand) { return AMB_GRID_START[brand] || AMB_GRID_FALLBACK; }
+    function ymAdd(ym, n) {
+      let [y, m] = ym.split('-').map(Number);
+      m += n; while (m > 12) { m -= 12; y++; } while (m < 1) { m += 12; y--; }
+      return y + '-' + String(m).padStart(2, '0');
+    }
+    function ymNow() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+
     function ambGridMonths() {
+      const start = ambGridBrand === '전체'
+        ? Object.keys(AMB_GRID_START).map(b => AMB_GRID_START[b]).sort()[0]
+        : ambStartOf(ambGridBrand);
+      const end = ymNow();
       const out = [];
-      const [sy, sm] = AMB_GRID_START.split('-').map(Number);
-      const now = new Date();
-      let y = sy, m = sm;
-      while (y < now.getFullYear() || (y === now.getFullYear() && m <= now.getMonth() + 1)) {
-        out.push(y + '-' + String(m).padStart(2, '0'));
-        m++; if (m > 12) { m = 1; y++; }
-      }
+      for (let m = start; m <= end; m = ymAdd(m, 1)) { out.push(m); if (out.length > 60) break; }
       return out;
     }
 
@@ -6194,21 +6238,31 @@
       renderAmbGrid();
     }
 
+    function ambStatusOf(p, ym) { return ((p.ambMonthStatus || {})[ym]) || null; }
+
     function ambGridRows() {
       const months = ambGridMonths();
       const list = pplList.filter(p => (isFreeAmb(p) || isAmbPaid(p))
         && (ambGridBrand === '전체' || p.brand === ambGridBrand));
       return list.map(p => {
+        const start = ambStartOf(p.brand);
+        const mine = months.filter(m => m >= start);
         const cells = {};
         (p.uploads || []).forEach(u => {
           const ym = String(u.date || '').slice(0, 7);
-          if (!ym || months.indexOf(ym) < 0) return;
+          if (!ym || mine.indexOf(ym) < 0) return;
           (cells[ym] = cells[ym] || []).push(u);
         });
-        const active = months.filter(m => cells[m] && cells[m].length).length;
+        const active = mine.filter(m => cells[m] && cells[m].length).length;
         let gap = 0;
-        for (let i = months.length - 1; i >= 0; i--) { if (cells[months[i]]) break; gap++; }
-        return { p, cells, active, gap };
+        for (let i = mine.length - 1; i >= 0; i--) {
+          const m = mine[i];
+          if (cells[m]) break;
+          const st = ambStatusOf(p, m);
+          if (st && st.state === 'skip') { continue; }   // 미진행 희망은 미활동으로 세지 않음
+          gap++;
+        }
+        return { p, cells, active, gap, start, mine };
       }).sort((a, b) => (b.gap - a.gap) || (a.active - b.active)
         || String(a.p.realName || '').localeCompare(String(b.p.realName || ''), 'ko'));
     }
@@ -6222,22 +6276,24 @@
       setTxt('ambGridCount', rows.length + '명');
 
       head.innerHTML = '<th class="py-3 px-3 whitespace-nowrap sticky left-0 bg-violet-50/60">앰버서더</th>'
-        + months.map(m => '<th class="py-3 px-3 text-center whitespace-nowrap">'
-            + Number(m.slice(5)) + '월</th>').join('')
+        + months.map(m => '<th class="py-3 px-3 text-center whitespace-nowrap">' + Number(m.slice(5)) + '월</th>').join('')
         + '<th class="py-3 px-3 text-center whitespace-nowrap">활동</th>';
 
       const cur = months[months.length - 1];
-      const doneNow = rows.filter(r => r.cells[cur]).length;
+      const inScope = rows.filter(r => cur >= r.start);
+      const doneNow = inScope.filter(r => r.cells[cur]).length;
+      const skipNow = inScope.filter(r => { const st = ambStatusOf(r.p, cur); return !r.cells[cur] && st && st.state === 'skip'; }).length;
       const sum = document.getElementById('ambGridSummary');
       if (sum) {
         const card = (label, val, sub, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
           + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
           + '<div class="text-2xl font-black text-' + color + '-600 mt-0.5">' + val + '</div>'
           + '<div class="text-[10px] text-slate-400 font-semibold">' + sub + '</div></div>';
-        sum.innerHTML = card('전체 앰버서더', rows.length + '명', ambGridBrand, 'slate')
-          + card('이번 달 업로드', doneNow + '명', Number(cur.slice(5)) + '월 기준', 'emerald')
-          + card('이번 달 미제출', (rows.length - doneNow) + '명', Number(cur.slice(5)) + '월 기준', 'rose')
-          + card('2개월 이상 미활동', rows.filter(r => r.gap >= 2).length + '명', '표 상단에 표시', 'amber');
+        const mm = Number(cur.slice(5)) + '월 기준';
+        sum.innerHTML = card('진행 대상', inScope.length + '명', ambGridBrand, 'slate')
+          + card('이번 달 업로드', doneNow + '명', mm, 'emerald')
+          + card('미진행 희망', skipNow + '명', mm, 'slate')
+          + card('미제출', (inScope.length - doneNow - skipNow) + '명', mm, 'rose');
       }
 
       if (!rows.length) {
@@ -6250,26 +6306,84 @@
         const nameCell = p.channelUrl
           ? '<a href="' + tEsc(p.channelUrl) + '" target="_blank" rel="noopener" class="font-bold text-slate-900 hover:text-violet-700 hover:underline">' + tEsc(p.realName || '무명') + '</a>'
           : '<span class="font-bold text-slate-900">' + tEsc(p.realName || '무명') + '</span>';
-        const sub = '<div class="text-[10px] text-slate-400">' + tEsc(p.influencer || '') + '</div>';
+        const bBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded ' + (p.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-sky-100 text-sky-700') + '">' + tEsc(p.brand || '') + '</span>';
         const warn = r.gap >= 2 ? ' <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 whitespace-nowrap">' + r.gap + '개월 미활동</span>' : '';
+        const sub = '<div class="text-[10px] text-slate-400">' + tEsc(p.influencer || '') + '</div>';
 
-        const cells = ambGridMonths().map(m => {
+        const cells = months.map(m => {
+          if (m < r.start) return '<td class="py-2.5 px-3 text-center text-slate-200 bg-slate-50/50">·</td>';
+          const open = 'onclick="openAmbCell(' + p.id + ',\'' + m + '\')" class="cursor-pointer hover:bg-violet-50 transition"';
           const ups = r.cells[m];
-          if (!ups) return '<td class="py-2.5 px-3 text-center text-slate-300">—</td>';
-          const prod = prodNamesOf(p).join(', ') || '제품 미지정';
-          const short = prod.length > 14 ? prod.slice(0, 13) + '…' : prod;
-          const inner = ups.map(u => u.url
-            ? '<a href="' + tEsc(u.url) + '" target="_blank" rel="noopener" title="' + tEsc(prod) + '" class="block text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 hover:bg-emerald-200 truncate max-w-[130px] mx-auto">' + tEsc(short) + '</a>'
-            : '<span class="block text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 truncate max-w-[130px] mx-auto">' + tEsc(short) + '</span>').join('');
-          return '<td class="py-2.5 px-3 text-center"><div class="text-emerald-600 font-bold leading-none mb-1">✓</div>' + inner + '</td>';
+          if (ups) {
+            const prod = prodNamesOf(p).join(', ') || '제품 미지정';
+            const short = prod.length > 14 ? prod.slice(0, 13) + '…' : prod;
+            const inner = ups.map(u => u.url
+              ? '<a href="' + tEsc(u.url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="' + tEsc(prod) + '" class="block text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 hover:bg-emerald-200 truncate max-w-[130px] mx-auto">' + tEsc(short) + '</a>'
+              : '<span class="block text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 truncate max-w-[130px] mx-auto">' + tEsc(short) + '</span>').join('');
+            return '<td ' + open + '><div class="text-emerald-600 font-bold leading-none mb-1">✓</div>' + inner + '</td>';
+          }
+          const st = ambStatusOf(p, m);
+          if (st && st.state === 'skip') {
+            return '<td ' + open + '><div class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 inline-block">미진행 희망</div>'
+              + (st.memo ? '<div class="text-[9px] text-slate-400 mt-0.5 truncate max-w-[130px] mx-auto">' + tEsc(st.memo) + '</div>' : '') + '</td>';
+          }
+          if (st && st.due) {
+            const late = st.due < todayStr();
+            return '<td ' + open + '><div class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + (late ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700') + ' inline-block whitespace-nowrap">'
+              + (late ? '기한 초과 ' : '~') + tEsc(st.due.slice(5).replace('-', '/')) + '</div>'
+              + (st.memo ? '<div class="text-[9px] text-slate-400 mt-0.5 truncate max-w-[130px] mx-auto">' + tEsc(st.memo) + '</div>' : '') + '</td>';
+          }
+          return '<td ' + open + '><span class="text-slate-300">—</span></td>';
         }).join('');
 
-        return '<tr class="hover:bg-violet-50/30 transition' + (r.gap >= 2 ? ' bg-amber-50/30' : '') + '">'
-          + '<td class="py-2.5 px-3 align-middle whitespace-nowrap sticky left-0 bg-white">' + nameCell + warn + sub + '</td>'
+        return '<tr class="' + (r.gap >= 2 ? 'bg-amber-50/30' : '') + '">'
+          + '<td class="py-2.5 px-3 align-middle whitespace-nowrap sticky left-0 bg-white">' + nameCell + ' ' + bBadge + warn + sub + '</td>'
           + cells
           + '<td class="py-2.5 px-3 text-center font-bold text-slate-700">' + r.active + '회</td>'
           + '</tr>';
       }).join('');
+    }
+
+    /* ----- 셀 상태 입력 ----- */
+    let ambCellTarget = null;
+
+    function openAmbCell(id, ym) {
+      const p = pplList.find(x => x.id === id); if (!p) return;
+      ambCellTarget = { id, ym };
+      const st = ambStatusOf(p, ym) || {};
+      const hasUp = (p.uploads || []).some(u => String(u.date || '').slice(0, 7) === ym);
+      setTxt('ambCellWho', (p.realName || '무명') + ' · ' + Number(ym.slice(5)) + '월');
+      const note = document.getElementById('ambCellNote');
+      if (note) note.innerHTML = hasUp
+        ? '<span class="text-emerald-700 font-bold">이미 업로드 기록이 있는 달입니다.</span> 상태는 참고용으로만 저장돼요.'
+        : '업로드 기록이 없는 달입니다. 미진행 희망 또는 제출 기한을 남겨 두세요.';
+      document.getElementById('ambCellState').value = st.state || '';
+      document.getElementById('ambCellDue').value = st.due || '';
+      document.getElementById('ambCellMemo').value = st.memo || '';
+      openModalEl('ambCellModal');
+    }
+    function closeAmbCell() { ambCellTarget = null; closeModalEl('ambCellModal'); }
+    function saveAmbCell() {
+      if (!ambCellTarget) return;
+      const p = pplList.find(x => x.id === ambCellTarget.id); if (!p) return;
+      const ym = ambCellTarget.ym;
+      const state = document.getElementById('ambCellState').value;
+      const due = document.getElementById('ambCellDue').value;
+      const memo = document.getElementById('ambCellMemo').value.trim();
+      p.ambMonthStatus = p.ambMonthStatus || {};
+      if (!state && !due && !memo) delete p.ambMonthStatus[ym];
+      else p.ambMonthStatus[ym] = { state, due, memo };
+      saveAll();
+      renderAmbGrid();
+      closeAmbCell();
+    }
+    function clearAmbCell() {
+      if (!ambCellTarget) return;
+      const p = pplList.find(x => x.id === ambCellTarget.id); if (!p) return;
+      if (p.ambMonthStatus) delete p.ambMonthStatus[ambCellTarget.ym];
+      saveAll();
+      renderAmbGrid();
+      closeAmbCell();
     }
 
     function exportAmbGrid() {
@@ -6279,10 +6393,14 @@
       downloadSheet(rows.map(r => {
         const o = { '앰버서더': r.p.realName || '', '계정': r.p.influencer || '', '브랜드': r.p.brand || '' };
         months.forEach(m => {
+          const key = Number(m.slice(5)) + '월';
+          if (m < r.start) { o[key] = '해당없음'; return; }
           const ups = r.cells[m];
-          o[Number(m.slice(5)) + '월'] = ups
-            ? (prodNamesOf(r.p).join(', ') || '업로드') + ' / ' + ups.map(u => u.url || '').filter(Boolean).join(' ')
-            : '';
+          if (ups) { o[key] = (prodNamesOf(r.p).join(', ') || '업로드') + ' / ' + ups.map(u => u.url || '').filter(Boolean).join(' '); return; }
+          const st = ambStatusOf(r.p, m);
+          if (st && st.state === 'skip') { o[key] = '미진행 희망' + (st.memo ? ' (' + st.memo + ')' : ''); return; }
+          if (st && st.due) { o[key] = '제출예정 ~' + st.due + (st.memo ? ' (' + st.memo + ')' : ''); return; }
+          o[key] = '';
         });
         o['활동 횟수'] = r.active;
         o['연속 미활동(개월)'] = r.gap;
