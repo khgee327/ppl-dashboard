@@ -1926,7 +1926,7 @@
           <p class="text-xs text-slate-500">이 명단은 <b>크리에이터 페이지 전용</b>입니다. PPL · 앰버서더 목록에는 나타나지 않아요.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-          <select id="creMonth" onchange="renderCre()" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-bold"></select>
+          <select id="creMonth" onchange="setCreMonth(this.value)" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-bold"></select>
           <div class="flex p-1 bg-slate-100 rounded-xl text-xs font-bold">
             <button onclick="setCreBrand('전체')" id="creb-전체" class="px-3 py-1.5 rounded-lg bg-white text-slate-800 shadow-xs">전체</button>
             <button onclick="setCreBrand('온살')" id="creb-온살" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">온살</button>
@@ -9293,6 +9293,11 @@
     }
     function creSubmitted(m) { return !!(m && (m.m1 || m.m2)); }
 
+    function setCreMonth(v) {
+      if (!v) return;
+      creMonthSel = v;
+      renderCre();
+    }
     function setCreBrand(b) {
       creBrandSel = b;
       ['전체', '온살', '루메아카이브'].forEach(x => {
