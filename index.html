@@ -1927,6 +1927,11 @@
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <select id="creMonth" onchange="renderCre()" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-bold"></select>
+          <div class="flex p-1 bg-slate-100 rounded-xl text-xs font-bold">
+            <button onclick="setCreBrand('전체')" id="creb-전체" class="px-3 py-1.5 rounded-lg bg-white text-slate-800 shadow-xs">전체</button>
+            <button onclick="setCreBrand('온살')" id="creb-온살" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">온살</button>
+            <button onclick="setCreBrand('루메아카이브')" id="creb-루메아카이브" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">루메아카이브</button>
+          </div>
           <div class="flex p-1 bg-emerald-50 rounded-xl border border-emerald-100 text-xs font-bold">
             <button onclick="setCreFilter('전체')" id="cref-전체" class="px-3 py-1.5 rounded-lg bg-white text-emerald-700 shadow-xs">전체</button>
             <button onclick="setCreFilter('제출')" id="cref-제출" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">제출</button>
@@ -1967,6 +1972,69 @@
       </div>
     </section>
 
+    <!-- 크리에이터 수정 모달 -->
+    <div id="creEditModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs items-center justify-center z-50 hidden p-4">
+      <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
+        <div class="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between z-10">
+          <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-pen-to-square text-emerald-600"></i> <span id="ceeWho">크리에이터 수정</span></h3>
+          <button onclick="closeCreEdit()" class="text-slate-400 hover:text-slate-700 text-xl leading-none px-2">&times;</button>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div><label class="block text-[11px] font-bold text-slate-600 mb-1">브랜드</label>
+              <select id="ceeBrand" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-semibold">
+                <option value="온살">온살</option><option value="루메아카이브">루메아카이브</option></select></div>
+            <div><label class="block text-[11px] font-bold text-slate-600 mb-1">이름</label>
+              <input id="ceeName" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></div>
+            <div><label class="block text-[11px] font-bold text-slate-600 mb-1">유형</label>
+              <select id="ceeType" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white">
+                <option value="피드">피드</option><option value="릴스">릴스</option><option value="클립">클립</option><option value="">미지정</option></select></div>
+            <div><label class="block text-[11px] font-bold text-slate-600 mb-1">채널명 (계정)</label>
+              <input id="ceeAcct" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></div>
+            <div class="md:col-span-2"><label class="block text-[11px] font-bold text-slate-600 mb-1">채널 URL</label>
+              <input id="ceeUrl" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></div>
+            <div><label class="block text-[11px] font-bold text-slate-600 mb-1">연락처</label>
+              <input id="ceePhone" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></div>
+            <div><label class="block text-[11px] font-bold text-slate-600 mb-1">기본 우편번호</label>
+              <input id="ceeZip" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></div>
+            <div class="md:col-span-2"><label class="block text-[11px] font-bold text-slate-600 mb-1">기본 주소</label>
+              <input id="ceeAddr" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></div>
+          </div>
+
+          <div class="border-t border-slate-100 pt-4">
+            <p class="text-xs font-bold text-slate-700 mb-2"><span id="ceeMonthLabel"></span> 미션 정보</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div><label class="block text-[11px] font-bold text-slate-600 mb-1">업로드일</label>
+                <input type="date" id="ceeDate" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></div>
+              <div><label class="block text-[11px] font-bold text-slate-600 mb-1">상위노출 건수</label>
+                <input type="number" min="0" id="ceeTop" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></div>
+              <div class="md:col-span-2"><label class="block text-[11px] font-bold text-slate-600 mb-1">미션 1 링크</label>
+                <input id="ceeM1" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></div>
+              <div class="md:col-span-2"><label class="block text-[11px] font-bold text-slate-600 mb-1">미션 2 링크</label>
+                <input id="ceeM2" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></div>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-100 pt-4">
+            <label class="flex items-center gap-1.5 text-xs font-bold text-slate-700 cursor-pointer">
+              <input type="checkbox" id="ceeShipCustom" onchange="toggleCeeShip()" class="accent-sky-600 w-4 h-4"> 이번 달만 다른 주소로 발송
+            </label>
+            <p class="text-[11px] text-slate-400 mt-1 mb-2">체크하면 이 달에만 적용되고, 다음 달은 기본 주소로 돌아갑니다.</p>
+            <div id="ceeShipBox" class="grid grid-cols-1 md:grid-cols-3 gap-3 hidden">
+              <div><label class="block text-[11px] font-bold text-slate-600 mb-1">당월 우편번호</label>
+                <input id="ceeMZip" class="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl"></div>
+              <div class="md:col-span-2"><label class="block text-[11px] font-bold text-slate-600 mb-1">당월 주소</label>
+                <input id="ceeMAddr" class="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl"></div>
+            </div>
+          </div>
+        </div>
+        <div class="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+          <button onclick="closeCreEdit()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">취소</button>
+          <button onclick="saveCreEdit()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl"><i class="fa-solid fa-check"></i> 저장</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 크리에이터 가져오기 모달 -->
     <div id="creImportModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs items-center justify-center z-50 hidden p-4">
       <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
@@ -1977,13 +2045,14 @@
         <div class="p-6 space-y-5">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">① 크리에이터 명단 <span class="font-normal text-slate-400">(첫 줄 제목 행 · 탭 구분)</span></label>
-            <p class="text-[11px] text-slate-500 mb-1">열 순서: <b>이름 · 연락처 · 유형 · 계정 · URL · 팔로워 · 상태</b></p>
+            <p class="text-[11px] text-slate-500 mb-1">열 순서: <b>이름 · 연락처 · 유형 · 계정 · URL · 팔로워 · 상태 · 브랜드 · 우편번호 · 주소</b></p>
             <textarea id="creRosterPaste" rows="4" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-mono"></textarea>
             <button onclick="importCreRoster()" class="mt-2 px-3.5 py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl">명단 불러오기</button>
           </div>
           <div class="border-t border-slate-100 pt-4">
             <label class="block text-xs font-bold text-slate-700 mb-1">② 월별 미션 인증 <span class="font-normal text-slate-400">(선택한 달에 반영)</span></label>
-            <p class="text-[11px] text-slate-500 mb-1">열 순서: <b>이름 · 계정 · 업로드일 · 미션1 · 미션2 · 상위노출수 · 키워드</b></p>
+            <p class="text-[11px] text-slate-500 mb-1">열 순서: <b>이름 · 계정 · 업로드일 · 미션1 · 미션2 · 상위노출수 · 키워드 · 우편번호 · 주소</b></p>
+            <p class="text-[11px] text-sky-600 mb-1">주소가 기본과 다르면 <b>그 달 배송지</b>로만 저장됩니다.</p>
             <textarea id="creMissionPaste" rows="4" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-mono"></textarea>
             <button onclick="importCreMission()" class="mt-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl">미션 인증 불러오기</button>
           </div>
@@ -9134,6 +9203,7 @@
     }
     /* ==================== 크리에이터 명단 · 미션 현황 ==================== */
     let creFilter = '전체';
+    let creBrandSel = '전체';
     let creMonthSel = '';
 
     function creNorm(v) { return String(v || '').toLowerCase().replace(/^@/, '').replace(/[\s._\-]/g, ''); }
@@ -9220,6 +9290,21 @@
     }
     function creSubmitted(m) { return !!(m && (m.m1 || m.m2)); }
 
+    function setCreBrand(b) {
+      creBrandSel = b;
+      ['전체', '온살', '루메아카이브'].forEach(x => {
+        const el = document.getElementById('creb-' + x);
+        if (el) el.className = (x === b)
+          ? 'px-3 py-1.5 rounded-lg bg-white text-slate-800 shadow-xs'
+          : 'px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800';
+      });
+      renderCre();
+    }
+    /* 해당 월 배송지: 그 달에 따로 적어 냈으면 그것, 아니면 기본 주소 */
+    function creShip(c, ym) {
+      const m = creM(c, ym) || {};
+      return { zip: m.zip || c.zip || '', addr: m.addr || c.addr || '', custom: !!(m.zip || m.addr) };
+    }
     function setCreFilter(f) {
       creFilter = f;
       ['전체', '제출', '미제출', '미지급', '이탈·주의', '카페 미가입'].forEach(x => {
@@ -9261,6 +9346,8 @@
     function creRows() {
       const ym = creCurMonth();
       let list = creRoster.filter(c => c.active !== false);
+      if (creBrandSel !== '전체') list = list.filter(c => (c.brand || '온살') === creBrandSel);
+      if (creFilter !== '카페 미가입') list = list.filter(c => c.cafe === 'y');
       if (creFilter === '제출') list = list.filter(c => creSubmitted(creM(c, ym)));
       else if (creFilter === '미제출') list = list.filter(c => creLive(c) && !creSubmitted(creM(c, ym)) && !(creM(c, ym) || {}).skip);
       else if (creFilter === '미지급') list = list.filter(c => { const m = creM(c, ym); return creSubmitted(m) && !m.paid; });
@@ -9286,7 +9373,8 @@
       if (bar) {
         const inp = (id, v) => '<input id="' + id + '" type="number" value="' + (Number(v) || 0) + '" onchange="setCreRate()" class="w-24 px-2 py-1 text-xs border border-slate-200 rounded-lg">';
         const lab = t => '<span class="text-[11px] font-bold text-slate-700">' + t + '</span>';
-        const copyBtn = '<button onclick="copyUnpaidPhones()" class="ml-auto px-3 py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold rounded-lg"><i class="fa-regular fa-copy"></i> 미지급자 연락처 복사</button>';
+        const copyBtn = '<button onclick="copyShipList()" class="ml-auto px-3 py-1.5 bg-white hover:bg-sky-50 text-sky-700 border border-sky-200 text-[11px] font-bold rounded-lg"><i class="fa-solid fa-truck-fast"></i> 익월 발송 명단 복사</button>'
+          + '<button onclick="copyUnpaidPhones()" class="px-3 py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold rounded-lg"><i class="fa-regular fa-copy"></i> 미지급자 연락처 복사</button>';
         bar.innerHTML = creNewRule(ym)
           ? lab('미션 1 진행') + inp('creRateM1', creRate.m1) + lab('미션 2 추가') + inp('creRateM2', creRate.m2)
             + '<span class="text-[11px] text-slate-400">둘 다 진행 시 ' + ((Number(creRate.m1) || 0) + (Number(creRate.m2) || 0)).toLocaleString() + '원 · 상위노출 보너스 없음</span>'
@@ -9295,8 +9383,8 @@
         bar.innerHTML += copyBtn;
       }
 
-      const all = creRoster.filter(c => c.active !== false);
-      const live = all.filter(creLive);
+      const all = creRoster.filter(c => c.active !== false && (creBrandSel === '전체' || (c.brand || '온살') === creBrandSel));
+      const live = all.filter(c => creLive(c) && c.cafe === 'y');
       const sub = all.filter(c => creSubmitted(creM(c, ym)));
       const paid = sub.filter(c => creM(c, ym).paid);
       const due = sub.filter(c => !creM(c, ym).paid);
@@ -9322,7 +9410,7 @@
 
       const rows = creRows();
       if (!rows.length) {
-        body.innerHTML = '<tr><td colspan="12" class="py-10 text-center text-slate-400">해당하는 크리에이터가 없습니다.<br>위 <b>가져오기</b>에서 명단을 먼저 넣어 주세요.</td></tr>';
+        body.innerHTML = '<tr><td colspan="15" class="py-10 text-center text-slate-400">해당하는 크리에이터가 없습니다.<br>위 <b>가져오기</b>에서 명단을 먼저 넣어 주세요.</td></tr>';
         return;
       }
 
@@ -9340,6 +9428,7 @@
           : '<span class="font-bold text-slate-900">' + tEsc(c.name || '') + '</span>';
         const amt = creAmount(m, ym);
 
+        const sh = creShip(c, ym);
         const st = creEffState(c, ym);
         const streak = creMissStreak(c);
         const dead = (c.state === 'out' || c.state === 'end');
@@ -9362,6 +9451,9 @@
           + '<td class="py-2.5 px-3 whitespace-nowrap"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + typeColor + '">' + tEsc(c.type || '-') + '</span></td>'
           + '<td class="py-2.5 px-3 text-slate-600">' + tEsc(c.acct || '') + '</td>'
           + '<td class="py-2.5 px-3 text-slate-600 whitespace-nowrap">' + tEsc(c.phone || '') + '</td>'
+          + '<td class="py-2.5 px-3 text-slate-600 whitespace-nowrap">' + tEsc(sh.zip || '')
+            + (sh.custom ? ' <span class="text-[9px] font-bold px-1 py-0.5 rounded bg-sky-100 text-sky-700">당월</span>' : '') + '</td>'
+          + '<td class="py-2.5 px-3 text-slate-600 min-w-[220px] max-w-[300px]"><span class="block truncate" title="' + tEsc(sh.addr || '') + '">' + tEsc(sh.addr || '') + '</span></td>'
           + '<td class="py-2.5 px-3 text-slate-600 whitespace-nowrap">' + tEsc(m.date || '') + '</td>'
           + '<td class="py-2.5 px-3 text-center">' + link(m.m1, '미션1') + '</td>'
           + '<td class="py-2.5 px-3 text-center">' + link(m.m2, '미션2') + '</td>'
@@ -9374,7 +9466,9 @@
                 ? '<input type="checkbox" ' + (m.paid ? 'checked' : '') + ' onchange="toggleCrePaid(' + c.id + ', this.checked)" class="accent-sky-600 w-5 h-5 cursor-pointer">'
                   + (m.paid && m.paidAt ? '<div class="text-[9px] text-slate-400 mt-0.5">' + tEsc(m.paidAt.slice(5)) + '</div>' : '')
                 : '<span class="text-slate-300">—</span>')
-          + '</td></tr>';
+          + '</td>'
+          + '<td class="py-2.5 px-3 text-center"><button onclick="openCreEdit(' + c.id + ')" title="수정" class="text-slate-400 hover:text-emerald-600 p-1"><i class="fa-solid fa-pen-to-square"></i></button></td>'
+          + '</tr>';
       }).join('');
     }
 
@@ -9401,15 +9495,18 @@
       if (!rows) { alert('붙여넣은 내용이 없거나 제목 행이 빠졌습니다.'); return; }
       let add = 0, upd = 0;
       rows.forEach(r => {
-        const [name, phone, type, acct, url, followers, status] = r;
+        const [name, phone, type, acct, url, followers, status, brand, zip, addr] = r;
         if (!name) return;
         const key = creNorm(acct) || creNorm(name);
         let c = creRoster.find(x => (creNorm(x.acct) || creNorm(x.name)) === key);
         const rec = {
           name: name, phone: crePhone(phone), type: type || '', acct: acct || '',
-          url: url || '', followers: followers || '',
+          url: url || '', followers: followers || '', brand: brand || '온살',
+          zip: zip || '', addr: addr || '',
           active: !/불가|제외|취소/.test(String(status || '') + name)
         };
+        if (!zip && c) rec.zip = c.zip || '';
+        if (!addr && c) rec.addr = c.addr || '';
         if (c) { Object.assign(c, rec); upd++; }
         else { creRoster.push(Object.assign({ id: Date.now() + Math.floor(Math.random() * 100000), months: {} }, rec)); add++; }
       });
@@ -9423,7 +9520,7 @@
       const ym = creCurMonth();
       let ok = 0; const miss = [];
       rows.forEach(r => {
-        const [name, acct, date, m1, m2, top, kw] = r;
+        const [name, acct, date, m1, m2, top, kw, zip, addr] = r;
         if (!name && !acct) return;
         const a = creNorm(acct), n = creNorm(name);
         let c = creRoster.find(x => a && creNorm(x.acct) === a);
@@ -9431,15 +9528,74 @@
         if (!c) { miss.push(name + ' (' + acct + ')'); return; }
         c.months = c.months || {};
         const prev = c.months[ym] || {};
-        c.months[ym] = Object.assign({}, prev, {
+        const upd = {
           date: date || prev.date || '', m1: m1 || '', m2: m2 || '',
           top: Number(top) || 0, kw: kw || ''
-        });
+        };
+        /* 인증 폼에 적어 낸 주소가 기본과 다르면 그 달 배송지로만 저장 */
+        if (zip || addr) {
+          const sameZip = creNorm(zip) === creNorm(c.zip), sameAddr = creNorm(addr) === creNorm(c.addr);
+          if (!c.zip && !c.addr) { c.zip = zip || ''; c.addr = addr || ''; }
+          else if (!(sameZip && sameAddr)) { upd.zip = zip || ''; upd.addr = addr || ''; }
+        }
+        c.months[ym] = Object.assign({}, prev, upd);
         ok++;
       });
       saveAll(); renderCre(); closeCreImport();
       alert(ym + ' 미션 반영 완료\n성공 ' + ok + '명'
         + (miss.length ? '\n\n명단에 없어 건너뜀 (' + miss.length + '명):\n' + miss.slice(0, 15).join('\n') : ''));
+    }
+
+    /* 당월 미션 제출자 → 익월 제품 발송 명단 */
+    let ceeId = null;
+    function toggleCeeShip() {
+      const on = document.getElementById('ceeShipCustom').checked;
+      document.getElementById('ceeShipBox').classList.toggle('hidden', !on);
+    }
+    function openCreEdit(id) {
+      const c = creRoster.find(x => x.id === id); if (!c) return;
+      ceeId = id;
+      const ym = creCurMonth(), m = creM(c, ym) || {};
+      const set = (k, v) => { const e = document.getElementById(k); if (e) e.value = v == null ? '' : v; };
+      setTxt('ceeWho', (c.name || '') + ' 수정');
+      setTxt('ceeMonthLabel', ym.slice(0, 4) + '년 ' + Number(ym.slice(5)) + '월');
+      set('ceeBrand', c.brand || '온살'); set('ceeName', c.name); set('ceeType', c.type || '');
+      set('ceeAcct', c.acct); set('ceeUrl', c.url); set('ceePhone', c.phone);
+      set('ceeZip', c.zip); set('ceeAddr', c.addr);
+      set('ceeDate', m.date); set('ceeTop', Number(m.top) || 0); set('ceeM1', m.m1); set('ceeM2', m.m2);
+      const custom = !!(m.zip || m.addr);
+      document.getElementById('ceeShipCustom').checked = custom;
+      document.getElementById('ceeShipBox').classList.toggle('hidden', !custom);
+      set('ceeMZip', m.zip); set('ceeMAddr', m.addr);
+      openModalEl('creEditModal');
+    }
+    function closeCreEdit() { ceeId = null; closeModalEl('creEditModal'); }
+    function saveCreEdit() {
+      const c = creRoster.find(x => x.id === ceeId); if (!c) { closeCreEdit(); return; }
+      const v = k => { const e = document.getElementById(k); return e ? e.value.trim() : ''; };
+      const ym = creCurMonth();
+      c.brand = v('ceeBrand') || '온살'; c.name = v('ceeName'); c.type = v('ceeType');
+      c.acct = v('ceeAcct'); c.url = v('ceeUrl'); c.phone = crePhone(v('ceePhone'));
+      c.zip = v('ceeZip'); c.addr = v('ceeAddr');
+      c.months = c.months || {};
+      const m = c.months[ym] = c.months[ym] || {};
+      m.date = v('ceeDate'); m.m1 = v('ceeM1'); m.m2 = v('ceeM2'); m.top = Number(v('ceeTop')) || 0;
+      if (document.getElementById('ceeShipCustom').checked) { m.zip = v('ceeMZip'); m.addr = v('ceeMAddr'); }
+      else { delete m.zip; delete m.addr; }
+      saveAll(); renderCre(); closeCreEdit();
+    }
+
+    function copyShipList() {
+      const ym = creCurMonth();
+      const list = creRows().filter(c => creSubmitted(creM(c, ym)) && creLive(c));
+      if (!list.length) { alert(ym + ' 미션을 제출한 사람이 없습니다.'); return; }
+      const head = ['이름', '연락처', '우편번호', '주소', '브랜드'].join('\t');
+      const body = list.map(c => {
+        const sh = creShip(c, ym);
+        return [c.name || '', c.phone || '', sh.zip, sh.addr, c.brand || '온살'].join('\t');
+      }).join('\n');
+      ambmCopyText(head + '\n' + body,
+        ym + ' 제출자 ' + list.length + '명의 발송 정보를 복사했습니다.\n엑셀에 붙여넣으면 열이 나뉘어요.');
     }
 
     function importCreCafe() {
@@ -9469,7 +9625,8 @@
       downloadSheet(rows.map(c => {
         const m = creM(c, ym) || {};
         return {
-          '이름': c.name || '', '유형': c.type || '', '채널명': c.acct || '', '연락처': c.phone || '',
+          '브랜드': c.brand || '온살', '이름': c.name || '', '유형': c.type || '', '채널명': c.acct || '', '연락처': c.phone || '',
+          '우편번호': creShip(c, ym).zip, '주소': creShip(c, ym).addr,
           '업로드일': m.date || '', '미션1': m.m1 || '', '미션2': m.m2 || '',
           '상위노출': Number(m.top) || 0, '키워드': m.kw || '',
           '지급액': creSubmitted(m) ? creAmount(m, ym) : 0,
