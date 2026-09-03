@@ -1637,6 +1637,39 @@
 
 
     <!-- 업로드 일자 & 링크 표 -->
+    <!-- ==================== 앰버서더 월별 활동 현황판 ==================== -->
+    <section class="bg-white p-5 rounded-2xl border border-violet-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-violet-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-calendar-check text-violet-600"></i> 월별 활동 현황판
+            <span id="ambGridCount" class="text-xs font-bold px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">0명</span>
+          </h2>
+          <p class="text-xs text-slate-500">누가 어느 달에 업로드했는지 한눈에 봅니다. 이름을 누르면 채널로, 제품 배지를 누르면 게시물로 이동해요.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex p-1 bg-violet-50 rounded-xl border border-violet-100 text-xs font-bold">
+            <button onclick="setAmbGridBrand('전체')" id="agb-전체" class="px-3 py-1.5 rounded-lg bg-white text-violet-700 shadow-xs">전체</button>
+            <button onclick="setAmbGridBrand('온살')" id="agb-온살" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">온살</button>
+            <button onclick="setAmbGridBrand('루메아카이브')" id="agb-루메아카이브" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">루메아카이브</button>
+          </div>
+          <button onclick="exportAmbGrid()" class="px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-file-arrow-down"></i> 다운로드
+          </button>
+        </div>
+      </div>
+      <div id="ambGridSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-violet-50/60 text-slate-600 font-semibold border-y border-violet-100">
+            <tr id="ambGridHead"></tr>
+          </thead>
+          <tbody id="ambGridBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+      <p class="text-[11px] text-slate-400">2026년 8월부터 집계합니다. 업로드 기록에 <b>날짜가 없는 건</b>은 어느 달에도 잡히지 않으니, 인증 취합 시 날짜를 꼭 채워 주세요.</p>
+    </section>
+
     <section class="bg-white p-5 rounded-2xl border border-indigo-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-indigo-100 pb-3">
         <div>
@@ -6134,7 +6167,131 @@
       }).join('');
     }
 
+    /* ==================== 앰버서더 월별 활동 현황판 ==================== */
+    const AMB_GRID_START = '2026-08';
+    let ambGridBrand = '전체';
+
+    function ambGridMonths() {
+      const out = [];
+      const [sy, sm] = AMB_GRID_START.split('-').map(Number);
+      const now = new Date();
+      let y = sy, m = sm;
+      while (y < now.getFullYear() || (y === now.getFullYear() && m <= now.getMonth() + 1)) {
+        out.push(y + '-' + String(m).padStart(2, '0'));
+        m++; if (m > 12) { m = 1; y++; }
+      }
+      return out;
+    }
+
+    function setAmbGridBrand(b) {
+      ambGridBrand = b;
+      ['전체', '온살', '루메아카이브'].forEach(x => {
+        const el = document.getElementById('agb-' + x);
+        if (el) el.className = (x === b)
+          ? 'px-3 py-1.5 rounded-lg bg-white text-violet-700 shadow-xs'
+          : 'px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800';
+      });
+      renderAmbGrid();
+    }
+
+    function ambGridRows() {
+      const months = ambGridMonths();
+      const list = pplList.filter(p => (isFreeAmb(p) || isAmbPaid(p))
+        && (ambGridBrand === '전체' || p.brand === ambGridBrand));
+      return list.map(p => {
+        const cells = {};
+        (p.uploads || []).forEach(u => {
+          const ym = String(u.date || '').slice(0, 7);
+          if (!ym || months.indexOf(ym) < 0) return;
+          (cells[ym] = cells[ym] || []).push(u);
+        });
+        const active = months.filter(m => cells[m] && cells[m].length).length;
+        let gap = 0;
+        for (let i = months.length - 1; i >= 0; i--) { if (cells[months[i]]) break; gap++; }
+        return { p, cells, active, gap };
+      }).sort((a, b) => (b.gap - a.gap) || (a.active - b.active)
+        || String(a.p.realName || '').localeCompare(String(b.p.realName || ''), 'ko'));
+    }
+
+    function renderAmbGrid() {
+      const head = document.getElementById('ambGridHead');
+      const body = document.getElementById('ambGridBody');
+      if (!head || !body) return;
+      const months = ambGridMonths();
+      const rows = ambGridRows();
+      setTxt('ambGridCount', rows.length + '명');
+
+      head.innerHTML = '<th class="py-3 px-3 whitespace-nowrap sticky left-0 bg-violet-50/60">앰버서더</th>'
+        + months.map(m => '<th class="py-3 px-3 text-center whitespace-nowrap">'
+            + Number(m.slice(5)) + '월</th>').join('')
+        + '<th class="py-3 px-3 text-center whitespace-nowrap">활동</th>';
+
+      const cur = months[months.length - 1];
+      const doneNow = rows.filter(r => r.cells[cur]).length;
+      const sum = document.getElementById('ambGridSummary');
+      if (sum) {
+        const card = (label, val, sub, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
+          + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
+          + '<div class="text-2xl font-black text-' + color + '-600 mt-0.5">' + val + '</div>'
+          + '<div class="text-[10px] text-slate-400 font-semibold">' + sub + '</div></div>';
+        sum.innerHTML = card('전체 앰버서더', rows.length + '명', ambGridBrand, 'slate')
+          + card('이번 달 업로드', doneNow + '명', Number(cur.slice(5)) + '월 기준', 'emerald')
+          + card('이번 달 미제출', (rows.length - doneNow) + '명', Number(cur.slice(5)) + '월 기준', 'rose')
+          + card('2개월 이상 미활동', rows.filter(r => r.gap >= 2).length + '명', '표 상단에 표시', 'amber');
+      }
+
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="' + (months.length + 2) + '" class="py-10 text-center text-slate-400">해당하는 앰버서더가 없습니다.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = rows.map(r => {
+        const p = r.p;
+        const nameCell = p.channelUrl
+          ? '<a href="' + tEsc(p.channelUrl) + '" target="_blank" rel="noopener" class="font-bold text-slate-900 hover:text-violet-700 hover:underline">' + tEsc(p.realName || '무명') + '</a>'
+          : '<span class="font-bold text-slate-900">' + tEsc(p.realName || '무명') + '</span>';
+        const sub = '<div class="text-[10px] text-slate-400">' + tEsc(p.influencer || '') + '</div>';
+        const warn = r.gap >= 2 ? ' <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 whitespace-nowrap">' + r.gap + '개월 미활동</span>' : '';
+
+        const cells = ambGridMonths().map(m => {
+          const ups = r.cells[m];
+          if (!ups) return '<td class="py-2.5 px-3 text-center text-slate-300">—</td>';
+          const prod = prodNamesOf(p).join(', ') || '제품 미지정';
+          const short = prod.length > 14 ? prod.slice(0, 13) + '…' : prod;
+          const inner = ups.map(u => u.url
+            ? '<a href="' + tEsc(u.url) + '" target="_blank" rel="noopener" title="' + tEsc(prod) + '" class="block text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 hover:bg-emerald-200 truncate max-w-[130px] mx-auto">' + tEsc(short) + '</a>'
+            : '<span class="block text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 truncate max-w-[130px] mx-auto">' + tEsc(short) + '</span>').join('');
+          return '<td class="py-2.5 px-3 text-center"><div class="text-emerald-600 font-bold leading-none mb-1">✓</div>' + inner + '</td>';
+        }).join('');
+
+        return '<tr class="hover:bg-violet-50/30 transition' + (r.gap >= 2 ? ' bg-amber-50/30' : '') + '">'
+          + '<td class="py-2.5 px-3 align-middle whitespace-nowrap sticky left-0 bg-white">' + nameCell + warn + sub + '</td>'
+          + cells
+          + '<td class="py-2.5 px-3 text-center font-bold text-slate-700">' + r.active + '회</td>'
+          + '</tr>';
+      }).join('');
+    }
+
+    function exportAmbGrid() {
+      const months = ambGridMonths();
+      const rows = ambGridRows();
+      if (!rows.length) { alert('내보낼 내용이 없습니다.'); return; }
+      downloadSheet(rows.map(r => {
+        const o = { '앰버서더': r.p.realName || '', '계정': r.p.influencer || '', '브랜드': r.p.brand || '' };
+        months.forEach(m => {
+          const ups = r.cells[m];
+          o[Number(m.slice(5)) + '월'] = ups
+            ? (prodNamesOf(r.p).join(', ') || '업로드') + ' / ' + ups.map(u => u.url || '').filter(Boolean).join(' ')
+            : '';
+        });
+        o['활동 횟수'] = r.active;
+        o['연속 미활동(개월)'] = r.gap;
+        return o;
+      }), '앰버서더_월별활동');
+    }
+
     function renderUploadTables() {
+      renderAmbGrid();
       renderUploadLinkTable('pplUploadBody', isPurePpl);
       renderUploadLinkTable('ambUploadBody', p => isFreeAmb(p) || isAmbPaid(p));
       renderUploadLinkTable('creatorUploadBody', isCreatorType);
