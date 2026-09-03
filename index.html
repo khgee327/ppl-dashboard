@@ -1915,6 +1915,86 @@
     </section>
 
 
+    <!-- ==================== 크리에이터 명단 · 미션 현황 ==================== -->
+    <section class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-emerald-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-user-group text-emerald-600"></i> 크리에이터 명단 · 미션 현황
+            <span id="creCount" class="text-xs font-bold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">0명</span>
+          </h2>
+          <p class="text-xs text-slate-500">이 명단은 <b>크리에이터 페이지 전용</b>입니다. PPL · 앰버서더 목록에는 나타나지 않아요.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="creMonth" onchange="renderCre()" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white font-bold"></select>
+          <div class="flex p-1 bg-emerald-50 rounded-xl border border-emerald-100 text-xs font-bold">
+            <button onclick="setCreFilter('전체')" id="cref-전체" class="px-3 py-1.5 rounded-lg bg-white text-emerald-700 shadow-xs">전체</button>
+            <button onclick="setCreFilter('제출')" id="cref-제출" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">제출</button>
+            <button onclick="setCreFilter('미제출')" id="cref-미제출" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">미제출</button>
+            <button onclick="setCreFilter('미지급')" id="cref-미지급" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">미지급</button>
+          </div>
+          <button onclick="openCreImport()" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-file-import"></i> 가져오기</button>
+          <button onclick="exportCre()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-file-arrow-down"></i> 다운로드</button>
+        </div>
+      </div>
+
+      <div id="creSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+
+      <div class="flex flex-wrap items-center gap-3 bg-emerald-50/40 border border-emerald-100 rounded-xl px-3 py-2">
+        <span class="text-[11px] font-bold text-slate-700">기본 단가</span>
+        <input id="creRateBase" type="number" onchange="setCreRate()" class="w-24 px-2 py-1 text-xs border border-slate-200 rounded-lg">
+        <span class="text-[11px] font-bold text-slate-700">상위노출 보너스</span>
+        <input id="creRateBonus" type="number" onchange="setCreRate()" class="w-24 px-2 py-1 text-xs border border-slate-200 rounded-lg">
+        <span class="text-[11px] text-slate-400">지급액 = 기본 + 상위노출 건수 x 보너스</span>
+        <button onclick="copyUnpaidPhones()" class="ml-auto px-3 py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold rounded-lg"><i class="fa-regular fa-copy"></i> 미지급자 연락처 복사</button>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-emerald-50/60 text-slate-600 font-semibold border-y border-emerald-100">
+            <tr>
+              <th class="py-3 px-3 whitespace-nowrap">이름</th>
+              <th class="py-3 px-3 whitespace-nowrap">유형</th>
+              <th class="py-3 px-3">채널명</th>
+              <th class="py-3 px-3 whitespace-nowrap">연락처</th>
+              <th class="py-3 px-3 whitespace-nowrap">업로드일</th>
+              <th class="py-3 px-3 text-center">미션 1</th>
+              <th class="py-3 px-3 text-center">미션 2</th>
+              <th class="py-3 px-3 text-center whitespace-nowrap">상위노출</th>
+              <th class="py-3 px-3 text-right whitespace-nowrap">지급액</th>
+              <th class="py-3 px-3 text-center whitespace-nowrap">지급</th>
+            </tr>
+          </thead>
+          <tbody id="creBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 크리에이터 가져오기 모달 -->
+    <div id="creImportModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs items-center justify-center z-50 hidden p-4">
+      <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
+        <div class="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between z-10">
+          <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-file-import text-slate-700"></i> 크리에이터 데이터 가져오기</h3>
+          <button onclick="closeCreImport()" class="text-slate-400 hover:text-slate-700 text-xl leading-none px-2">&times;</button>
+        </div>
+        <div class="p-6 space-y-5">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">① 크리에이터 명단 <span class="font-normal text-slate-400">(첫 줄 제목 행 · 탭 구분)</span></label>
+            <p class="text-[11px] text-slate-500 mb-1">열 순서: <b>이름 · 연락처 · 유형 · 계정 · URL · 팔로워 · 상태</b></p>
+            <textarea id="creRosterPaste" rows="4" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-mono"></textarea>
+            <button onclick="importCreRoster()" class="mt-2 px-3.5 py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl">명단 불러오기</button>
+          </div>
+          <div class="border-t border-slate-100 pt-4">
+            <label class="block text-xs font-bold text-slate-700 mb-1">② 월별 미션 인증 <span class="font-normal text-slate-400">(선택한 달에 반영)</span></label>
+            <p class="text-[11px] text-slate-500 mb-1">열 순서: <b>이름 · 계정 · 업로드일 · 미션1 · 미션2 · 상위노출수 · 키워드</b></p>
+            <textarea id="creMissionPaste" rows="4" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl font-mono"></textarea>
+            <button onclick="importCreMission()" class="mt-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl">미션 인증 불러오기</button>
+          </div>
+          <p class="text-[11px] text-slate-400">이름 + 계정으로 매칭합니다. 명단에 없는 사람은 건너뛰고 결과에 알려드려요.</p>
+        </div>
+      </div>
+    </div>
+
     <!-- 업로드 인증 폼 자동 취합 -->
     <section class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-emerald-100 pb-3">
@@ -4272,6 +4352,7 @@
         onsal_monthlyNotes: monthlyNotes,
         onsal_contactList: contactList,
         onsal_creatorMissions: creatorMissions,
+        onsal_creRoster: creRoster,
         onsal_microPackages: microPackages,
         onsal_budgets: budgets,
         onsal_launchBudgets: launchBudgets,
@@ -4386,6 +4467,7 @@
           monthlyNotes = safeMerge(d.onsal_monthlyNotes, monthlyNotes, '월간 기록', pullWarn);
           contactList = safeMerge(d.onsal_contactList, contactList, '컨택 리스트', pullWarn);
           creatorMissions = safeMerge(d.onsal_creatorMissions, creatorMissions, '크리에이터 미션', pullWarn);
+          creRoster = safeMerge(d.onsal_creRoster, creRoster, '크리에이터 명단', pullWarn);
           microPackages = safeMerge(d.onsal_microPackages, microPackages, '마이크로 패키지', pullWarn);
           budgets = safeMerge(d.onsal_budgets, budgets, '월 예산', pullWarn);
           launchBudgets = safeMerge(d.onsal_launchBudgets, launchBudgets, '출시 예산', pullWarn);
@@ -4405,6 +4487,7 @@
           localStorage.setItem('onsal_monthlyNotes', JSON.stringify(monthlyNotes));
           localStorage.setItem('onsal_contactList', JSON.stringify(contactList));
           localStorage.setItem('onsal_creatorMissions', JSON.stringify(creatorMissions));
+          localStorage.setItem('onsal_creRoster', JSON.stringify(creRoster));
           localStorage.setItem('onsal_microPackages', JSON.stringify(microPackages));
           localStorage.setItem('onsal_budgets', JSON.stringify(budgets));
           localStorage.setItem('onsal_launchBudgets', JSON.stringify(launchBudgets));
@@ -4711,6 +4794,8 @@
 
     // 크리에이터 월간 미션 설정 [{ month:'2026-08', m1, m2, baseFee, bonusFee, keywordGoal, rankLimit }]
     let creatorMissions = JSON.parse(localStorage.getItem('onsal_creatorMissions')) || [];
+    let creRoster = JSON.parse(localStorage.getItem('onsal_creRoster')) || [];
+    let creRate = Object.assign({ base: 20000, bonus: 10000 }, JSON.parse(localStorage.getItem('onsal_creRate') || '{}'));
 
     // 마이크로 패키지 [{ id, brand, name, month, headcount, amount, memo, memberIds:[] }]
     let microPackages = JSON.parse(localStorage.getItem('onsal_microPackages')) || [];
@@ -5333,6 +5418,8 @@
       localStorage.setItem('onsal_monthlyNotes', JSON.stringify(monthlyNotes));
       localStorage.setItem('onsal_contactList', JSON.stringify(contactList));
       localStorage.setItem('onsal_creatorMissions', JSON.stringify(creatorMissions));
+      localStorage.setItem('onsal_creRoster', JSON.stringify(creRoster));
+      localStorage.setItem('onsal_creRate', JSON.stringify(creRate));
       localStorage.setItem('onsal_microPackages', JSON.stringify(microPackages));
       localStorage.setItem('onsal_budgets', JSON.stringify(budgets));
       localStorage.setItem('onsal_launchBudgets', JSON.stringify(launchBudgets));
@@ -5454,6 +5541,7 @@
       if (pageId === 'perf') renderPerf();
       if (pageId === 'report') { renderRptPage(); rptInitResizers(); }
       if (pageId === 'contact') { updateContactProductList(); renderContactList(); }
+      if (pageId === 'sup') { renderCre(); }
       if (pageId === 'micro') { renderMicroTable(); renderPackages(); renderMicroCostSummary(); renderUploadTables(); }
       if (pageId === 'etc') { renderEtcTable(); renderUploadTables(); }
       if (pageId === 'sup') { renderSupTable(); renderRankTable(); renderCreatorMissions(); renderUploadTables(); }
@@ -9038,6 +9126,230 @@
       fr.readAsArrayBuffer(f);
       input.value = '';
     }
+    /* ==================== 크리에이터 명단 · 미션 현황 ==================== */
+    let creFilter = '전체';
+    let creMonthSel = '';
+
+    function creNorm(v) { return String(v || '').toLowerCase().replace(/^@/, '').replace(/[\s._\-]/g, ''); }
+    function crePhone(v) {
+      const d = String(v || '').replace(/\D/g, '');
+      const t = (d.length === 10 && d[0] === '1') ? '0' + d : d;
+      return t.length === 11 ? t.slice(0, 3) + '-' + t.slice(3, 7) + '-' + t.slice(7) : t;
+    }
+    function creMonths() {
+      const set = new Set();
+      creRoster.forEach(c => Object.keys(c.months || {}).forEach(m => set.add(m)));
+      set.add(ymNow());
+      return Array.from(set).sort().reverse();
+    }
+    function creCurMonth() {
+      const ms = creMonths();
+      if (!creMonthSel || ms.indexOf(creMonthSel) < 0) creMonthSel = ms[0];
+      return creMonthSel;
+    }
+    function creM(c, ym) { return ((c.months || {})[ym]) || null; }
+    function creAmount(m) {
+      if (!m) return 0;
+      if (m.paid && Number(m.paidAmount) > 0) return Number(m.paidAmount);
+      return (Number(creRate.base) || 0) + (Number(m.top) || 0) * (Number(creRate.bonus) || 0);
+    }
+    function creSubmitted(m) { return !!(m && (m.m1 || m.m2)); }
+
+    function setCreFilter(f) {
+      creFilter = f;
+      ['전체', '제출', '미제출', '미지급'].forEach(x => {
+        const el = document.getElementById('cref-' + x);
+        if (el) el.className = (x === f)
+          ? 'px-3 py-1.5 rounded-lg bg-white text-emerald-700 shadow-xs'
+          : 'px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800';
+      });
+      renderCre();
+    }
+    function setCreRate() {
+      creRate.base = Number(document.getElementById('creRateBase').value) || 0;
+      creRate.bonus = Number(document.getElementById('creRateBonus').value) || 0;
+      saveAll(); renderCre();
+    }
+    function toggleCrePaid(id, on) {
+      const c = creRoster.find(x => x.id === id); if (!c) return;
+      const ym = creCurMonth();
+      c.months = c.months || {}; c.months[ym] = c.months[ym] || {};
+      const m = c.months[ym];
+      if (on) { m.paidAmount = creAmount(m); m.paid = true; m.paidAt = todayStr(); }
+      else { m.paid = false; m.paidAt = ''; delete m.paidAmount; }
+      saveAll(); renderCre();
+    }
+    function setCreTop(id, v) {
+      const c = creRoster.find(x => x.id === id); if (!c) return;
+      const ym = creCurMonth();
+      c.months = c.months || {}; c.months[ym] = c.months[ym] || {};
+      c.months[ym].top = Number(v) || 0;
+      saveAll(); renderCre();
+    }
+
+    function creRows() {
+      const ym = creCurMonth();
+      let list = creRoster.filter(c => c.active !== false);
+      if (creFilter === '제출') list = list.filter(c => creSubmitted(creM(c, ym)));
+      else if (creFilter === '미제출') list = list.filter(c => !creSubmitted(creM(c, ym)));
+      else if (creFilter === '미지급') list = list.filter(c => { const m = creM(c, ym); return creSubmitted(m) && !m.paid; });
+      return list.sort((a, b) => {
+        const ma = creM(a, ym), mb = creM(b, ym);
+        const sa = creSubmitted(ma) ? (ma.paid ? 2 : 1) : 0;
+        const sb = creSubmitted(mb) ? (mb.paid ? 2 : 1) : 0;
+        return sa - sb || String(a.name || '').localeCompare(String(b.name || ''), 'ko');
+      });
+    }
+
+    function renderCre() {
+      const body = document.getElementById('creBody');
+      if (!body) return;
+      const ym = creCurMonth();
+
+      const sel = document.getElementById('creMonth');
+      if (sel) sel.innerHTML = creMonths().map(m => '<option value="' + m + '"' + (m === ym ? ' selected' : '') + '>'
+        + m.slice(0, 4) + '년 ' + Number(m.slice(5)) + '월</option>').join('');
+      const rb = document.getElementById('creRateBase'), rn = document.getElementById('creRateBonus');
+      if (rb) rb.value = creRate.base; if (rn) rn.value = creRate.bonus;
+
+      const all = creRoster.filter(c => c.active !== false);
+      const sub = all.filter(c => creSubmitted(creM(c, ym)));
+      const paid = sub.filter(c => creM(c, ym).paid);
+      const due = sub.filter(c => !creM(c, ym).paid);
+      const dueAmt = due.reduce((a, c) => a + creAmount(creM(c, ym)), 0);
+      setTxt('creCount', all.length + '명');
+
+      const sum = document.getElementById('creSummary');
+      if (sum) {
+        const card = (label, val, sub2, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
+          + '<span class="text-[11px] text-slate-500 font-semibold">' + label + '</span>'
+          + '<div class="text-2xl font-black text-' + color + '-600 mt-0.5">' + val + '</div>'
+          + '<div class="text-[10px] text-slate-400 font-semibold">' + sub2 + '</div></div>';
+        sum.innerHTML = card('전체 명단', all.length + '명', '진행불가 제외', 'slate')
+          + card('이번 달 제출', sub.length + '명', '미제출 ' + (all.length - sub.length) + '명', 'emerald')
+          + card('지급 완료', paid.length + '명', '/ 제출 ' + sub.length + '명', 'sky')
+          + card('지급 예정액', dueAmt.toLocaleString() + '원', due.length + '명 미지급', 'rose');
+      }
+
+      const rows = creRows();
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="10" class="py-10 text-center text-slate-400">해당하는 크리에이터가 없습니다.<br>위 <b>가져오기</b>에서 명단을 먼저 넣어 주세요.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = rows.map(c => {
+        const m = creM(c, ym) || {};
+        const link = (u, label) => u
+          ? '<a href="' + tEsc(u) + '" target="_blank" rel="noopener" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 hover:bg-emerald-200">' + label + '</a>'
+          : '<span class="text-slate-300">—</span>';
+        const same = m.m1 && m.m2 && m.m1 === m.m2;
+        const typeColor = c.type === '릴스' ? 'bg-rose-100 text-rose-700'
+          : (c.type === '클립' ? 'bg-green-100 text-green-700' : 'bg-violet-100 text-violet-700');
+        const nameCell = c.url
+          ? '<a href="' + tEsc(c.url) + '" target="_blank" rel="noopener" class="font-bold text-slate-900 hover:text-emerald-700 hover:underline">' + tEsc(c.name || '') + '</a>'
+          : '<span class="font-bold text-slate-900">' + tEsc(c.name || '') + '</span>';
+        const amt = creAmount(m);
+
+        return '<tr class="' + (m.paid ? 'bg-sky-50/40' : (same ? 'bg-amber-50/40' : '')) + ' hover:bg-emerald-50/30 transition">'
+          + '<td class="py-2.5 px-3 whitespace-nowrap">' + nameCell
+            + (same ? ' <span class="text-[9px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-700">동일 URL</span>' : '') + '</td>'
+          + '<td class="py-2.5 px-3 whitespace-nowrap"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + typeColor + '">' + tEsc(c.type || '-') + '</span></td>'
+          + '<td class="py-2.5 px-3 text-slate-600">' + tEsc(c.acct || '') + '</td>'
+          + '<td class="py-2.5 px-3 text-slate-600 whitespace-nowrap">' + tEsc(c.phone || '') + '</td>'
+          + '<td class="py-2.5 px-3 text-slate-600 whitespace-nowrap">' + tEsc(m.date || '') + '</td>'
+          + '<td class="py-2.5 px-3 text-center">' + link(m.m1, '미션1') + '</td>'
+          + '<td class="py-2.5 px-3 text-center">' + link(m.m2, '미션2') + '</td>'
+          + '<td class="py-2.5 px-3 text-center"><input type="number" min="0" value="' + (Number(m.top) || 0) + '" onchange="setCreTop(' + c.id + ', this.value)" class="w-14 px-1 py-0.5 text-[11px] text-center border border-slate-200 rounded-lg"></td>'
+          + '<td class="py-2.5 px-3 text-right font-bold ' + (creSubmitted(m) ? 'text-slate-800' : 'text-slate-300') + ' whitespace-nowrap">' + (creSubmitted(m) ? amt.toLocaleString() + '원' : '-') + '</td>'
+          + '<td class="py-2.5 px-3 text-center">'
+            + (creSubmitted(m)
+                ? '<input type="checkbox" ' + (m.paid ? 'checked' : '') + ' onchange="toggleCrePaid(' + c.id + ', this.checked)" class="accent-sky-600 w-5 h-5 cursor-pointer">'
+                  + (m.paid && m.paidAt ? '<div class="text-[9px] text-slate-400 mt-0.5">' + tEsc(m.paidAt.slice(5)) + '</div>' : '')
+                : '<span class="text-slate-300">—</span>')
+          + '</td></tr>';
+      }).join('');
+    }
+
+    function copyUnpaidPhones() {
+      const ym = creCurMonth();
+      const due = creRoster.filter(c => c.active !== false)
+        .filter(c => { const m = creM(c, ym); return creSubmitted(m) && !m.paid; });
+      if (!due.length) { alert('미지급자가 없습니다.'); return; }
+      const txt = due.map(c => c.name + '\t' + c.phone + '\t' + creAmount(creM(c, ym))).join('\n');
+      ambmCopyText(txt, due.length + '명의 이름 · 연락처 · 지급액을 복사했습니다.');
+    }
+
+    /* ----- 가져오기 ----- */
+    function openCreImport() { openModalEl('creImportModal'); }
+    function closeCreImport() { closeModalEl('creImportModal'); }
+    function creSplit(txt) {
+      const lines = String(txt || '').trim().split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) return null;
+      const sep = lines[0].indexOf('\t') >= 0 ? '\t' : ',';
+      return lines.slice(1).map(l => l.split(sep).map(x => x.trim()));
+    }
+    function importCreRoster() {
+      const rows = creSplit(document.getElementById('creRosterPaste').value);
+      if (!rows) { alert('붙여넣은 내용이 없거나 제목 행이 빠졌습니다.'); return; }
+      let add = 0, upd = 0;
+      rows.forEach(r => {
+        const [name, phone, type, acct, url, followers, status] = r;
+        if (!name) return;
+        const key = creNorm(acct) || creNorm(name);
+        let c = creRoster.find(x => (creNorm(x.acct) || creNorm(x.name)) === key);
+        const rec = {
+          name: name, phone: crePhone(phone), type: type || '', acct: acct || '',
+          url: url || '', followers: followers || '',
+          active: !/불가|제외|취소/.test(String(status || '') + name)
+        };
+        if (c) { Object.assign(c, rec); upd++; }
+        else { creRoster.push(Object.assign({ id: Date.now() + Math.floor(Math.random() * 100000), months: {} }, rec)); add++; }
+      });
+      saveAll(); renderCre();
+      alert('명단 반영 완료\n신규 ' + add + '명 / 갱신 ' + upd + '명 (총 ' + creRoster.length + '명)');
+    }
+    function importCreMission() {
+      if (!creRoster.length) { alert('명단을 먼저 불러와 주세요.'); return; }
+      const rows = creSplit(document.getElementById('creMissionPaste').value);
+      if (!rows) { alert('붙여넣은 내용이 없거나 제목 행이 빠졌습니다.'); return; }
+      const ym = creCurMonth();
+      let ok = 0; const miss = [];
+      rows.forEach(r => {
+        const [name, acct, date, m1, m2, top, kw] = r;
+        if (!name && !acct) return;
+        const a = creNorm(acct), n = creNorm(name);
+        let c = creRoster.find(x => a && creNorm(x.acct) === a);
+        if (!c) c = creRoster.find(x => n && creNorm(x.name) === n);
+        if (!c) { miss.push(name + ' (' + acct + ')'); return; }
+        c.months = c.months || {};
+        const prev = c.months[ym] || {};
+        c.months[ym] = Object.assign({}, prev, {
+          date: date || prev.date || '', m1: m1 || '', m2: m2 || '',
+          top: Number(top) || 0, kw: kw || ''
+        });
+        ok++;
+      });
+      saveAll(); renderCre(); closeCreImport();
+      alert(ym + ' 미션 반영 완료\n성공 ' + ok + '명'
+        + (miss.length ? '\n\n명단에 없어 건너뜀 (' + miss.length + '명):\n' + miss.slice(0, 15).join('\n') : ''));
+    }
+
+    function exportCre() {
+      const ym = creCurMonth();
+      const rows = creRows();
+      if (!rows.length) { alert('내보낼 내용이 없습니다.'); return; }
+      downloadSheet(rows.map(c => {
+        const m = creM(c, ym) || {};
+        return {
+          '이름': c.name || '', '유형': c.type || '', '채널명': c.acct || '', '연락처': c.phone || '',
+          '업로드일': m.date || '', '미션1': m.m1 || '', '미션2': m.m2 || '',
+          '상위노출': Number(m.top) || 0, '키워드': m.kw || '',
+          '지급액': creSubmitted(m) ? creAmount(m) : 0,
+          '지급여부': m.paid ? 'O' : '', '지급일': m.paidAt || ''
+        };
+      }), '크리에이터_' + ym);
+    }
+
     function parseFormPaste() {
       const txt = document.getElementById('formPasteArea').value;
       if (!txt.trim()) { alert('붙여넣은 내용이 없습니다.'); return; }
@@ -10440,6 +10752,7 @@
       ['onsal_monthlyNotes', 'monthlyNotes'],  // 월간 기록
       ['onsal_contactList', 'contactList'],  // 컨택 리스트
       ['onsal_creatorMissions', 'creatorMissions'],  // 크리에이터 미션
+      ['onsal_creRoster', 'creRoster'],  // 크리에이터 명단
       ['onsal_microPackages', 'microPackages'],  // 마이크로 패키지
       ['onsal_budgets', 'budgets'],  // 월 예산
       ['onsal_launchBudgets', 'launchBudgets'],  // 출시 예산
