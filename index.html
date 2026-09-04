@@ -1743,10 +1743,11 @@
   <main data-page="1" id="page-sup" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 hidden">
 
     <div class="bg-cyan-50/60 border border-cyan-100 rounded-2xl px-5 py-3.5 text-xs text-cyan-900">
-      <b>크리에이터 전용 페이지</b> · PPL 등록 시 <b>크리에이터</b>를 체크하면 이 페이지로 분리됩니다. 아래에서 <b>월간 미션 · 활동비</b>와 <b>상위노출 키워드 · 순위 · 캡쳐</b>를 함께 관리해요.
+      <b>크리에이터 전용 페이지</b> · 아래 <b>크리에이터 명단 · 미션 현황</b>에서 월별 미션 · 활동비 · 상위노출 · 카페 가입 · 배송지를 함께 관리합니다.
     </div>
 
-    <section class="bg-white p-5 rounded-2xl border border-cyan-200 shadow-sm space-y-4">
+    <!-- [숨김] 구 크리에이터 섹션 — 신규 "크리에이터 명단 · 미션 현황"으로 대체
+<section class="bg-white p-5 rounded-2xl border border-cyan-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-cyan-100 pb-3">
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -1806,9 +1807,11 @@
         </table>
       </div>
     </section>
+-->
 
     <!-- 월간 미션 · 활동비 관리 -->
-    <section class="bg-white p-5 rounded-2xl border border-cyan-200 shadow-sm space-y-4">
+    <!-- [숨김] 구 크리에이터 섹션 — 신규 "크리에이터 명단 · 미션 현황"으로 대체
+<section class="bg-white p-5 rounded-2xl border border-cyan-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-cyan-100 pb-3">
         <div class="flex items-center gap-3">
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -1828,7 +1831,7 @@
         </div>
       </div>
 
-      <!-- 이번 달 미션 정의 -->
+      <!- - 이번 달 미션 정의 - ->
       <div class="bg-cyan-50/50 p-4 rounded-2xl border border-cyan-200 space-y-3">
         <h3 class="text-xs font-black text-cyan-900 flex items-center gap-1.5"><i class="fa-solid fa-list-check"></i> 이번 달 미션 내용</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1886,7 +1889,7 @@
         </table>
       </div>
 
-      <!-- 추가미션 성공자 -->
+      <!- - 추가미션 성공자 - ->
       <div class="bg-amber-50/50 p-4 rounded-2xl border border-amber-200 space-y-2.5">
         <h3 class="text-xs font-black text-amber-900 flex items-center gap-1.5">
           <i class="fa-solid fa-star"></i> 이번 달 추가미션 성공자
@@ -1895,7 +1898,7 @@
         <div id="bonusWinners" class="space-y-2"></div>
       </div>
 
-      <!-- 월별 이력 -->
+      <!- - 월별 이력 - ->
       <div>
         <h3 class="text-xs font-black text-slate-700 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-clock-rotate-left"></i> 최근 6개월 추가미션 성공 이력</h3>
         <div class="overflow-x-auto custom-scrollbar">
@@ -1913,6 +1916,7 @@
         </div>
       </div>
     </section>
+-->
 
 
     <!-- ==================== 크리에이터 명단 · 미션 현황 ==================== -->
@@ -9361,11 +9365,11 @@
       else if (creFilter === '미지급') list = list.filter(c => { const m = creM(c, ym); return creSubmitted(m) && !m.paid; });
       else if (creFilter === '이탈·주의') list = list.filter(c => ['out', 'end', 'watch'].indexOf(c.state) >= 0 || creMissStreak(c) >= 2);
       else if (creFilter === '카페 미가입') list = list.filter(c => c.cafe !== 'y');
+      /* 미지급 제출자 → 지급완료 → 미제출 순. 같은 그룹은 가나다순 */
       return list.sort((a, b) => {
         const ma = creM(a, ym), mb = creM(b, ym);
-        const sa = creSubmitted(ma) ? (ma.paid ? 2 : 1) : 0;
-        const sb = creSubmitted(mb) ? (mb.paid ? 2 : 1) : 0;
-        return sa - sb || String(a.name || '').localeCompare(String(b.name || ''), 'ko');
+        const rank = m => creSubmitted(m) ? (m.paid ? 1 : 0) : 2;
+        return rank(ma) - rank(mb) || String(a.name || '').localeCompare(String(b.name || ''), 'ko');
       });
     }
 
