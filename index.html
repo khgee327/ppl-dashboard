@@ -1953,6 +1953,32 @@
 
       <div id="creRateBar" class="flex flex-wrap items-center gap-3 bg-emerald-50/40 border border-emerald-100 rounded-xl px-3 py-2"></div>
 
+      <div class="bg-slate-50/60 border border-slate-200 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs font-black text-slate-700 flex items-center gap-1.5"><i class="fa-solid fa-coins text-amber-500"></i> 월별 정산 요약</h3>
+          <button onclick="exportCreSettle()" class="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-bold rounded-lg"><i class="fa-solid fa-file-arrow-down"></i> 다운로드</button>
+        </div>
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-white text-slate-500 font-semibold border-y border-slate-200">
+              <tr>
+                <th class="py-2 px-3 whitespace-nowrap">월</th>
+                <th class="py-2 px-3 text-center whitespace-nowrap">제출</th>
+                <th class="py-2 px-3 text-center whitespace-nowrap">미션 1</th>
+                <th class="py-2 px-3 text-center whitespace-nowrap">미션 2</th>
+                <th class="py-2 px-3 text-center whitespace-nowrap">상위노출</th>
+                <th class="py-2 px-3 text-right whitespace-nowrap">활동비</th>
+                <th class="py-2 px-3 text-right whitespace-nowrap">추가활동비</th>
+                <th class="py-2 px-3 text-right whitespace-nowrap">총 지급액</th>
+                <th class="py-2 px-3 text-right whitespace-nowrap">지급 완료</th>
+                <th class="py-2 px-3 text-right whitespace-nowrap">미지급</th>
+              </tr>
+            </thead>
+            <tbody id="creSettleBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left text-xs">
           <thead class="bg-emerald-50/60 text-slate-600 font-semibold border-y border-emerald-100">
@@ -9442,6 +9468,7 @@
           + (noCafe ? card('카페 미가입', noCafe + '명', '미확인 포함 · 진행 대상 제외', 'amber') : '');
       }
 
+      renderCreSettle();
       const rows = creRows();
       if (!rows.length) {
         body.innerHTML = '<tr><td colspan="16" class="py-10 text-center text-slate-400">해당하는 크리에이터가 없습니다.<br>위 <b>가져오기</b>에서 명단을 먼저 넣어 주세요.</td></tr>';
@@ -9515,6 +9542,61 @@
           + '<td class="py-2.5 px-3 text-center"><button onclick="openCreEdit(' + c.id + ')" title="수정" class="text-slate-400 hover:text-emerald-600 p-1"><i class="fa-solid fa-pen-to-square"></i></button></td>'
           + '</tr>';
       }).join('');
+    }
+
+    /* ==================== 월별 정산 요약 ==================== */
+    function creSettleRows() {
+      return creMonths().slice().sort().map(ym => {
+        const sub = creRoster.filter(c => creSubmitted(creM(c, ym)));
+        let base = 0, bonus = 0, paidB = 0, paidN = 0;
+        let m1 = 0, m2 = 0, top = 0;
+        sub.forEach(c => {
+          const m = c.months[ym];
+          if (m.m1) m1++;
+          if (m.m2) m2++;
+          const b = creBase(m, ym), n = creBonus(m);
+          base += b; bonus += n;
+          if (creIsTop(m)) top++;
+          if (m.paidBase) paidB += b;
+          if (m.paidBonus) paidN += n;
+        });
+        return {
+          월: ym, 제출: sub.length, 미션1: m1, 미션2: m2, 상위노출: top,
+          활동비: base, 추가활동비: bonus, 총액: base + bonus,
+          지급완료: paidB + paidN, 미지급: (base + bonus) - (paidB + paidN)
+        };
+      }).filter(r => r.제출 > 0);
+    }
+
+    function renderCreSettle() {
+      const body = document.getElementById('creSettleBody');
+      if (!body) return;
+      const rows = creSettleRows();
+      if (!rows.length) { body.innerHTML = '<tr><td colspan="10" class="py-6 text-center text-slate-400">집계할 내역이 없습니다.</td></tr>'; return; }
+      const won = v => v.toLocaleString() + '원';
+      const cur = creCurMonth();
+      body.innerHTML = rows.map(r => '<tr class="' + (r.월 === cur ? 'bg-emerald-50/50 font-bold' : '') + '">'
+        + '<td class="py-2 px-3 whitespace-nowrap">' + r.월.slice(0,4) + '년 ' + Number(r.월.slice(5)) + '월</td>'
+        + '<td class="py-2 px-3 text-center">' + r.제출 + '명</td>'
+        + '<td class="py-2 px-3 text-center">' + r.미션1 + '명</td>'
+        + '<td class="py-2 px-3 text-center">' + r.미션2 + '명</td>'
+        + '<td class="py-2 px-3 text-center ' + (r.상위노출 ? 'text-amber-600 font-bold' : 'text-slate-300') + '">' + (r.상위노출 || '-') + (r.상위노출 ? '명' : '') + '</td>'
+        + '<td class="py-2 px-3 text-right">' + won(r.활동비) + '</td>'
+        + '<td class="py-2 px-3 text-right ' + (r.추가활동비 ? 'text-amber-700' : 'text-slate-300') + '">' + (r.추가활동비 ? won(r.추가활동비) : '-') + '</td>'
+        + '<td class="py-2 px-3 text-right font-black text-slate-900">' + won(r.총액) + '</td>'
+        + '<td class="py-2 px-3 text-right text-sky-700">' + won(r.지급완료) + '</td>'
+        + '<td class="py-2 px-3 text-right ' + (r.미지급 ? 'text-rose-600 font-bold' : 'text-slate-300') + '">' + (r.미지급 ? won(r.미지급) : '-') + '</td>'
+        + '</tr>').join('')
+        + (rows.length > 1 ? '<tr class="bg-slate-100 font-black"><td class="py-2 px-3">누적</td>'
+            + ['제출','미션1','미션2','상위노출'].map(k => '<td class="py-2 px-3 text-center">' + rows.reduce((a,r)=>a+r[k],0) + '명</td>').join('')
+            + ['활동비','추가활동비','총액','지급완료','미지급'].map(k => '<td class="py-2 px-3 text-right">' + won(rows.reduce((a,r)=>a+r[k],0)) + '</td>').join('')
+            + '</tr>' : '');
+    }
+
+    function exportCreSettle() {
+      const rows = creSettleRows();
+      if (!rows.length) { alert('집계할 내역이 없습니다.'); return; }
+      downloadSheet(rows, '크리에이터_월별정산');
     }
 
     function copyUnpaidPhones() {
