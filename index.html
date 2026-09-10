@@ -1969,8 +1969,9 @@
               <th class="py-3 px-3 text-center">미션 1</th>
               <th class="py-3 px-3 text-center">미션 2</th>
               <th class="py-3 px-3 text-center whitespace-nowrap">상위노출</th>
-              <th class="py-3 px-3 text-right whitespace-nowrap">지급액</th>
-              <th class="py-3 px-3 text-center whitespace-nowrap">지급</th>
+              <th class="py-3 px-3 text-right whitespace-nowrap">합계</th>
+              <th class="py-3 px-3 text-center whitespace-nowrap">활동비</th>
+              <th class="py-3 px-3 text-center whitespace-nowrap">추가</th>
               <th class="py-3 px-3 text-center whitespace-nowrap">수정</th>
             </tr>
           </thead>
@@ -2019,6 +2020,8 @@
                 <input id="ceeM1" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></div>
               <div class="md:col-span-2"><label class="block text-[11px] font-bold text-slate-600 mb-1">미션 2 링크</label>
                 <input id="ceeM2" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl"></div>
+              <div class="md:col-span-2"><label class="block text-[11px] font-bold text-slate-600 mb-1">상위노출 게시물 링크</label>
+                <input id="ceeTopUrl" placeholder="상위노출된 게시물 URL" class="w-full px-3 py-2 text-xs border border-amber-200 rounded-xl"></div>
             </div>
           </div>
 
@@ -9287,14 +9290,16 @@
     }
     /* 9월(creRate.newFrom)부터 상위노출 보너스 폐지 → 미션1 3만 + 미션2 2만 방식 */
     function creNewRule(ym) { return String(ym || '') >= String(creRate.newFrom || '2026-09'); }
-    function creAmount(m, ym) {
-      if (!m) return 0;
-      if (m.paid && Number(m.paidAmount) > 0) return Number(m.paidAmount);
-      if (creNewRule(ym || creCurMonth())) {
+    /* 상위노출 인정 여부 — 건수 또는 메모 기준 */
+    function creIsTop(m) { return !!m && (Number(m.top) > 0 || /상위노출\s*성공/.test(m.note || '')); }
+    function creBase(m, ym) {
+      if (!creSubmitted(m)) return 0;
+      if (creNewRule(ym || creCurMonth()))
         return (m.m1 ? (Number(creRate.m1) || 0) : 0) + (m.m2 ? (Number(creRate.m2) || 0) : 0);
-      }
-      return (Number(creRate.base) || 0) + (Number(m.top) || 0) * (Number(creRate.bonus) || 0);
+      return Number(creRate.base) || 0;
     }
+    function creBonus(m) { return creIsTop(m) ? (Number(creRate.bonus) || 0) : 0; }
+    function creAmount(m, ym) { return creBase(m, ym) + creBonus(m); }
     function creSubmitted(m) { return !!(m && (m.m1 || m.m2)); }
 
     function setCreMonth(v) {
@@ -9338,14 +9343,28 @@
       }
       saveAll(); renderCre();
     }
-    function toggleCrePaid(id, on) {
+    /* kind: 'base' 활동비 · 'bonus' 상위노출 추가 */
+    function toggleCrePaid(id, kind, on) {
       const c = creRoster.find(x => x.id === id); if (!c) return;
       const ym = creCurMonth();
       c.months = c.months || {}; c.months[ym] = c.months[ym] || {};
       const m = c.months[ym];
-      if (on) { m.paidAmount = creAmount(m, ym); m.paid = true; m.paidAt = todayStr(); }
-      else { m.paid = false; m.paidAt = ''; delete m.paidAmount; }
+      if (kind === 'base') { m.paidBase = !!on; m.paidBaseAt = on ? todayStr() : ''; }
+      else { m.paidBonus = !!on; m.paidBonusAt = on ? todayStr() : ''; }
+      m.paid = !!(m.paidBase && (creIsTop(m) ? m.paidBonus : true));
       saveAll(); renderCre();
+    }
+    /* 예전 단일 paid 기록 이관 */
+    function creMigratePaid() {
+      let n = 0;
+      creRoster.forEach(c => Object.values(c.months || {}).forEach(m => {
+        if (m.paid && m.paidBase === undefined) {
+          m.paidBase = true; m.paidBaseAt = m.paidAt || '';
+          if (creIsTop(m)) { m.paidBonus = true; m.paidBonusAt = m.paidAt || ''; }
+          n++;
+        }
+      }));
+      return n;
     }
     function setCreTop(id, v) {
       const c = creRoster.find(x => x.id === id); if (!c) return;
@@ -9377,6 +9396,7 @@
       const body = document.getElementById('creBody');
       if (!body) return;
       const ym = creCurMonth();
+      if (!renderCre._mig) { renderCre._mig = true; const n = creMigratePaid(); if (n) { saveAll(); console.log('지급 기록 이관 ' + n + '건'); } }
 
       const sel = document.getElementById('creMonth');
       if (sel) sel.innerHTML = creMonths().map(m => '<option value="' + m + '"' + (m === ym ? ' selected' : '') + '>'
@@ -9398,8 +9418,8 @@
       const all = creRoster.filter(c => c.active !== false && (creBrandSel === '전체' || (c.brand || '온살') === creBrandSel));
       const live = all.filter(c => creLive(c) && c.cafe === 'y');
       const sub = all.filter(c => creSubmitted(creM(c, ym)));
-      const paid = sub.filter(c => creM(c, ym).paid);
-      const due = sub.filter(c => !creM(c, ym).paid);
+      const paid = sub.filter(c => { const m=creM(c,ym); return m.paidBase && (!creIsTop(m) || m.paidBonus); });
+      const due = sub.filter(c => { const m=creM(c,ym); return !m.paidBase || (creIsTop(m) && !m.paidBonus); });
       const dueAmt = due.reduce((a, c) => a + creAmount(creM(c, ym), ym), 0);
       const skipN = live.filter(c => (creM(c, ym) || {}).skip && !creSubmitted(creM(c, ym))).length;
       const risk = all.filter(c => ['out', 'end', 'watch'].indexOf(c.state) >= 0 || creMissStreak(c) >= 2).length;
@@ -9422,7 +9442,7 @@
 
       const rows = creRows();
       if (!rows.length) {
-        body.innerHTML = '<tr><td colspan="15" class="py-10 text-center text-slate-400">해당하는 크리에이터가 없습니다.<br>위 <b>가져오기</b>에서 명단을 먼저 넣어 주세요.</td></tr>';
+        body.innerHTML = '<tr><td colspan="16" class="py-10 text-center text-slate-400">해당하는 크리에이터가 없습니다.<br>위 <b>가져오기</b>에서 명단을 먼저 넣어 주세요.</td></tr>';
         return;
       }
 
@@ -9469,14 +9489,24 @@
           + '<td class="py-2.5 px-3 text-slate-600 whitespace-nowrap">' + tEsc(m.date || '') + '</td>'
           + '<td class="py-2.5 px-3 text-center">' + link(m.m1, '미션1') + '</td>'
           + '<td class="py-2.5 px-3 text-center">' + link(m.m2, '미션2') + '</td>'
-          + '<td class="py-2.5 px-3 text-center">' + (newRule
-              ? '<span class="text-slate-300" title="9월부터 상위노출 보너스 미적용">—</span>'
-              : '<input type="number" min="0" value="' + (Number(m.top) || 0) + '" onchange="setCreTop(' + c.id + ', this.value)" class="w-14 px-1 py-0.5 text-[11px] text-center border border-slate-200 rounded-lg">') + '</td>'
+          + '<td class="py-2.5 px-3 text-center whitespace-nowrap">' + (newRule
+              ? '<span class="text-slate-300">—</span>'
+              : '<input type="number" min="0" value="' + (Number(m.top) || 0) + '" onchange="setCreTop(' + c.id + ', this.value)" class="w-12 px-1 py-0.5 text-[11px] text-center border border-slate-200 rounded-lg">'
+                + (creIsTop(m) ? (m.topUrl
+                    ? ' <a href="' + tEsc(m.topUrl) + '" target="_blank" rel="noopener" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 hover:bg-amber-200">링크</a>'
+                    : ' <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-400">링크없음</span>') : '')
+              ) + '</td>'
           + '<td class="py-2.5 px-3 text-right font-bold ' + (creSubmitted(m) ? 'text-slate-800' : 'text-slate-300') + ' whitespace-nowrap">' + (creSubmitted(m) ? amt.toLocaleString() + '원' : '-') + '</td>'
           + '<td class="py-2.5 px-3 text-center">'
             + (creSubmitted(m)
-                ? '<input type="checkbox" ' + (m.paid ? 'checked' : '') + ' onchange="toggleCrePaid(' + c.id + ', this.checked)" class="accent-sky-600 w-5 h-5 cursor-pointer">'
-                  + (m.paid && m.paidAt ? '<div class="text-[9px] text-slate-400 mt-0.5">' + tEsc(m.paidAt.slice(5)) + '</div>' : '')
+                ? '<input type="checkbox" ' + (m.paidBase ? 'checked' : '') + ' onchange="toggleCrePaid(' + c.id + ', \'base\', this.checked)" class="accent-sky-600 w-5 h-5 cursor-pointer">'
+                  + '<div class="text-[9px] ' + (m.paidBase ? 'text-slate-400' : 'text-slate-300') + ' mt-0.5">' + (m.paidBase && m.paidBaseAt ? tEsc(m.paidBaseAt.slice(5)) : creBase(m, ym).toLocaleString()) + '</div>'
+                : '<span class="text-slate-300">—</span>')
+          + '</td>'
+          + '<td class="py-2.5 px-3 text-center">'
+            + (creIsTop(m)
+                ? '<input type="checkbox" ' + (m.paidBonus ? 'checked' : '') + ' onchange="toggleCrePaid(' + c.id + ', \'bonus\', this.checked)" class="accent-amber-500 w-5 h-5 cursor-pointer">'
+                  + '<div class="text-[9px] ' + (m.paidBonus ? 'text-slate-400' : 'text-amber-600 font-bold') + ' mt-0.5">' + (m.paidBonus && m.paidBonusAt ? tEsc(m.paidBonusAt.slice(5)) : creBonus(m).toLocaleString()) + '</div>'
                 : '<span class="text-slate-300">—</span>')
           + '</td>'
           + '<td class="py-2.5 px-3 text-center"><button onclick="openCreEdit(' + c.id + ')" title="수정" class="text-slate-400 hover:text-emerald-600 p-1"><i class="fa-solid fa-pen-to-square"></i></button></td>'
@@ -9487,7 +9517,7 @@
     function copyUnpaidPhones() {
       const ym = creCurMonth();
       const due = creRoster.filter(creLive)
-        .filter(c => { const m = creM(c, ym); return creSubmitted(m) && !m.paid; });
+        .filter(c => { const m = creM(c, ym); return creSubmitted(m) && (!m.paidBase || (creIsTop(m) && !m.paidBonus)); });
       if (!due.length) { alert('미지급자가 없습니다.'); return; }
       const txt = due.map(c => c.name + '\t' + c.phone + '\t' + creAmount(creM(c, ym), ym)).join('\n');
       ambmCopyText(txt, due.length + '명의 이름 · 연락처 · 지급액을 복사했습니다.');
@@ -9574,7 +9604,7 @@
       set('ceeBrand', c.brand || '온살'); set('ceeName', c.name); set('ceeType', c.type || '');
       set('ceeAcct', c.acct); set('ceeUrl', c.url); set('ceePhone', c.phone);
       set('ceeZip', c.zip); set('ceeAddr', c.addr);
-      set('ceeDate', m.date); set('ceeTop', Number(m.top) || 0); set('ceeM1', m.m1); set('ceeM2', m.m2);
+      set('ceeDate', m.date); set('ceeTop', Number(m.top) || 0); set('ceeM1', m.m1); set('ceeM2', m.m2); set('ceeTopUrl', m.topUrl);
       const custom = !!(m.zip || m.addr);
       document.getElementById('ceeShipCustom').checked = custom;
       document.getElementById('ceeShipBox').classList.toggle('hidden', !custom);
@@ -9591,7 +9621,7 @@
       c.zip = v('ceeZip'); c.addr = v('ceeAddr');
       c.months = c.months || {};
       const m = c.months[ym] = c.months[ym] || {};
-      m.date = v('ceeDate'); m.m1 = v('ceeM1'); m.m2 = v('ceeM2'); m.top = Number(v('ceeTop')) || 0;
+      m.date = v('ceeDate'); m.m1 = v('ceeM1'); m.m2 = v('ceeM2'); m.top = Number(v('ceeTop')) || 0; m.topUrl = v('ceeTopUrl');
       if (document.getElementById('ceeShipCustom').checked) { m.zip = v('ceeMZip'); m.addr = v('ceeMAddr'); }
       else { delete m.zip; delete m.addr; }
       saveAll(); renderCre(); closeCreEdit();
@@ -9641,8 +9671,9 @@
           '우편번호': creShip(c, ym).zip, '주소': creShip(c, ym).addr,
           '업로드일': m.date || '', '미션1': m.m1 || '', '미션2': m.m2 || '',
           '상위노출': Number(m.top) || 0, '키워드': m.kw || '',
-          '지급액': creSubmitted(m) ? creAmount(m, ym) : 0,
-          '지급여부': m.paid ? 'O' : '', '지급일': m.paidAt || '',
+          '활동비': creBase(m, ym), '활동비지급': m.paidBase ? 'O' : '',
+          '상위노출링크': m.topUrl || '', '추가활동비': creBonus(m), '추가지급': m.paidBonus ? 'O' : '',
+          '합계': creSubmitted(m) ? creAmount(m, ym) : 0,
           '상태': (CRE_STATES.find(function (o) { return o[0] === creEffState(c, ym); }) || ['', ''])[1],
           '상태메모': (c.state === 'out' || c.state === 'end') ? (c.stateNote || '') : ((m.skip && m.note) ? m.note : ''),
           '연속무응답(개월)': creMissStreak(c),
