@@ -1942,6 +1942,7 @@
             <button onclick="setCreFilter('미제출')" id="cref-미제출" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">미제출</button>
             <button onclick="setCreFilter('미지급')" id="cref-미지급" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">미지급</button>
             <button onclick="setCreFilter('이탈·주의')" id="cref-이탈·주의" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">이탈·주의</button>
+            <button onclick="setCreFilter('상위노출')" id="cref-상위노출" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">상위노출</button>
             <button onclick="setCreFilter('카페 미가입')" id="cref-카페 미가입" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">카페 미가입</button>
           </div>
           <button onclick="openCreImport()" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-file-import"></i> 가져오기</button>
@@ -9352,7 +9353,7 @@
     }
     function setCreFilter(f) {
       creFilter = f;
-      ['전체', '제출', '미제출', '미지급', '이탈·주의', '카페 미가입'].forEach(x => {
+      ['전체', '제출', '미제출', '미지급', '이탈·주의', '상위노출', '카페 미가입'].forEach(x => {
         const el = document.getElementById('cref-' + x);
         if (el) el.className = (x === f)
           ? 'px-3 py-1.5 rounded-lg bg-white text-emerald-700 shadow-xs'
@@ -9411,6 +9412,7 @@
       else if (creFilter === '미제출') list = list.filter(c => creLive(c) && !creSubmitted(creM(c, ym)) && !(creM(c, ym) || {}).skip);
       else if (creFilter === '미지급') list = list.filter(c => { const m = creM(c, ym); return creSubmitted(m) && !m.paid; });
       else if (creFilter === '이탈·주의') list = list.filter(c => ['out', 'end', 'watch'].indexOf(c.state) >= 0 || creMissStreak(c) >= 2);
+      else if (creFilter === '상위노출') list = list.filter(c => creIsTop(creM(c, ym)));
       else if (creFilter === '카페 미가입') list = list.filter(c => c.cafe !== 'y');
       /* 미지급 제출자 → 지급완료 → 미제출 순. 같은 그룹은 가나다순 */
       return list.sort((a, b) => {
