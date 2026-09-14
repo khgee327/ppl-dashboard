@@ -4517,11 +4517,99 @@
     }
 
     let sizeWarned = false;
+    /* ===== 다른 기기·탭 작업분 보호 =====
+       id가 있는 목록은 저장 직전에 서버 내용을 합칩니다.
+       "지금 화면"을 우선하되, 내 쪽에 없는 건은 서버 것을 살려 둡니다. */
+    const MERGE_KEYS = [
+      ['onsal_pplList',    'PPL·인플루언서'],
+      ['onsal_trialList',  '체험단'],
+      ['onsal_creRoster',  '크리에이터'],
+      ['onsal_contactList','컨택 리스트'],
+      ['onsal_products',   '제품'],
+      ['onsal_utmList',    'UTM'],
+      ['onsal_proposals',  'MCN 소개서']
+    ];
+    function mergeRowsById(mine, theirs) {
+      if (!Array.isArray(theirs)) return mine;
+      if (!Array.isArray(mine)) return theirs;
+      const m = new Map();
+      theirs.forEach(x => { if (x && x.id != null) m.set(String(x.id), x); });
+      mine.forEach(x => { if (x && x.id != null) m.set(String(x.id), x); });
+      return [...m.values()];
+    }
+
+    /* 저장 전에 서버를 읽어 내 목록과 합칩니다. 합쳐진 건수를 돌려줍니다. */
+    async function mergeServerBeforePush() {
+      const res = await fetch(`${SYNC_URL}?key=${encodeURIComponent(SYNC_KEY)}&t=${Date.now()}`);
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'load failed');
+      const d = expandSyncChunks(json.data || {});
+      if (!Object.keys(d).length) return [];
+
+      const added = [];
+      const LIVE = {
+        onsal_pplList:     () => pplList,
+        onsal_trialList:   () => trialList,
+        onsal_creRoster:   () => creRoster,
+        onsal_contactList: () => contactList,
+        onsal_products:    () => products,
+        onsal_utmList:     () => utmList,
+        onsal_proposals:   () => proposals
+      };
+      const SET = {
+        onsal_pplList:     v => { pplList = v; },
+        onsal_trialList:   v => { trialList = v; },
+        onsal_creRoster:   v => { creRoster = v; },
+        onsal_contactList: v => { contactList = v; },
+        onsal_products:    v => { products = v; },
+        onsal_utmList:     v => { utmList = v; },
+        onsal_proposals:   v => { proposals = v; }
+      };
+      MERGE_KEYS.forEach(([key, label]) => {
+        const get = LIVE[key]; if (!get) return;
+        const mine = get() || [];
+        const merged = mergeRowsById(mine, d[key]);
+        if (merged.length > mine.length) {
+          SET[key](merged);
+          added.push(label + ' +' + (merged.length - mine.length) + '건');
+        }
+      });
+      if (added.length) { saveLocalOnly(); renderAll(); }
+      return added;
+    }
+
+    /* 병합 결과를 localStorage에만 반영 (저장 루프 방지) */
+    function saveLocalOnly() {
+      try {
+        localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
+        localStorage.setItem('onsal_trialList', JSON.stringify(trialList));
+        localStorage.setItem('onsal_creRoster', JSON.stringify(creRoster));
+        localStorage.setItem('onsal_contactList', JSON.stringify(contactList));
+        localStorage.setItem('onsal_products', JSON.stringify(products));
+        localStorage.setItem('onsal_utmList', JSON.stringify(utmList));
+        localStorage.setItem('onsal_proposals', JSON.stringify(proposals));
+      } catch (e) {}
+    }
+
     async function pushToSheet() {
       if (RPT_READONLY) return;   // 보기 전용 공유 링크에서는 저장하지 않습니다
       if (IS_REPORT) return pushReportSheet();
       setSyncStatus('saving', '저장 중...');
       try {
+        /* 다른 기기에서 추가된 건을 먼저 합칩니다 */
+        let addedInfo = [];
+        try {
+          addedInfo = await mergeServerBeforePush();
+          if (addedInfo.length) {
+            setSyncStatus('saving', '다른 기기 작업 합치는 중...');
+            console.log('[자동 합치기]', addedInfo.join(' · '));
+          }
+        } catch (e) {
+          setSyncStatus('error', '서버 확인 실패 · 저장을 멈췄습니다 (클릭해 다시 시도)');
+          console.warn('병합 실패로 저장 중단', e);
+          return;   // 서버를 못 읽으면 덮어쓰지 않습니다
+        }
+
         const payload = JSON.stringify({ key: SYNC_KEY, data: collectSyncData() });
         if (payload.length > 900000 && !sizeWarned) {
           sizeWarned = true;
@@ -4537,6 +4625,7 @@
 
         const t = new Date();
         setSyncStatus('ok', `저장됨 ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`);
+        if (addedInfo.length && typeof toast === 'function') toast('다른 기기 작업 ' + addedInfo.join(' · ') + ' 합쳐서 저장했어요', 'ok');
       } catch (e) {
         setSyncStatus('error', '저장 실패 (다시 시도하려면 클릭)');
       }
