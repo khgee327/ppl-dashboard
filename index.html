@@ -4529,11 +4529,26 @@
       ['onsal_utmList',    'UTM'],
       ['onsal_proposals',  'MCN 소개서']
     ];
+    /* 삭제한 항목은 다시 살아나지 않도록 id를 기록해 둡니다 (묘비) */
+    function tombRead() {
+      try { return JSON.parse(localStorage.getItem('onsal_deletedIds') || '[]'); } catch (e) { return []; }
+    }
+    function tombAdd(id) {
+      if (id == null) return;
+      const t = tombRead();
+      if (t.indexOf(String(id)) < 0) {
+        t.push(String(id));
+        /* 오래된 기록은 300개까지만 보관 */
+        localStorage.setItem('onsal_deletedIds', JSON.stringify(t.slice(-300)));
+      }
+    }
+
     function mergeRowsById(mine, theirs) {
       if (!Array.isArray(theirs)) return mine;
       if (!Array.isArray(mine)) return theirs;
+      const dead = new Set(tombRead());
       const m = new Map();
-      theirs.forEach(x => { if (x && x.id != null) m.set(String(x.id), x); });
+      theirs.forEach(x => { if (x && x.id != null && !dead.has(String(x.id))) m.set(String(x.id), x); });
       mine.forEach(x => { if (x && x.id != null) m.set(String(x.id), x); });
       return [...m.values()];
     }
@@ -5320,7 +5335,7 @@
       const t = trialList.find(x => x.id === id);
       if (!t) return;
       if (!confirm(`'${t.title}' 체험단을 삭제할까요?`)) return;
-      trialList = trialList.filter(x => x.id !== id);
+      tombAdd(id); trialList = trialList.filter(x => x.id !== id);
       saveAll();
       renderTrialDashboard();
     }
@@ -7190,7 +7205,7 @@
 
     function deleteContact(id) {
       if (!confirm('이 컨택 건을 삭제할까요?')) return;
-      contactList = contactList.filter(x => x.id !== id);
+      tombAdd(id); contactList = contactList.filter(x => x.id !== id);
       saveAll();
       renderContactList();
     }
@@ -12104,7 +12119,7 @@
 
     function deletePpl(id) {
       if (confirm("이 PPL 진행 건을 삭제할까요?")) {
-        pplList = pplList.filter(item => item.id !== id);
+        tombAdd(id); pplList = pplList.filter(item => item.id !== id);
         saveAll();
         renderAll();
       }
@@ -15274,7 +15289,7 @@
     function ambmDelete(id) {
       const p = pplList.find(x => x.id === id); if (!p) return;
       if (!confirm((p.realName || '') + ' 님을 완전히 삭제할까요?\n이번 달뿐 아니라 지난 달 기록까지 모두 사라지고 되돌릴 수 없습니다.')) return;
-      pplList = pplList.filter(x => x.id !== id);
+      tombAdd(id); pplList = pplList.filter(x => x.id !== id);
       ambmSel = null;
       saveAll(); renderAll();
     }
