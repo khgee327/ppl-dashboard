@@ -4752,17 +4752,42 @@
       return 'PPL';
     }
 
+        /* 스케줄러는 데이터를 schmeta + sch_0..N 조각으로 저장합니다.
+       단일 칸만 읽으면 taskList 가 비어 보여서 기존 일정을 통째로 날릴 수 있어요. */
+    const SCH_CHUNK = 35000;
     async function fetchSchedulerState() {
       const res = await fetch(SCHEDULER_API_URL + '?t=' + Date.now());
       const rows = await res.json();
-      let existing = { taskList: [], memoCards: [], customCategories: [] };
-      if (Array.isArray(rows)) {
-        const target = rows.find(r => r.key === SCHEDULER_KEY) || rows.find(r => r.json);
-        if (target && target.json) {
-          existing = typeof target.json === 'string' ? JSON.parse(target.json) : target.json;
+      let existing = { taskList: [], memoCards: [], customCategories: [], _ok: false, _parts: 0 };
+      if (!Array.isArray(rows)) return existing;
+      const rj = r => { try { return typeof r.json === 'string' ? JSON.parse(r.json) : r.json; } catch (e) { return null; } };
+
+      // (1) 조각 방식 — 스케줄러가 실제로 쓰는 형식
+      const meta = rj(rows.find(r => r.key === 'schmeta')) || {};
+      if (meta.parts > 0) {
+        let str = '';
+        for (let i = 0; i < meta.parts; i++) {
+          const p = rj(rows.find(r => r.key === 'sch_' + i));
+          if (!p || typeof p.c !== 'string') { str = null; break; }
+          str += p.c;
+        }
+        if (str) {
+          try {
+            const d = JSON.parse(str);
+            d._ok = true; d._parts = meta.parts;
+            if (!Array.isArray(d.taskList)) d.taskList = [];
+            return d;
+          } catch (e) { console.warn('스케줄러 조각 해석 실패', e); }
         }
       }
-      if (!Array.isArray(existing.taskList)) existing.taskList = [];
+
+      // (2) 예전 단일 칸 방식 (조각이 없을 때만)
+      const target = rows.find(r => r.key === SCHEDULER_KEY);
+      const parsed = target ? rj(target) : null;
+      if (parsed && Array.isArray(parsed.taskList)) {
+        parsed._ok = true; parsed._parts = 0;
+        return parsed;
+      }
       return existing;
     }
 
@@ -4846,7 +4871,11 @@
         pplList.forEach(p => {
           if (!p.stepDates) return;
           Object.entries(p.stepDates).forEach(([stage, info]) => {
-            if (typeof info !== 'object' || !info.sched || !info.date) return;
+            if (typeof info !== 'object' || !info.date) return;
+            // sched 값이 없는 일정(직접 입력·복구분)은 주요 단계만 내보냅니다
+            const useSched = (info.sched !== undefined) ? info.sched : KEY_STAGES.includes(stage);
+            if (!useSched) return;
+            if (info.sched === undefined) info.sched = useSched;
             if (!info.updatedAt) info.updatedAt = now;
             info.syncedAt = now;
 
@@ -4871,7 +4900,9 @@
           const order = (tr.stageOrder && tr.stageOrder.length) ? tr.stageOrder : Object.keys(tr.stages);
           order.forEach(stage => {
             const info = tr.stages[stage];
-            if (!info || typeof info !== 'object' || !info.sched || !info.date) return;
+            if (!info || typeof info !== 'object' || !info.date) return;
+            if (info.sched === undefined) info.sched = true;
+            if (!info.sched) return;
             if (!info.updatedAt) info.updatedAt = now;
             info.syncedAt = now;
 
@@ -4890,22 +4921,49 @@
           });
         });
 
+        // 서버를 못 읽었으면 절대 덮어쓰지 않습니다 (기존 일정 보호)
+        if (!existing._ok) {
+          schedSyncing = false;
+          if (label) label.innerText = '스케줄러 읽기 실패 · 저장 안 함';
+          if (!silent) alert('스케줄러 데이터를 읽지 못해 저장을 멈췄습니다.\n기존 일정을 보호하기 위한 조치이니, 잠시 후 다시 시도해 주세요.');
+          return;
+        }
+
         const kept = existing.taskList.filter(t => {
           const sid = String(t.id || '');
           return !(sid.startsWith('ppl_') || sid.startsWith('trial_'));
         });
+        const finalList = kept.concat(mine);
+
+        // 대시보드가 만든 일정을 뺀 나머지가 사라지면 중단
+        if (kept.length === 0 && existing.taskList.length > 0) {
+          schedSyncing = false;
+          if (label) label.innerText = '스케줄러 동기화 중단 (안전)';
+          if (!silent) alert('스케줄러의 기존 일정이 사라질 수 있어 저장을 멈췄습니다.');
+          return;
+        }
+
+        // 스케줄러와 같은 조각 형식으로 기록
+        const outStr = JSON.stringify({
+          taskList: finalList,
+          memoCards: existing.memoCards || [],
+          customCategories: existing.customCategories || []
+        });
+        const chunks = [];
+        for (let i = 0; i < outStr.length; i += SCH_CHUNK) chunks.push(outStr.slice(i, i + SCH_CHUNK));
+        const payload = [
+          { key: 'schmeta', json: JSON.stringify({ parts: chunks.length, updated: new Date().toISOString() }) },
+          { key: SCHEDULER_KEY, json: JSON.stringify({ chunked: true, parts: chunks.length }) }
+        ];
+        chunks.forEach((c, i) => payload.push({ key: 'sch_' + i, json: JSON.stringify({ c: c }) }));
+        for (let i = chunks.length; i < (existing._parts || 0); i++) {
+          payload.push({ key: 'sch_' + i, json: JSON.stringify({ c: '' }) });
+        }
 
         await fetch(SCHEDULER_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify([{
-            key: SCHEDULER_KEY,
-            json: JSON.stringify({
-              taskList: kept.concat(mine),
-              memoCards: existing.memoCards || [],
-              customCategories: existing.customCategories || []
-            })
-          }])
+          body: JSON.stringify(payload)
         });
 
         if (changed > 0) {
