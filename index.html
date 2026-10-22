@@ -5680,7 +5680,9 @@
     let ROLE   = localStorage.getItem('onsal_role') || '';
     let WHOAMI = localStorage.getItem('onsal_user') || '';
     let PERM   = Object.assign(
-      { money: false, report: false, export: false, sched: false, reuse: false, del: false, contact: true, settings: false },
+      { money: false, report: false, export: false, sched: false, reuse: false,
+        micro: false, viral: false, list: false, check: false,
+        del: false, contact: true, settings: false },
       (function () { try { return JSON.parse(localStorage.getItem('onsal_perm') || '{}'); } catch (e) { return {}; } })()
     );
     const isAdmin = () => ROLE === 'admin';
@@ -5749,7 +5751,11 @@
       show('btnCsvExport',  can('export'));
       show('schedSyncBtn',  can('sched'));
       show('reuseSyncCard', can('reuse'));
-      show('reuseLinkCard', !can('reuse'));
+      show('reuseLinkCard', true);          /* 바로가기는 관리자·편집자 모두 */
+      show('nav-micro',   can('micro'));
+      show('nav-etc',     can('viral'));
+      show('nav-creator', can('list'));
+      show('nav-check',   can('check'));
       document.body.classList.toggle('no-contact', !can('contact'));
       if (!can('contact')) maskPII();
     }
@@ -6054,6 +6060,50 @@
        자동으로 완료로 넘깁니다. 무엇이 넘어갔는지 화면과 변경 이력에 남습니다.
        끄려면 관리자 권한 설정에서 "날짜 지난 건 자동 완료" 체크를 해제하세요.
        ================================================================== */
+    /* 앰버서더가 제출한 피드 URL을 '업로드 일자 & 링크' 표에도 올립니다.
+       제출 내역은 monthlyPlan 에만 들어가서 그동안 표가 비어 있었습니다. */
+    function ambChanOf(u) {
+      u = String(u || '');
+      if (/instagram\.com\/reel/i.test(u))    return ['인스타', '릴스'];
+      if (/instagram\.com\/p\//i.test(u))     return ['인스타', '피드'];
+      if (/instagram\.com\/stories/i.test(u)) return ['인스타', '스토리'];
+      if (/tiktok\.com/i.test(u))             return ['틱톡', '숏폼'];
+      if (/youtube\.com\/shorts|youtu\.be/i.test(u)) return ['유튜브', '쇼츠'];
+      if (/youtube\.com\/watch/i.test(u))     return ['유튜브', '영상'];
+      if (/naver\.com\/shorts|naver\.me/i.test(u))   return ['네이버', '클립'];
+      if (/blog\.naver\.com/i.test(u))        return ['네이버', '블로그'];
+      return ['기타', ''];
+    }
+
+    function syncAmbFeedToUploads(silent) {
+      if (typeof pplList === 'undefined' || !Array.isArray(pplList)) return 0;
+      let n = 0;
+      pplList.forEach(p => {
+        const t = p.types || {};
+        if (!(t.freeAmb || t.ambassador || t.sample)) return;
+        Object.keys(p.monthlyPlan || {}).forEach(ym => {
+          const m = p.monthlyPlan[ym] || {};
+          const url = String(m.feedUrl || '').trim();
+          if (!/^https?:\/\//i.test(url)) return;
+          p.uploads = Array.isArray(p.uploads) ? p.uploads : [];
+          if (p.uploads.some(u => u && String(u.url || '').trim() === url)) return;
+          const [c, k] = ambChanOf(url);
+          p.uploads.push({
+            date: m.uploadDate || m.plannedDate || (ym + '-01'),
+            channel: c, type: k, url: url,
+            views: '', likes: '', comments: '', keyword: '', rank: '',
+            memo: ym + ' 앰버서더 제출', src: 'amb'
+          });
+          n++;
+        });
+      });
+      if (n) {
+        try { localStorage.setItem('onsal_pplList', JSON.stringify(pplList)); } catch (e) {}
+        if (!silent) console.log('%c앰버서더 피드 링크 ' + n + '건을 업로드 기록에 올렸습니다', 'color:#16a34a;font-weight:bold');
+      }
+      return n;
+    }
+
     function autoCompleteOn() { return localStorage.getItem('onsal_autoComplete') !== '0'; }
 
     /* 진행완료 판정이 바뀌었으므로 isCompleted 플래그를 맞춰 둡니다.
@@ -6336,7 +6386,9 @@
         + '<div style="font-size:11.5px;color:#64748b;margin-top:4px;line-height:1.6">체크하면 편집자도 할 수 있습니다. 관리자는 항상 전부 가능합니다.</div>'
         + '<div style="margin-top:16px;display:flex;flex-direction:column;gap:10px">'
         + [['money','정산 · 예산 메뉴 보기'],['report','리포트 메뉴 보기'],['export','CSV 내보내기'],
-           ['sched','스케줄러 연동'],['reuse','2차활용 연동 (표 · 불러오기)'],['del','삭제하기'],['contact','연락처 · 주소 보기'],['settings','설정 · 단가 바꾸기']]
+           ['sched','스케줄러 연동'],['reuse','2차활용 연동 (표 · 불러오기)'],
+           ['micro','마이크로 메뉴'],['viral','바이럴 · 기타 메뉴'],['list','LIST 메뉴'],['check','누락 점검 메뉴'],
+           ['del','삭제하기'],['contact','연락처 · 주소 보기'],['settings','설정 · 단가 바꾸기']]
             .map(([k,l]) => '<label style="display:flex;align-items:center;gap:9px;font-size:13px;color:#0f172a;cursor:pointer">'
               + '<input type="checkbox" id="perm_' + k + '" ' + cur(k) + ' style="width:17px;height:17px;accent-color:#0f172a"> ' + l + '</label>').join('')
         + '</div>'
@@ -6353,7 +6405,8 @@
       document.body.insertAdjacentHTML('beforeend', html);
     }
     function savePerm() {
-      ['money', 'report', 'export', 'sched', 'reuse', 'del', 'contact', 'settings'].forEach(k => {
+      ['money', 'report', 'export', 'sched', 'reuse', 'micro', 'viral', 'list', 'check',
+       'del', 'contact', 'settings'].forEach(k => {
         const el = document.getElementById('perm_' + k);
         if (el) PERM[k] = el.checked;
       });
@@ -6417,6 +6470,7 @@
         renderRptPage();
         syncToScheduler(true);
         pullReuseRecords(false);
+        try { syncAmbFeedToUploads(false); } catch (e) { console.warn('앰버서더 링크 반영 실패', e); }
         try { syncCompletedFlags(); } catch (e) {}
         auditSnapRebuild();
         try { autoCompletePast(false); } catch (e) { console.warn('자동 완료 처리 실패', e); }
@@ -6543,6 +6597,10 @@
       }
       if (!can('report') && ['monthly', 'perf', 'report'].indexOf(pageId) >= 0) {
         alert('리포트는 관리자만 볼 수 있습니다.'); pageId = 'ppl';
+      }
+      const PAGE_PERM = { micro: 'micro', etc: 'viral', creator: 'list', check: 'check' };
+      if (PAGE_PERM[pageId] && !can(PAGE_PERM[pageId])) {
+        alert('이 메뉴는 관리자만 볼 수 있습니다.'); pageId = 'ppl';
       }
       if (pageId === 'audit' && !isAdmin()) {
         alert('변경 이력은 관리자만 볼 수 있습니다.'); pageId = 'ppl';
@@ -15734,6 +15792,7 @@
           applied++;
         });
 
+        try { syncAmbFeedToUploads(true); } catch (e) {}
         saveAll(); renderAll();
 
         if (acks.length) {
