@@ -6056,18 +6056,37 @@
        ================================================================== */
     function autoCompleteOn() { return localStorage.getItem('onsal_autoComplete') !== '0'; }
 
+    /* 진행완료 판정이 바뀌었으므로 isCompleted 플래그를 맞춰 둡니다.
+       변경 이력 스냅샷을 찍기 전에 조용히 돌려서 기록에는 남기지 않습니다. */
+    function syncCompletedFlags() {
+      if (typeof pplList === 'undefined' || !Array.isArray(pplList)) return 0;
+      if (typeof isPplDone !== 'function') return 0;
+      let n = 0;
+      pplList.forEach(p => { const d = isPplDone(p); if (p.isCompleted !== d) { p.isCompleted = d; n++; } });
+      if (n) { try { localStorage.setItem('onsal_pplList', JSON.stringify(pplList)); } catch (e) {} }
+      return n;
+    }
+
     function autoCompletePast(silent) {
       if (!autoCompleteOn()) return [];
       if (typeof pplList === 'undefined' || !Array.isArray(pplList)) return [];
       const T = new Date().toISOString().slice(0, 10);
+      const STEPS = (typeof FINAL_STAGES !== 'undefined') ? FINAL_STAGES : ['업로드', '잔금입금'];
       const moved = [];
       pplList.forEach(p => {
-        const up = p.stepDates && p.stepDates['업로드'];
-        if (!up || typeof up !== 'object' || !up.date || up.done) return;
-        if (up.date >= T) return;
-        up.done = true; up.autoDone = true; up.updatedAt = Date.now();
+        if (typeof isPplDone === 'function' && isPplDone(p)) return;   // 이미 완료
+        let hit = null;
+        STEPS.forEach(st => {
+          const d = p.stepDates && p.stepDates[st];
+          if (!d || typeof d !== 'object' || !d.date || d.done) return;
+          if (d.date >= T) return;
+          d.done = true; d.autoDone = true; d.updatedAt = Date.now();
+          hit = { 단계: st, 날짜: d.date };
+        });
+        if (!hit) return;
         p.isCompleted = true;
-        moved.push({ 이름: (p.realName || '무명') + (p.influencer ? ' (' + p.influencer + ')' : ''), 업로드일: up.date });
+        moved.push({ 이름: (p.realName || '무명') + (p.influencer ? ' (' + p.influencer + ')' : ''),
+                     단계: hit.단계, 날짜: hit.날짜 });
       });
       if (!moved.length) return [];
 
@@ -6082,14 +6101,14 @@
 
     function autoToast(moved) {
       document.getElementById('autoToast')?.remove();
-      const names = moved.slice(0, 5).map(m => '· ' + m.이름 + ' (' + m.업로드일 + ')').join('\n')
+      const names = moved.slice(0, 5).map(m => '· ' + m.이름 + ' — ' + m.단계 + ' ' + m.날짜).join('\n')
         + (moved.length > 5 ? '\n· 외 ' + (moved.length - 5) + '건' : '');
       const el = document.createElement('div');
       el.id = 'autoToast';
       el.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:9998;max-width:340px;background:#fff;'
         + 'border:1px solid #bae6fd;border-left:4px solid #0284c7;border-radius:12px;padding:14px 16px;'
         + 'box-shadow:0 12px 32px rgba(15,23,42,.18);font-family:Pretendard,-apple-system,sans-serif';
-      el.innerHTML = '<div style="font-size:13px;font-weight:800;color:#075985">업로드일이 지난 '
+      el.innerHTML = '<div style="font-size:13px;font-weight:800;color:#075985">날짜가 지난 '
         + moved.length + '건을 진행완료로 옮겼습니다</div>'
         + '<div style="font-size:11px;color:#64748b;margin-top:5px;line-height:1.6;white-space:pre-line">' + tEsc(names) + '</div>'
         + '<div style="display:flex;gap:6px;margin-top:10px">'
@@ -6104,11 +6123,13 @@
     function autoUndo() {
       let n = 0;
       pplList.forEach(p => {
-        const up = p.stepDates && p.stepDates['업로드'];
-        if (up && typeof up === 'object' && up.autoDone) {
-          up.done = false; delete up.autoDone; up.updatedAt = Date.now();
-          p.isCompleted = false; n++;
-        }
+        let touched = false;
+        Object.values(p.stepDates || {}).forEach(d => {
+          if (d && typeof d === 'object' && d.autoDone) {
+            d.done = false; delete d.autoDone; d.updatedAt = Date.now(); touched = true;
+          }
+        });
+        if (touched) { p.isCompleted = (typeof isPplDone === 'function') ? isPplDone(p) : false; n++; }
       });
       document.getElementById('autoToast')?.remove();
       if (!n) { alert('되돌릴 건이 없습니다.'); return; }
@@ -6133,8 +6154,9 @@
 
       /* 1. 기한 지난 미완료 일정 */
       const late = [];
+      const donePpl = p => (typeof isPplDone === 'function') ? isPplDone(p) : !!p.isCompleted;
       PPL.forEach(p => {
-        if (p.isCompleted) return;
+        if (donePpl(p)) return;
         Object.entries(p.stepDates || {}).forEach(([st, info]) => {
           if (!info || !info.date || info.done) return;
           if (info.date < T) late.push({ 대상: who(p), 항목: 'PPL', 내용: st, 날짜: info.date, page: 'ppl' });
@@ -6203,6 +6225,7 @@
         if (totalCostOf(p) > 0) return;
         const started = ['진행확정', '계약서작성', '계약금입금', '촬영', '초안전달', '최종본전달', '업로드', '잔금입금'].indexOf(p.status) >= 0;
         if (!started) return;
+        if (donePpl(p) && (p.costs || {}).ppl === undefined) return;
         noCost.push({ 대상: who(p), 항목: (typeof catOfPpl === 'function' ? catOfPpl(p) : 'PPL'), 내용: '단가 0원 · ' + (p.status || ''), 날짜: p.contactDate || '', page: 'ppl' });
       });
       add('nocost', '단가가 안 들어간 진행 건', 'slate', noCost);
@@ -6394,6 +6417,7 @@
         renderRptPage();
         syncToScheduler(true);
         pullReuseRecords(false);
+        try { syncCompletedFlags(); } catch (e) {}
         auditSnapRebuild();
         try { autoCompletePast(false); } catch (e) { console.warn('자동 완료 처리 실패', e); }
         updateCheckBadge();
@@ -11907,8 +11931,22 @@
       if (!info) return false;
       return (typeof info === 'object') ? !!info.done : false;
     }
+
+    /* 진행완료로 보는 조건
+         ① '업로드' 단계 완료 체크
+         ② '잔금입금' 단계 완료 체크
+         ③ 진행 상태가 '잔금입금'  (업로드 뒤 단계라 이미 끝난 건) */
+    const FINAL_STAGES = ['업로드', '잔금입금'];
+    function isPplDone(p) {
+      if (!p) return false;
+      if (isUploadStepDone(p)) return true;
+      const fin = p.stepDates && p.stepDates['잔금입금'];
+      if (fin && typeof fin === 'object' && fin.done) return true;
+      if (p.status === '잔금입금') return true;
+      return false;
+    }
     function progressBucketOf(p) {
-      if (isUploadStepDone(p)) return 'done';
+      if (isPplDone(p)) return 'done';
       if (PLANNED_STAGES.includes(p.status)) return 'planned';
       return 'active';
     }
@@ -12889,9 +12927,8 @@
         p.status = undone.sort((a, b) => STAGES.indexOf(a) - STAGES.indexOf(b))[0] || p.status;
       }
 
-      // 업로드 단계를 체크하면 완료 처리
-      const up = p.stepDates['업로드'];
-      p.isCompleted = !!(up && typeof up === 'object' && up.done);
+      // 업로드 체크 · 잔금입금까지 끝나면 완료 처리
+      p.isCompleted = isPplDone(p);
     }
 
     function toggleStepDateDone(id, stageName, doneVal) {
