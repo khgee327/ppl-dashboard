@@ -131,6 +131,10 @@
       color:#5F5E5A; background:transparent; transition:.15s; }
     .side-util:hover{ background:#F5F4F2; color:#1F1F1E }
     .side-util i{ font-size:11px; width:13px; text-align:center; color:#A5A29A }
+    .role-admin { background:#0f172a !important; color:#fff !important; font-weight:800; }
+    .role-editor { background:#e0e7ff !important; color:#3730a3 !important; font-weight:800; }
+    body.no-contact .pii { filter: blur(4px); }
+  </style>
 
     .app-main{
       max-width:none !important; margin-left:0 !important; margin-right:0 !important;
@@ -314,6 +318,8 @@
         <button onclick="setNavGroup('ops')" id="navgrp-ops" class="nav-grp"><i class="fa-solid fa-boxes-stacked"></i> 운영</button>
         <div id="navsub-ops" class="nav-sub hidden">
           <button onclick="switchMainPage('utm')" id="nav-utm" class="nav-item"><i class="fa-solid fa-link"></i> UTM</button>
+          <button onclick="switchMainPage('check')" id="nav-check" class="nav-item"><i class="fa-solid fa-triangle-exclamation"></i> 누락 점검 <span id="navCheckBadge" class="ml-auto text-[10px] font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white hidden">0</span></button>
+          <button onclick="switchMainPage('audit')" id="nav-audit" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> 변경 이력</button>
         </div>
     </nav>
 
@@ -327,6 +333,8 @@
       </div>
       <button onclick="toggleSideNav()" class="side-util"><i class="fa-solid fa-left-right"></i> 사이드바 접기 · 넓게 보기</button>
       <button onclick="openBackupModal()" class="side-util"><i class="fa-solid fa-shield-halved"></i> 백업</button>
+      <button id="roleBadge" onclick="openPermModal()" class="side-util hidden"></button>
+      <button onclick="authLogout()" class="side-util"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</button>
       <button onclick="toggleCompactTable()" id="compactTableBtn" class="side-util"><i class="fa-solid fa-table-columns"></i> <span id="compactTableLabel">표 간단히 보기</span></button>
       <button onclick="exportToCSV()" class="side-util"><i class="fa-solid fa-file-excel"></i> CSV 내보내기</button>
       <button id="schedSyncBtn" onclick="syncToScheduler()" title="체크한 일정이 자동으로 스케줄러에 반영됩니다" class="side-util"><i class="fa-solid fa-calendar-check"></i> <span id="schedSyncText">스케줄러 자동연동</span></button>
@@ -3988,6 +3996,40 @@
 
   </main>
 
+  <!-- ==================== 누락 점검 ==================== -->
+  <main data-page="1" id="page-check" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6 hidden">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="text-xl font-black text-slate-900 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 누락 점검</h1>
+        <p class="text-xs text-slate-500 mt-1">기한이 지났는데 처리가 안 된 건, 빠진 정보를 한 번에 모아서 보여줍니다.</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="renderCheckPage()" class="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl"><i class="fa-solid fa-rotate"></i> 새로고침</button>
+        <button onclick="checkDownload()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl"><i class="fa-solid fa-file-arrow-down"></i> 다운로드</button>
+      </div>
+    </div>
+    <div id="checkCards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+    <div id="checkBody" class="space-y-5"></div>
+  </main>
+
+  <!-- ==================== 변경 이력 ==================== -->
+  <main data-page="1" id="page-audit" class="app-main max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6 hidden">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="text-xl font-black text-slate-900 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-violet-600"></i> 변경 이력</h1>
+        <p class="text-xs text-slate-500 mt-1">누가 · 언제 · 무엇을 바꿨는지 기록됩니다. 잘못된 수정은 되돌릴 수 있어요.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <select id="auditWho" onchange="renderAuditPage()" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white"></select>
+        <select id="auditSet" onchange="renderAuditPage()" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white"></select>
+        <input id="auditQ" oninput="renderAuditPage()" placeholder="이름 검색" class="px-3 py-2 text-xs border border-slate-200 rounded-xl w-36">
+        <button onclick="auditDownload()" class="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl"><i class="fa-solid fa-file-arrow-down"></i> 다운로드</button>
+      </div>
+    </div>
+    <div id="auditCards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+    <div id="auditBody" class="bg-white rounded-2xl border border-slate-200 overflow-hidden"></div>
+  </main>
+
   <!-- ==================== 업로드 / 결과 입력 모달 ==================== -->
   <div id="uploadModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden p-4">
     <div class="bg-white rounded-3xl w-full max-w-5xl max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl">
@@ -4470,7 +4512,8 @@
         onsal_microPackages: microPackages,
         onsal_budgets: budgets,
         onsal_launchBudgets: launchBudgets,
-        onsal_perfReports: rptReports
+        onsal_perfReports: rptReports,
+        onsal_auditLog: auditForSync()
       };
     }
 
@@ -4690,6 +4733,7 @@
           budgets = safeMerge(d.onsal_budgets, budgets, '월 예산', pullWarn);
           launchBudgets = safeMerge(d.onsal_launchBudgets, launchBudgets, '출시 예산', pullWarn);
           rptReports = safeMerge(d.onsal_perfReports, rptReports, 'PPL 보고', pullWarn);
+          try { auditMerge(d.onsal_auditLog); } catch (e) {}
 
           localStorage.setItem('onsal_products', JSON.stringify(products));
           localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
@@ -5634,8 +5678,593 @@
     };
     function holidayOf(dateStr) { return KR_HOLIDAYS[dateStr] || ''; }
 
+
+    /* ==================================================================
+       권한 · 변경 이력 · 누락 점검
+       ------------------------------------------------------------------
+       비밀번호를 바꾸려면 아래 AUTH.admin / AUTH.editor 값을 고치세요.
+       (화면 잠금 수준입니다 — 개발자도구로 들여다보면 보입니다)
+       ================================================================== */
+    const AUTH = { admin: 'b25zYWwyMDI2IQ==', editor: 'dGVhbTIwMjY=' };
+
+    let ROLE   = localStorage.getItem('onsal_role') || '';
+    let WHOAMI = localStorage.getItem('onsal_user') || '';
+    let PERM   = Object.assign(
+      { money: false, del: false, contact: true, settings: false },
+      (function () { try { return JSON.parse(localStorage.getItem('onsal_perm') || '{}'); } catch (e) { return {}; } })()
+    );
+    const isAdmin = () => ROLE === 'admin';
+    const can = k => isAdmin() ? true : !!PERM[k];
+
+    function authGate() {
+      const box = document.getElementById('authGate');
+      if (!box) return true;
+      if (ROLE && WHOAMI) { authHide(); applyRole(); return true; }
+
+      const nameEl = document.getElementById('authName');
+      const pwEl   = document.getElementById('authPw');
+      const msgEl  = document.getElementById('authMsg');
+      nameEl.value = WHOAMI || '';
+
+      const tryIn = () => {
+        const nm = (nameEl.value || '').trim();
+        const pw = pwEl.value || '';
+        if (!nm) { msgEl.textContent = '이름을 적어주세요.'; nameEl.focus(); return; }
+        let role = '';
+        try {
+          if (pw && btoa(unescape(encodeURIComponent(pw))) === AUTH.admin)  role = 'admin';
+          else if (pw && btoa(unescape(encodeURIComponent(pw))) === AUTH.editor) role = 'editor';
+        } catch (e) {}
+        if (!role) { msgEl.textContent = '비밀번호가 맞지 않습니다.'; pwEl.value = ''; pwEl.focus(); return; }
+        ROLE = role; WHOAMI = nm;
+        localStorage.setItem('onsal_role', ROLE);
+        localStorage.setItem('onsal_user', WHOAMI);
+        authHide();
+        applyRole();
+        auditPush('로그인', '접속', WHOAMI, null, [], null);
+        bootApp();
+      };
+      document.getElementById('authGo').onclick = tryIn;
+      [nameEl, pwEl].forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') tryIn(); }));
+      setTimeout(() => (WHOAMI ? pwEl : nameEl).focus(), 100);
+      return false;
+    }
+
+    function authHide() {
+      const g = document.getElementById('authGate');
+      if (g) { g.style.display = 'none'; g.style.pointerEvents = 'none'; g.setAttribute('aria-hidden', 'true'); }
+    }
+
+    function authLogout() {
+      if (!confirm('로그아웃할까요?\n데이터는 그대로 남습니다.')) return;
+      localStorage.removeItem('onsal_role');
+      localStorage.removeItem('onsal_user');
+      location.reload();
+    }
+
+    /* ---------- 역할 적용 ---------- */
+    function applyRole() {
+      const badge = document.getElementById('roleBadge');
+      if (badge) {
+        badge.textContent = (isAdmin() ? '관리자' : '편집자') + ' · ' + WHOAMI;
+        badge.className = 'side-util ' + (isAdmin() ? 'role-admin' : 'role-editor');
+        badge.classList.remove('hidden');
+      }
+      const show = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
+      show('nav-audit', isAdmin());
+      show('navgrp-money', can('money'));
+      show('navsub-money', can('money'));
+      document.body.classList.toggle('no-contact', !can('contact'));
+      if (!can('contact')) maskPII();
+    }
+
+    /* 삭제 차단 (편집자) */
+    document.addEventListener('click', function (e) {
+      if (can('del')) return;
+      const el = e.target.closest && e.target.closest('[onclick]');
+      if (!el) return;
+      const code = el.getAttribute('onclick') || '';
+      if (/\b(delete|del[A-Z]|remove[A-Z])/.test(code) || /삭제|제거/.test(el.textContent || '')) {
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+        alert('편집자 권한으로는 삭제할 수 없습니다.\n관리자에게 요청해 주세요.');
+      }
+    }, true);
+
+    /* 연락처 가리기 */
+    function maskPII() {
+      if (can('contact')) return;
+      const re = /01[016789][-\s]?\d{3,4}[-\s]?\d{4}/g;
+      const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      const hits = [];
+      while (w.nextNode()) { if (re.test(w.currentNode.nodeValue)) { re.lastIndex = 0; hits.push(w.currentNode); } }
+      hits.forEach(n => { n.nodeValue = n.nodeValue.replace(re, '010-****-****'); });
+    }
+
+    /* ==================================================================
+       변경 이력
+       ================================================================== */
+    const AUDIT_MAX  = 300;
+    const AUDIT_PREV = 40;      /* 최근 N건만 되돌리기용 원본 보관 */
+    let auditLog = (function () { try { return JSON.parse(localStorage.getItem('onsal_auditLog') || '[]'); } catch (e) { return []; } })();
+    let auditSnap = null;
+    let auditOn = false;
+    let auditRestoring = false;
+
+    const AUDIT_SETS = [
+      ['PPL·협찬',   () => (typeof pplList     !== 'undefined' ? pplList     : []), r => r.realName || r.influencer || ('#' + r.id), r => r.id],
+      ['체험단',     () => (typeof trialList   !== 'undefined' ? trialList   : []), r => r.title || r.product || ('#' + r.id),       r => r.id],
+      ['크리에이터', () => (typeof creRoster   !== 'undefined' ? creRoster   : []), r => r.name || r.acct || ('#' + r.id),           r => r.id],
+      ['컨택',       () => (typeof contactList !== 'undefined' ? contactList : []), r => r.name || r.influencer || ('#' + r.id),     r => r.id],
+      ['제품',       () => (typeof products    !== 'undefined' ? products    : []), r => r.name,                                      r => r.brand + '|' + r.name],
+      ['UTM',        () => (typeof utmList     !== 'undefined' ? utmList     : []), r => r.name || r.campaign || ('#' + r.id),       r => r.id]
+    ];
+
+    const AUDIT_SKIP = { updatedAt: 1, ytStats: 1, resultImages: 1 };
+
+    function auditFingerprint() {
+      const m = {};
+      AUDIT_SETS.forEach(([label, get, nameOf, keyOf]) => {
+        const bucket = {};
+        (get() || []).forEach(r => {
+          if (!r) return;
+          let k; try { k = String(keyOf(r)); } catch (e) { return; }
+          if (!k || k === 'undefined') return;
+          let j; try { j = JSON.stringify(r); } catch (e) { j = ''; }
+          bucket[k] = j;
+        });
+        m[label] = bucket;
+      });
+      return m;
+    }
+    function auditSnapRebuild() { auditSnap = auditFingerprint(); auditOn = true; }
+
+    function auditTrim(v) {
+      if (v === undefined) return '(없음)';
+      if (v === null) return '(없음)';
+      let t = (typeof v === 'object') ? JSON.stringify(v) : String(v);
+      if (t === '') return '(빈칸)';
+      return t.length > 140 ? t.slice(0, 140) + '…' : t;
+    }
+
+    function auditDiff(beforeObj, afterObj) {
+      const out = [];
+      const walk = (a, b, prefix, depth) => {
+        const keys = new Set([...Object.keys(a || {}), ...Object.keys(b || {})]);
+        keys.forEach(k => {
+          if (AUDIT_SKIP[k]) return;
+          const av = a ? a[k] : undefined, bv = b ? b[k] : undefined;
+          let as, bs;
+          try { as = JSON.stringify(av); bs = JSON.stringify(bv); } catch (e) { return; }
+          if (as === bs) return;
+          const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
+          if (depth < 2 && (isObj(av) || isObj(bv))) { walk(av || {}, bv || {}, prefix + k + '·', depth + 1); return; }
+          if (out.length < 25) out.push({ k: prefix + k, b: auditTrim(av), v: auditTrim(bv) });
+        });
+      };
+      walk(beforeObj, afterObj, '', 0);
+      return out;
+    }
+
+    function auditPush(set, act, name, id, fields, prevJson) {
+      auditLog.push({
+        t: Date.now(), u: WHOAMI || '(이름없음)', r: ROLE || '-',
+        s: set, act: act, n: String(name || ''), i: id == null ? '' : String(id),
+        f: fields || [], p: prevJson || null
+      });
+      if (auditLog.length > AUDIT_MAX) auditLog = auditLog.slice(-AUDIT_MAX);
+      for (let i = 0; i < auditLog.length - AUDIT_PREV; i++) auditLog[i].p = null;
+      try { localStorage.setItem('onsal_auditLog', JSON.stringify(auditLog)); } catch (e) {}
+    }
+
+    function auditCapture() {
+      if (!auditOn || !auditSnap) return;
+      const now = auditFingerprint();
+      let n = 0;
+      AUDIT_SETS.forEach(([label, get, nameOf, keyOf]) => {
+        const was = auditSnap[label] || {}, is = now[label] || {};
+        const live = {};
+        (get() || []).forEach(r => { if (!r) return; try { live[String(keyOf(r))] = r; } catch (e) {} });
+
+        Object.keys(is).forEach(k => {
+          if (was[k] === undefined) {
+            auditPush(label, '추가', nameOf(live[k]) || k, k, [], null); n++;
+          } else if (was[k] !== is[k]) {
+            let prev = null; try { prev = JSON.parse(was[k]); } catch (e) {}
+            const f = auditDiff(prev, live[k]);
+            if (!f.length) return;
+            auditPush(label, auditRestoring ? '복구' : '수정', nameOf(live[k]) || k, k, f,
+                      (was[k] && was[k].length <= 5000) ? was[k] : null); n++;
+          }
+        });
+        Object.keys(was).forEach(k => {
+          if (is[k] === undefined) {
+            let prev = null; try { prev = JSON.parse(was[k]); } catch (e) {}
+            auditPush(label, '삭제', (prev ? nameOf(prev) : k) || k, k, [], (was[k] && was[k].length <= 5000) ? was[k] : null); n++;
+          }
+        });
+      });
+      auditSnap = now;
+      if (n) updateCheckBadge();
+    }
+
+    /* 시트로 보낼 때 용량 제한 — 오래된 원본부터 버립니다 (내 PC 기록은 그대로) */
+    const AUDIT_SYNC_MAX = 140000;
+    function auditForSync() {
+      let out = auditLog.map(x => Object.assign({}, x));
+      let len = 0;
+      try { len = JSON.stringify(out).length; } catch (e) { return out; }
+      for (let i = 0; i < out.length && len > AUDIT_SYNC_MAX; i++) {
+        if (!out[i].p) continue;
+        len -= out[i].p.length;
+        out[i] = Object.assign({}, out[i], { p: null });
+      }
+      return out;
+    }
+
+    /* 다른 기기 기록 합치기 */
+    function auditMerge(remote) {
+      if (!Array.isArray(remote)) return;
+      const seen = new Set(auditLog.map(x => x.t + '|' + x.u + '|' + x.s + '|' + x.i + '|' + x.act));
+      remote.forEach(x => {
+        if (!x || !x.t) return;
+        const k = x.t + '|' + x.u + '|' + x.s + '|' + x.i + '|' + x.act;
+        if (seen.has(k)) return;
+        seen.add(k); auditLog.push(x);
+      });
+      auditLog.sort((a, b) => a.t - b.t);
+      if (auditLog.length > AUDIT_MAX) auditLog = auditLog.slice(-AUDIT_MAX);
+      try { localStorage.setItem('onsal_auditLog', JSON.stringify(auditLog)); } catch (e) {}
+    }
+
+    /* ---------- 되돌리기 ---------- */
+    function auditRestore(idx) {
+      if (!isAdmin()) { alert('관리자만 되돌릴 수 있습니다.'); return; }
+      const e = auditLog[idx];
+      if (!e || !e.p) { alert('이 기록은 원본이 보관돼 있지 않아 되돌릴 수 없습니다.\n(오래됐거나 용량이 큰 건)\n\n백업 메뉴의 스냅샷을 이용해 주세요.'); return; }
+      let prev; try { prev = JSON.parse(e.p); } catch (err) { alert('원본을 읽지 못했습니다.'); return; }
+
+      const def = AUDIT_SETS.find(x => x[0] === e.s);
+      if (!def) { alert('대상을 찾지 못했습니다.'); return; }
+      const [label, get, nameOf, keyOf] = def;
+      const arr = get();
+      if (!Array.isArray(arr)) { alert('대상 목록을 찾지 못했습니다.'); return; }
+
+      const msg = '[' + label + '] ' + e.n + '\n'
+        + auditWhen(e.t) + ' · ' + e.u + ' 님의 "' + e.act + '" 을(를) 되돌립니다.\n\n'
+        + (e.act === '삭제' ? '삭제된 항목을 다시 살립니다.' : '수정 전 상태로 되돌립니다.')
+        + '\n\n진행할까요?';
+      if (!confirm(msg)) return;
+
+      try { localStorage.setItem('onsal_restore_bak_' + Date.now(), JSON.stringify(arr)); } catch (err) {}
+
+      const i = arr.findIndex(r => { try { return String(keyOf(r)) === String(e.i); } catch (err) { return false; } });
+      if (i >= 0) arr[i] = prev; else arr.push(prev);
+
+      auditRestoring = true;
+      try { saveAll(); } finally { auditRestoring = false; }
+      if (typeof renderAll === 'function') renderAll();
+      renderAuditPage();
+      alert('✅ 되돌렸습니다.\n\n' + label + ' · ' + e.n);
+    }
+
+    /* ---------- 화면 ---------- */
+    function auditWhen(t) {
+      const d = new Date(t);
+      const p = n => String(n).padStart(2, '0');
+      return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    }
+    const ACT_STYLE = { '추가': 'bg-emerald-100 text-emerald-700', '수정': 'bg-amber-100 text-amber-800',
+                        '삭제': 'bg-rose-100 text-rose-700', '접속': 'bg-slate-100 text-slate-500', '복구': 'bg-violet-100 text-violet-700' };
+
+    function renderAuditPage() {
+      const body = document.getElementById('auditBody');
+      if (!body) return;
+      if (!isAdmin()) { body.innerHTML = '<p class="p-8 text-center text-sm text-slate-400">관리자만 볼 수 있습니다.</p>'; return; }
+
+      const whoSel = document.getElementById('auditWho');
+      const setSel = document.getElementById('auditSet');
+      const who = whoSel ? whoSel.value : '';
+      const st  = setSel ? setSel.value : '';
+      const q   = (document.getElementById('auditQ') || {}).value || '';
+
+      const people = [...new Set(auditLog.map(x => x.u))].sort();
+      const sets   = [...new Set(auditLog.map(x => x.s))].sort();
+      const fill = (el, cur, list, allLabel) => {
+        if (!el) return;
+        el.innerHTML = '<option value="">' + allLabel + '</option>'
+          + list.map(v => '<option value="' + tEsc(v) + '"' + (v === cur ? ' selected' : '') + '>' + tEsc(v) + '</option>').join('');
+      };
+      fill(whoSel, who, people, '전체 작업자');
+      fill(setSel, st, sets, '전체 항목');
+
+      let rows = auditLog.slice().reverse();
+      if (who) rows = rows.filter(x => x.u === who);
+      if (st)  rows = rows.filter(x => x.s === st);
+      if (q)   rows = rows.filter(x => String(x.n).indexOf(q) >= 0);
+
+      /* 요약 카드 */
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const since = today.getTime();
+      const cards = document.getElementById('auditCards');
+      if (cards) {
+        const card = (t, v, c) => '<div class="bg-white p-4 rounded-2xl border border-slate-200"><p class="text-[11px] font-bold text-slate-500">' + t
+          + '</p><p class="text-2xl font-black mt-1 ' + c + '">' + v + '</p></div>';
+        cards.innerHTML =
+          card('전체 기록', auditLog.length + '건', 'text-slate-900') +
+          card('오늘 변경', auditLog.filter(x => x.t >= since && x.act !== '접속').length + '건', 'text-violet-700') +
+          card('삭제', auditLog.filter(x => x.act === '삭제').length + '건', 'text-rose-600') +
+          card('작업자', people.length + '명', 'text-slate-900');
+      }
+
+      if (!rows.length) { body.innerHTML = '<p class="p-8 text-center text-sm text-slate-400">기록이 없습니다.</p>'; return; }
+
+      body.innerHTML = '<div class="overflow-x-auto custom-scrollbar"><table class="w-full text-left text-xs">'
+        + '<thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200"><tr>'
+        + '<th class="py-2.5 px-3 whitespace-nowrap">시각</th><th class="py-2.5 px-3">작업자</th><th class="py-2.5 px-3">항목</th>'
+        + '<th class="py-2.5 px-3">대상</th><th class="py-2.5 px-3">구분</th><th class="py-2.5 px-3">바뀐 내용</th>'
+        + '<th class="py-2.5 px-3 text-center">되돌리기</th></tr></thead><tbody class="divide-y divide-slate-100">'
+        + rows.slice(0, 200).map(x => {
+            const idx = auditLog.indexOf(x);
+            const fields = (x.f || []).map(f =>
+              '<div class="py-0.5"><b class="text-slate-700">' + tEsc(f.k) + '</b> '
+              + '<span class="text-rose-500 line-through">' + tEsc(f.b) + '</span> '
+              + '<i class="fa-solid fa-arrow-right text-[9px] text-slate-400"></i> '
+              + '<span class="text-emerald-700 font-semibold">' + tEsc(f.v) + '</span></div>').join('');
+            return '<tr class="hover:bg-slate-50/60 align-top">'
+              + '<td class="py-2.5 px-3 whitespace-nowrap text-slate-500">' + auditWhen(x.t) + '</td>'
+              + '<td class="py-2.5 px-3 whitespace-nowrap"><b>' + tEsc(x.u) + '</b>'
+                + (x.r === 'admin' ? ' <span class="text-[9px] px-1 py-0.5 rounded bg-slate-800 text-white">관리자</span>' : '') + '</td>'
+              + '<td class="py-2.5 px-3 whitespace-nowrap text-slate-600">' + tEsc(x.s) + '</td>'
+              + '<td class="py-2.5 px-3 font-semibold text-slate-900">' + tEsc(x.n) + '</td>'
+              + '<td class="py-2.5 px-3 whitespace-nowrap"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded '
+                + (ACT_STYLE[x.act] || 'bg-slate-100 text-slate-600') + '">' + tEsc(x.act) + '</span></td>'
+              + '<td class="py-2.5 px-3 text-[11px] leading-relaxed max-w-[460px]">' + (fields || '<span class="text-slate-300">—</span>') + '</td>'
+              + '<td class="py-2.5 px-3 text-center">'
+                + (x.p ? '<button onclick="auditRestore(' + idx + ')" class="px-2 py-1 bg-white hover:bg-violet-50 border border-violet-200 text-violet-700 text-[10px] font-bold rounded-lg">되돌리기</button>'
+                       : '<span class="text-slate-300 text-[10px]">—</span>') + '</td>'
+              + '</tr>';
+          }).join('')
+        + '</tbody></table></div>'
+        + (rows.length > 200 ? '<p class="p-3 text-center text-[11px] text-slate-400">최근 200건만 표시합니다 (전체 ' + rows.length + '건)</p>' : '');
+    }
+
+    function auditDownload() {
+      if (!auditLog.length) { alert('기록이 없습니다.'); return; }
+      const data = auditLog.slice().reverse().map(x => ({
+        '시각': new Date(x.t).toLocaleString('ko-KR'), '작업자': x.u, '권한': x.r === 'admin' ? '관리자' : '편집자',
+        '항목': x.s, '대상': x.n, '구분': x.act,
+        '바뀐 내용': (x.f || []).map(f => f.k + ': ' + f.b + ' → ' + f.v).join(' / ')
+      }));
+      downloadSheet(data, '변경이력_' + new Date().toISOString().slice(0, 10));
+    }
+
+    /* ==================================================================
+       누락 점검
+       ================================================================== */
+    function checkToday() { return new Date().toISOString().slice(0, 10); }
+
+    function checkCollect() {
+      const T = checkToday();
+      const ym = (typeof ambmYm === 'function') ? ambmYm() : T.slice(0, 7);
+      const G = [];
+      const add = (key, title, color, rows) => { if (rows.length) G.push({ key, title, color, rows }); };
+
+      const PPL = (typeof pplList !== 'undefined' ? pplList : []);
+      const who = p => (p.realName || '무명') + (p.influencer ? ' (' + p.influencer + ')' : '');
+
+      /* 1. 기한 지난 미완료 일정 */
+      const late = [];
+      PPL.forEach(p => {
+        if (p.isCompleted) return;
+        Object.entries(p.stepDates || {}).forEach(([st, info]) => {
+          if (!info || !info.date || info.done) return;
+          if (info.date < T) late.push({ 대상: who(p), 항목: 'PPL', 내용: st, 날짜: info.date, page: 'ppl' });
+        });
+      });
+      (typeof trialList !== 'undefined' ? trialList : []).forEach(t => {
+        Object.entries(t.stages || {}).forEach(([st, info]) => {
+          if (!info || !info.date || info.done) return;
+          if (info.date < T) late.push({ 대상: t.title || t.product || '체험단', 항목: '체험단', 내용: st, 날짜: info.date, page: 'trial' });
+        });
+      });
+      late.sort((a, b) => (a.날짜 || '').localeCompare(b.날짜 || ''));
+      add('late', '기한 지난 미완료 일정', 'rose', late);
+
+      /* 2. 업로드일 지났는데 링크 없음 */
+      const noLink = [];
+      PPL.forEach(p => {
+        const up = (p.stepDates || {})['업로드'];
+        const has = (p.uploads || []).some(u => u && u.url);
+        if (up && up.date && up.date <= T && !has) noLink.push({ 대상: who(p), 항목: 'PPL', 내용: '업로드 링크 미등록', 날짜: up.date, page: 'ppl' });
+      });
+      PPL.forEach(p => {
+        const t = p.types || {};
+        if (!(t.freeAmb || t.ambassador || t.sample)) return;
+        const m = (p.monthlyPlan || {})[ym] || {};
+        if (m.uploadDate && !m.feedUrl) noLink.push({ 대상: who(p), 항목: '앰버서더', 내용: '피드 URL 미등록', 날짜: m.uploadDate, page: 'amb' });
+      });
+      noLink.sort((a, b) => (a.날짜 || '').localeCompare(b.날짜 || ''));
+      add('nolink', '업로드했는데 링크가 없음', 'amber', noLink);
+
+      /* 3. 제출했는데 미발송 */
+      const noShip = [];
+      PPL.forEach(p => {
+        const t = p.types || {};
+        if (!(t.freeAmb || t.ambassador || t.sample)) return;
+        const m = (p.monthlyPlan || {})[ym] || {};
+        if (m.submitted && !m.shipped) {
+          const noAddr = !(p.address || '').trim();
+          noShip.push({ 대상: who(p), 항목: '앰버서더', 내용: ym + ' 제출 완료 · 발송 미체크' + (noAddr ? ' · 주소 없음' : ''), 날짜: ym, page: 'amb' });
+        }
+      });
+      add('noship', '제출했는데 발송이 안 된 건', 'sky', noShip);
+
+      /* 4. 미지급 정산 */
+      const unpaid = [];
+      (typeof creRoster !== 'undefined' ? creRoster : []).forEach(c => {
+        Object.entries(c.months || {}).forEach(([m, d]) => {
+          if (!d || !(d.m1 || d.m2)) return;
+          const needBonus = (typeof creIsTop === 'function') ? creIsTop(d) : (Number(d.top) > 0);
+          const done = d.paidBase && (needBonus ? d.paidBonus : true);
+          if (done) return;
+          const amt = (typeof creAmount === 'function') ? creAmount(d, m) : 0;
+          unpaid.push({ 대상: c.name || c.acct || '', 항목: '크리에이터', 내용: m + ' 미지급' + (amt ? ' · ' + amt.toLocaleString() + '원' : ''), 날짜: m, page: 'sup' });
+        });
+      });
+      unpaid.sort((a, b) => (a.날짜 || '').localeCompare(b.날짜 || ''));
+      add('unpaid', '미지급 정산', 'violet', unpaid);
+
+      /* 5. 금액이 안 들어간 진행 건 */
+      const noCost = [];
+      PPL.forEach(p => {
+        if (typeof totalCostOf !== 'function') return;
+        const t = p.types || {};
+        if (t.freeAmb) return;
+        if (!Object.keys(t).some(k => t[k])) return;
+        if (totalCostOf(p) > 0) return;
+        const started = ['진행확정', '계약서작성', '계약금입금', '촬영', '초안전달', '최종본전달', '업로드', '잔금입금'].indexOf(p.status) >= 0;
+        if (!started) return;
+        noCost.push({ 대상: who(p), 항목: (typeof catOfPpl === 'function' ? catOfPpl(p) : 'PPL'), 내용: '단가 0원 · ' + (p.status || ''), 날짜: p.contactDate || '', page: 'ppl' });
+      });
+      add('nocost', '단가가 안 들어간 진행 건', 'slate', noCost);
+
+      /* 6. 발송 대상인데 주소가 없음 */
+      const noAddr = [];
+      (typeof creRoster !== 'undefined' ? creRoster : []).forEach(c => {
+        const liveOk = (typeof creLive === 'function') ? creLive(c) : (c.active !== false);
+        if (!liveOk) return;
+        const m = (c.months || {})[ym] || {};
+        if (!(m.m1 || m.m2)) return;
+        const zip = m.zip || c.zip, ad = m.addr || c.addr;
+        if (!ad) noAddr.push({ 대상: c.name || c.acct || '', 항목: '크리에이터', 내용: '주소 없음', 날짜: ym, page: 'sup' });
+        else if (!zip) noAddr.push({ 대상: c.name || c.acct || '', 항목: '크리에이터', 내용: '우편번호 없음', 날짜: ym, page: 'sup' });
+      });
+      (typeof creRoster !== 'undefined' ? creRoster : []).forEach(c => {
+        const liveOk = (typeof creLive === 'function') ? creLive(c) : (c.active !== false);
+        if (liveOk && !(c.phone || '').trim()) noAddr.push({ 대상: c.name || c.acct || '', 항목: '크리에이터', 내용: '연락처 없음', 날짜: '', page: 'sup' });
+      });
+      add('noaddr', '발송·지급에 필요한 정보가 빠진 건', 'orange', noAddr);
+
+      return G;
+    }
+
+    function checkCount() { return checkCollect().reduce((s, g) => s + g.rows.length, 0); }
+
+    function updateCheckBadge() {
+      const b = document.getElementById('navCheckBadge');
+      if (!b) return;
+      let n = 0; try { n = checkCount(); } catch (e) { return; }
+      b.textContent = n > 99 ? '99+' : n;
+      b.classList.toggle('hidden', n === 0);
+    }
+
+    const CHK_COLOR = {
+      rose:   ['border-rose-200',   'bg-rose-50',   'text-rose-700'],
+      amber:  ['border-amber-200',  'bg-amber-50',  'text-amber-800'],
+      sky:    ['border-sky-200',    'bg-sky-50',    'text-sky-700'],
+      violet: ['border-violet-200', 'bg-violet-50', 'text-violet-700'],
+      slate:  ['border-slate-200',  'bg-slate-50',  'text-slate-700'],
+      orange: ['border-orange-200', 'bg-orange-50', 'text-orange-700']
+    };
+
+    function renderCheckPage() {
+      const cards = document.getElementById('checkCards');
+      const body  = document.getElementById('checkBody');
+      if (!body) return;
+      const G = checkCollect();
+      const total = G.reduce((s, g) => s + g.rows.length, 0);
+      updateCheckBadge();
+
+      if (cards) {
+        cards.innerHTML = G.length
+          ? G.map(g => {
+              const c = CHK_COLOR[g.color] || CHK_COLOR.slate;
+              return '<button onclick="document.getElementById(\'chk-' + g.key + '\').scrollIntoView({behavior:\'smooth\',block:\'start\'})" '
+                + 'class="text-left p-4 rounded-2xl border ' + c[0] + ' ' + c[1] + ' hover:shadow-sm transition">'
+                + '<p class="text-[11px] font-bold text-slate-600 leading-tight">' + tEsc(g.title) + '</p>'
+                + '<p class="text-2xl font-black mt-1 ' + c[2] + '">' + g.rows.length + '<span class="text-sm ml-0.5">건</span></p></button>';
+            }).join('')
+          : '<div class="col-span-full p-6 bg-emerald-50 border border-emerald-200 rounded-2xl text-center">'
+            + '<p class="text-base font-black text-emerald-700"><i class="fa-solid fa-circle-check"></i> 누락된 건이 없습니다</p></div>';
+      }
+
+      if (!total) { body.innerHTML = ''; return; }
+
+      body.innerHTML = G.map(g => {
+        const c = CHK_COLOR[g.color] || CHK_COLOR.slate;
+        return '<section id="chk-' + g.key + '" class="bg-white rounded-2xl border ' + c[0] + ' overflow-hidden">'
+          + '<div class="px-5 py-3 ' + c[1] + ' border-b ' + c[0] + ' flex items-center justify-between">'
+          + '<h2 class="text-sm font-black ' + c[2] + '">' + tEsc(g.title) + ' <span class="ml-1">' + g.rows.length + '건</span></h2></div>'
+          + '<div class="overflow-x-auto custom-scrollbar"><table class="w-full text-left text-xs">'
+          + '<thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200"><tr>'
+          + '<th class="py-2 px-3">대상</th><th class="py-2 px-3">항목</th><th class="py-2 px-3">내용</th>'
+          + '<th class="py-2 px-3 whitespace-nowrap">날짜</th><th class="py-2 px-3 text-center">이동</th></tr></thead>'
+          + '<tbody class="divide-y divide-slate-100">'
+          + g.rows.slice(0, 120).map(r =>
+              '<tr class="hover:bg-slate-50/60">'
+              + '<td class="py-2 px-3 font-semibold text-slate-900">' + tEsc(r.대상) + '</td>'
+              + '<td class="py-2 px-3 text-slate-500 whitespace-nowrap">' + tEsc(r.항목) + '</td>'
+              + '<td class="py-2 px-3 text-slate-700">' + tEsc(r.내용) + '</td>'
+              + '<td class="py-2 px-3 text-slate-500 whitespace-nowrap">' + tEsc(r.날짜 || '') + '</td>'
+              + '<td class="py-2 px-3 text-center"><button onclick="switchMainPage(\'' + r.page + '\')" '
+                + 'class="px-2 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg">열기</button></td>'
+              + '</tr>').join('')
+          + '</tbody></table></div>'
+          + (g.rows.length > 120 ? '<p class="p-2.5 text-center text-[11px] text-slate-400">120건만 표시 (전체 ' + g.rows.length + '건)</p>' : '')
+          + '</section>';
+      }).join('');
+    }
+
+    function checkDownload() {
+      const G = checkCollect();
+      const data = [];
+      G.forEach(g => g.rows.forEach(r => data.push({ '구분': g.title, '대상': r.대상, '항목': r.항목, '내용': r.내용, '날짜': r.날짜 || '' })));
+      if (!data.length) { alert('누락된 건이 없습니다.'); return; }
+      downloadSheet(data, '누락점검_' + new Date().toISOString().slice(0, 10));
+    }
+
+    /* ---------- 권한 설정 (관리자 전용) ---------- */
+    function openPermModal() {
+      if (!isAdmin()) { alert('관리자만 바꿀 수 있습니다.'); return; }
+      const cur = k => PERM[k] ? 'checked' : '';
+      const html =
+        '<div id="permBox" style="position:fixed;inset:0;z-index:99990;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:20px">'
+        + '<div style="width:100%;max-width:420px;background:#fff;border-radius:16px;padding:24px;font-family:Pretendard,-apple-system,sans-serif">'
+        + '<div style="font-size:16px;font-weight:800;color:#0f172a">편집자 권한 설정</div>'
+        + '<div style="font-size:11.5px;color:#64748b;margin-top:4px;line-height:1.6">체크하면 편집자도 할 수 있습니다. 관리자는 항상 전부 가능합니다.</div>'
+        + '<div style="margin-top:16px;display:flex;flex-direction:column;gap:10px">'
+        + [['money','정산 · 예산 메뉴 보기'],['del','삭제하기'],['contact','연락처 · 주소 보기'],['settings','설정 · 단가 바꾸기']]
+            .map(([k,l]) => '<label style="display:flex;align-items:center;gap:9px;font-size:13px;color:#0f172a;cursor:pointer">'
+              + '<input type="checkbox" id="perm_' + k + '" ' + cur(k) + ' style="width:17px;height:17px;accent-color:#0f172a"> ' + l + '</label>').join('')
+        + '</div>'
+        + '<div style="display:flex;gap:8px;margin-top:20px">'
+        + '<button onclick="document.getElementById(\'permBox\').remove()" style="flex:1;padding:10px;border:1px solid #cbd5e1;background:#fff;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">취소</button>'
+        + '<button onclick="savePerm()" style="flex:1;padding:10px;border:0;background:#0f172a;color:#fff;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer">저장</button>'
+        + '</div></div></div>';
+      document.body.insertAdjacentHTML('beforeend', html);
+    }
+    function savePerm() {
+      ['money', 'del', 'contact', 'settings'].forEach(k => {
+        const el = document.getElementById('perm_' + k);
+        if (el) PERM[k] = el.checked;
+      });
+      localStorage.setItem('onsal_perm', JSON.stringify(PERM));
+      const b = document.getElementById('permBox'); if (b) b.remove();
+      applyRole();
+      alert('저장했습니다.\n편집자가 다음에 새로고침하면 적용됩니다.');
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
-      if (RPT_READONLY) { rptEnterViewer(RPT_VIEW_ID); return; }   // 보기 전용 공유 링크
+      if (RPT_READONLY) {
+        const g = document.getElementById('authGate'); if (g) g.style.display = 'none';
+        rptEnterViewer(RPT_VIEW_ID); return;                       // 보기 전용 공유 링크
+      }
+      if (!authGate()) return;      // 로그인 전이면 여기서 멈춤
+      authHide();
+      bootApp();
+    });
+
+    function bootApp() {
       document.getElementById('contactDate').valueAsDate = new Date();
       document.getElementById('logDate').valueAsDate = new Date();
       renderAll();
@@ -5671,15 +6300,21 @@
       }
 
       rptInitResizers();
+      auditSnapRebuild();
       pullFromSheet().then(() => {
         renderAll();
         renderRptPage();
         syncToScheduler(true);
         pullReuseRecords(false);
+        auditSnapRebuild();
+        updateCheckBadge();
+        if (!can('contact')) maskPII();
       });
-    });
+    }
 
     function saveAll() {
+      try { auditCapture(); } catch (e) { console.warn('변경 이력 기록 실패', e); }
+      try { localStorage.setItem('onsal_auditLog', JSON.stringify(auditLog)); } catch (e) {}
       localStorage.setItem('onsal_products', JSON.stringify(products));
       localStorage.setItem('onsal_pplList', JSON.stringify(pplList));
       localStorage.setItem('onsal_proposals', JSON.stringify(proposals));
@@ -5790,7 +6425,13 @@
 
     // 페이지 전환 (PPL / 시딩재고 / UTM)
     function switchMainPage(pageId) {
-      const pages = ['monthly', 'perf', 'report', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'etc', 'pay', 'cost', 'utm', 'budget'];
+      if (!can('money') && ['pay', 'cost', 'budget'].indexOf(pageId) >= 0) {
+        alert('정산 · 예산은 관리자만 볼 수 있습니다.'); pageId = 'ppl';
+      }
+      if (pageId === 'audit' && !isAdmin()) {
+        alert('변경 이력은 관리자만 볼 수 있습니다.'); pageId = 'ppl';
+      }
+      const pages = ['monthly', 'perf', 'report', 'contact', 'ppl', 'micro', 'amb', 'sup', 'creator', 'trial', 'etc', 'pay', 'cost', 'utm', 'budget', 'check', 'audit'];
       const activeClass = "nav-item nav-item-on";
       const idleClass = "nav-item";
 
@@ -5828,6 +6469,10 @@
       if (pageId === 'budget') { renderBudget(); renderLaunchBudgets(); }
       if (pageId === 'trial') renderTrialDashboard();
       if (pageId === 'utm') renderUtmDashboard();
+      if (pageId === 'check') renderCheckPage();
+      if (pageId === 'audit') renderAuditPage();
+      try { applyRole(); } catch (e) {}
+      if (!can('contact')) setTimeout(maskPII, 50);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -16092,5 +16737,35 @@
     </div>
   </div>
 
+
+  <!-- ==================== 로그인 ==================== -->
+  <div id="authGate" style="position:fixed;inset:0;z-index:99998;background:linear-gradient(160deg,#0f172a,#1e1b4b);
+       display:flex;align-items:center;justify-content:center;padding:20px;font-family:Pretendard,-apple-system,sans-serif">
+    <div style="width:100%;max-width:380px;background:#fff;border-radius:18px;padding:30px 28px;box-shadow:0 24px 60px rgba(0,0,0,.35)">
+      <div style="font-size:19px;font-weight:800;color:#0f172a">온살 &amp; 루메아카이브</div>
+      <div style="font-size:12px;color:#64748b;margin-top:3px">마케팅 대시보드</div>
+
+      <div style="margin-top:22px">
+        <label style="display:block;font-size:11px;font-weight:700;color:#334155;margin-bottom:5px">이름</label>
+        <input id="authName" placeholder="본인 이름" autocomplete="off"
+          style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:13px">
+      </div>
+      <div style="margin-top:12px">
+        <label style="display:block;font-size:11px;font-weight:700;color:#334155;margin-bottom:5px">비밀번호</label>
+        <input id="authPw" type="password" placeholder="비밀번호" autocomplete="off"
+          style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:13px">
+      </div>
+
+      <div id="authMsg" style="margin-top:10px;font-size:11.5px;color:#dc2626;min-height:16px"></div>
+
+      <button id="authGo" style="width:100%;margin-top:6px;padding:11px;border:0;border-radius:10px;
+        background:#0f172a;color:#fff;font-size:14px;font-weight:800;cursor:pointer">들어가기</button>
+
+      <div style="margin-top:14px;font-size:10.5px;color:#94a3b8;line-height:1.6">
+        입력한 이름은 변경 이력에 남습니다.<br>
+        비밀번호를 모르면 관리자에게 문의하세요.
+      </div>
+    </div>
+  </div>
 </body>
 </html>
