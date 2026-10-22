@@ -1086,39 +1086,25 @@
       </div>
     </section>
 
-    <!-- 업로드 일자 & 링크 표 -->
-    <section class="bg-white p-5 rounded-2xl border border-pink-200 shadow-sm space-y-4">
-      <div class="flex flex-wrap gap-3 justify-between items-center border-b border-pink-100 pb-3">
+
+    <!-- 2차활용 대시보드 — 편집자용 바로가기 -->
+    <section id="reuseLinkCard" class="bg-white p-5 rounded-2xl border border-orange-200 shadow-sm hidden">
+      <div class="flex flex-wrap gap-3 justify-between items-center">
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-arrow-up-right-from-square text-pink-600"></i> PPL 업로드 일자 & 링크
-            <span id="pplUploadBodyCount" class="text-xs font-bold px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full">0건</span>
+            <i class="fa-solid fa-rotate text-orange-500"></i> 2차활용 대시보드
           </h2>
-          <p class="text-xs text-slate-500">업로드한 날짜와 링크만 모아서 봅니다. 목록의 “업로드/결과 입력”에서 기록하면 자동으로 쌓여요.</p>
+          <p class="text-xs text-slate-500 mt-0.5">업로드 완료 링크와 활용 기간은 2차활용 대시보드에서 확인하세요.</p>
         </div>
-        <button onclick="exportUploadExcel('ppl')" class="px-3.5 py-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
-          <i class="fa-solid fa-file-arrow-down"></i> 업로드 내역 다운로드
-        </button>
-      </div>
-      <div class="overflow-x-auto custom-scrollbar">
-        <table class="w-full text-left text-xs">
-          <thead class="bg-pink-50/60 text-slate-600 font-semibold border-y border-pink-100">
-            <tr>
-              <th class="py-3 px-3 whitespace-nowrap">업로드 일자</th>
-              <th class="py-3 px-3">인플루언서</th>
-              <th class="py-3 px-3">브랜드 / 제품</th>
-              <th class="py-3 px-3">채널 / 유형</th>
-              <th class="py-3 px-3">업로드 링크</th>
-              <th class="py-3 px-3">성과 / 상위노출</th>
-            </tr>
-          </thead>
-          <tbody id="pplUploadBody" class="divide-y divide-slate-100"></tbody>
-        </table>
+        <a href="https://khgee327.github.io/reuse-dashboard/?view=1" target="_blank" rel="noopener"
+           class="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> 2차활용 대시보드 열기
+        </a>
       </div>
     </section>
 
     <!-- 2차활용 대시보드 연동 -->
-    <section class="bg-white p-5 rounded-2xl border border-orange-200 shadow-sm space-y-4">
+    <section id="reuseSyncCard" class="bg-white p-5 rounded-2xl border border-orange-200 shadow-sm space-y-4">
       <div class="flex flex-wrap gap-3 justify-between items-center border-b border-orange-100 pb-3">
         <div>
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -5689,7 +5675,7 @@
     let ROLE   = localStorage.getItem('onsal_role') || '';
     let WHOAMI = localStorage.getItem('onsal_user') || '';
     let PERM   = Object.assign(
-      { money: false, report: false, export: false, sched: false, del: false, contact: true, settings: false },
+      { money: false, report: false, export: false, sched: false, reuse: false, del: false, contact: true, settings: false },
       (function () { try { return JSON.parse(localStorage.getItem('onsal_perm') || '{}'); } catch (e) { return {}; } })()
     );
     const isAdmin = () => ROLE === 'admin';
@@ -5757,6 +5743,8 @@
       show('navsub-report', can('report'));
       show('btnCsvExport',  can('export'));
       show('schedSyncBtn',  can('sched'));
+      show('reuseSyncCard', can('reuse'));
+      show('reuseLinkCard', !can('reuse'));
       document.body.classList.toggle('no-contact', !can('contact'));
       if (!can('contact')) maskPII();
     }
@@ -5792,6 +5780,7 @@
     let auditSnap = null;
     let auditOn = false;
     let auditRestoring = false;
+    let auditAuto = false;
 
     const AUDIT_SETS = [
       ['PPL·협찬',   () => (typeof pplList     !== 'undefined' ? pplList     : []), r => r.realName || r.influencer || ('#' + r.id), r => r.id],
@@ -5875,7 +5864,7 @@
             let prev = null; try { prev = JSON.parse(was[k]); } catch (e) {}
             const f = auditDiff(prev, live[k]);
             if (!f.length) return;
-            auditPush(label, auditRestoring ? '복구' : '수정', nameOf(live[k]) || k, k, f,
+            auditPush(label, auditRestoring ? '복구' : (auditAuto ? '자동완료' : '수정'), nameOf(live[k]) || k, k, f,
                       (was[k] && was[k].length <= 5000) ? was[k] : null); n++;
           }
         });
@@ -5957,7 +5946,8 @@
       return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
     }
     const ACT_STYLE = { '추가': 'bg-emerald-100 text-emerald-700', '수정': 'bg-amber-100 text-amber-800',
-                        '삭제': 'bg-rose-100 text-rose-700', '접속': 'bg-slate-100 text-slate-500', '복구': 'bg-violet-100 text-violet-700' };
+                        '삭제': 'bg-rose-100 text-rose-700', '접속': 'bg-slate-100 text-slate-500',
+                        '복구': 'bg-violet-100 text-violet-700', '자동완료': 'bg-sky-100 text-sky-700' };
 
     function renderAuditPage() {
       const body = document.getElementById('auditBody');
@@ -6039,6 +6029,76 @@
         '바뀐 내용': (x.f || []).map(f => f.k + ': ' + f.b + ' → ' + f.v).join(' / ')
       }));
       downloadSheet(data, '변경이력_' + new Date().toISOString().slice(0, 10));
+    }
+
+    /* ==================================================================
+       날짜 지난 건 자동으로 진행완료 처리
+       ------------------------------------------------------------------
+       '업로드' 단계 날짜가 오늘보다 이전인데 완료 체크가 안 돼 있으면
+       자동으로 완료로 넘깁니다. 무엇이 넘어갔는지 화면과 변경 이력에 남습니다.
+       끄려면 관리자 권한 설정에서 "날짜 지난 건 자동 완료" 체크를 해제하세요.
+       ================================================================== */
+    function autoCompleteOn() { return localStorage.getItem('onsal_autoComplete') !== '0'; }
+
+    function autoCompletePast(silent) {
+      if (!autoCompleteOn()) return [];
+      if (typeof pplList === 'undefined' || !Array.isArray(pplList)) return [];
+      const T = new Date().toISOString().slice(0, 10);
+      const moved = [];
+      pplList.forEach(p => {
+        const up = p.stepDates && p.stepDates['업로드'];
+        if (!up || typeof up !== 'object' || !up.date || up.done) return;
+        if (up.date >= T) return;
+        up.done = true; up.autoDone = true; up.updatedAt = Date.now();
+        p.isCompleted = true;
+        moved.push({ 이름: (p.realName || '무명') + (p.influencer ? ' (' + p.influencer + ')' : ''), 업로드일: up.date });
+      });
+      if (!moved.length) return [];
+
+      auditAuto = true;
+      try { saveAll(); } finally { auditAuto = false; }
+      if (typeof renderAll === 'function') renderAll();
+      if (!silent) autoToast(moved);
+      console.log('%c날짜 지난 ' + moved.length + '건을 진행완료로 옮겼습니다', 'color:#0284c7;font-weight:bold');
+      console.table(moved);
+      return moved;
+    }
+
+    function autoToast(moved) {
+      document.getElementById('autoToast')?.remove();
+      const names = moved.slice(0, 5).map(m => '· ' + m.이름 + ' (' + m.업로드일 + ')').join('\n')
+        + (moved.length > 5 ? '\n· 외 ' + (moved.length - 5) + '건' : '');
+      const el = document.createElement('div');
+      el.id = 'autoToast';
+      el.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:9998;max-width:340px;background:#fff;'
+        + 'border:1px solid #bae6fd;border-left:4px solid #0284c7;border-radius:12px;padding:14px 16px;'
+        + 'box-shadow:0 12px 32px rgba(15,23,42,.18);font-family:Pretendard,-apple-system,sans-serif';
+      el.innerHTML = '<div style="font-size:13px;font-weight:800;color:#075985">업로드일이 지난 '
+        + moved.length + '건을 진행완료로 옮겼습니다</div>'
+        + '<div style="font-size:11px;color:#64748b;margin-top:5px;line-height:1.6;white-space:pre-line">' + tEsc(names) + '</div>'
+        + '<div style="display:flex;gap:6px;margin-top:10px">'
+        + '<button onclick="autoUndo()" style="flex:1;padding:6px;border:1px solid #cbd5e1;background:#fff;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">되돌리기</button>'
+        + '<button onclick="document.getElementById(\'autoToast\').remove()" style="flex:1;padding:6px;border:0;background:#0f172a;color:#fff;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">확인</button>'
+        + '</div>';
+      document.body.appendChild(el);
+      setTimeout(() => { const t = document.getElementById('autoToast'); if (t) t.remove(); }, 20000);
+    }
+
+    /* 방금 자동으로 넘긴 건만 되돌립니다 */
+    function autoUndo() {
+      let n = 0;
+      pplList.forEach(p => {
+        const up = p.stepDates && p.stepDates['업로드'];
+        if (up && typeof up === 'object' && up.autoDone) {
+          up.done = false; delete up.autoDone; up.updatedAt = Date.now();
+          p.isCompleted = false; n++;
+        }
+      });
+      document.getElementById('autoToast')?.remove();
+      if (!n) { alert('되돌릴 건이 없습니다.'); return; }
+      saveAll();
+      if (typeof renderAll === 'function') renderAll();
+      alert(n + '건을 진행중으로 되돌렸습니다.\n\n다시 넘어가지 않게 하려면 권한 설정에서\n"날짜 지난 건 자동 완료"를 꺼 주세요.');
     }
 
     /* ==================================================================
@@ -6237,9 +6297,15 @@
         + '<div style="font-size:11.5px;color:#64748b;margin-top:4px;line-height:1.6">체크하면 편집자도 할 수 있습니다. 관리자는 항상 전부 가능합니다.</div>'
         + '<div style="margin-top:16px;display:flex;flex-direction:column;gap:10px">'
         + [['money','정산 · 예산 메뉴 보기'],['report','리포트 메뉴 보기'],['export','CSV 내보내기'],
-           ['sched','스케줄러 연동'],['del','삭제하기'],['contact','연락처 · 주소 보기'],['settings','설정 · 단가 바꾸기']]
+           ['sched','스케줄러 연동'],['reuse','2차활용 연동 (표 · 불러오기)'],['del','삭제하기'],['contact','연락처 · 주소 보기'],['settings','설정 · 단가 바꾸기']]
             .map(([k,l]) => '<label style="display:flex;align-items:center;gap:9px;font-size:13px;color:#0f172a;cursor:pointer">'
               + '<input type="checkbox" id="perm_' + k + '" ' + cur(k) + ' style="width:17px;height:17px;accent-color:#0f172a"> ' + l + '</label>').join('')
+        + '</div>'
+        + '<div style="margin-top:16px;padding-top:14px;border-top:1px solid #e2e8f0">'
+        + '<label style="display:flex;align-items:center;gap:9px;font-size:13px;color:#0f172a;cursor:pointer">'
+        + '<input type="checkbox" id="perm_autoDone" ' + (autoCompleteOn() ? 'checked' : '')
+        + ' style="width:17px;height:17px;accent-color:#0f172a"> 날짜 지난 건 자동 완료</label>'
+        + '<div style="font-size:10.5px;color:#94a3b8;margin-top:5px;line-height:1.6">업로드일이 지났는데 완료 체크가 안 된 건을 들어올 때 자동으로 진행완료로 옮깁니다.</div>'
         + '</div>'
         + '<div style="display:flex;gap:8px;margin-top:20px">'
         + '<button onclick="document.getElementById(\'permBox\').remove()" style="flex:1;padding:10px;border:1px solid #cbd5e1;background:#fff;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">취소</button>'
@@ -6248,11 +6314,13 @@
       document.body.insertAdjacentHTML('beforeend', html);
     }
     function savePerm() {
-      ['money', 'report', 'export', 'sched', 'del', 'contact', 'settings'].forEach(k => {
+      ['money', 'report', 'export', 'sched', 'reuse', 'del', 'contact', 'settings'].forEach(k => {
         const el = document.getElementById('perm_' + k);
         if (el) PERM[k] = el.checked;
       });
       localStorage.setItem('onsal_perm', JSON.stringify(PERM));
+      const ad = document.getElementById('perm_autoDone');
+      if (ad) localStorage.setItem('onsal_autoComplete', ad.checked ? '1' : '0');
       const b = document.getElementById('permBox'); if (b) b.remove();
       applyRole();
       alert('저장했습니다.\n편집자가 다음에 새로고침하면 적용됩니다.');
@@ -6311,6 +6379,7 @@
         syncToScheduler(true);
         pullReuseRecords(false);
         auditSnapRebuild();
+        try { autoCompletePast(false); } catch (e) { console.warn('자동 완료 처리 실패', e); }
         updateCheckBadge();
         if (!can('contact')) maskPII();
       });
