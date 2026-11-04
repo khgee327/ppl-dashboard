@@ -1406,7 +1406,10 @@
         <div class="border border-slate-200 rounded-2xl overflow-hidden">
           <div class="px-3 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <span id="ambmListTitle" class="text-xs font-black text-slate-700">앰버서더</span>
-            <span id="ambmListCount" class="text-[11px] font-bold text-slate-500">0명</span>
+            <div class="flex items-center gap-1.5">
+              <button onclick="ambmCopyAllHandles()" title="목록에 있는 인스타 계정을 한 번에 복사" class="px-2 py-0.5 bg-white hover:bg-violet-50 text-violet-700 border border-violet-200 text-[10px] font-bold rounded-md"><i class="fa-regular fa-copy"></i> 계정 복사</button>
+              <span id="ambmListCount" class="text-[11px] font-bold text-slate-500">0명</span>
+            </div>
           </div>
           <div id="ambmList" class="max-h-[620px] overflow-y-auto custom-scrollbar divide-y divide-slate-100"></div>
         </div>
@@ -16343,14 +16346,21 @@
             : pk === 'link' ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">' + prevLabel + ' 업로드 ✓</span>'
             : pk === 'manual' ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200 whitespace-nowrap">' + prevLabel + ' 진행 완료</span>'
             : '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-50 text-slate-400 border border-slate-200 whitespace-nowrap">' + prevLabel + ' 인증 없음</span>';
-          return '<button onclick="ambmSelect(' + p.id + ')" class="w-full text-left px-3.5 py-3 transition ' +
+          const h = ambmHandleOf(p);
+          const handleHtml = h
+            ? '<span class="group/h flex items-center gap-1 min-w-0">' +
+              '<span onclick="event.stopPropagation()" class="text-[11px] text-slate-400 truncate select-text cursor-text">' + tEsc(p.influencer || '') + '</span>' +
+              '<i onclick="event.stopPropagation(); ambmCopyHandle(' + p.id + ')" title="@' + tEsc(h) + ' 복사" class="fa-regular fa-copy text-[10px] text-slate-300 hover:text-violet-600 cursor-pointer shrink-0"></i>' +
+              '</span>'
+            : '<span class="text-[11px] text-slate-400 truncate">' + tEsc(p.influencer || '') + '</span>';
+          return '<div role="button" tabindex="0" onclick="ambmSelect(' + p.id + ')" class="w-full text-left px-3.5 py-3 cursor-pointer transition ' +
             (on ? 'bg-violet-50 border-l-[3px] border-violet-500' : 'hover:bg-slate-50 border-l-[3px] border-transparent') + '">' +
             '<div class="flex items-center gap-1.5">' +
             '<span class="text-xs font-black ' + (on ? 'text-violet-800' : 'text-slate-800') + '">' + tEsc(p.realName || '이름 없음') + '</span>' +
             (sub ? '<i class="fa-solid fa-circle-check text-emerald-500 text-[10px]"></i>' : '<i class="fa-solid fa-circle text-amber-400 text-[7px]"></i>') +
             '</div>' +
-            '<div class="flex items-center justify-between gap-1.5 mt-0.5"><span class="text-[11px] text-slate-400 truncate">' + tEsc(p.influencer || '') + '</span>' + prevBadge + '</div>' +
-            '</button>';
+            '<div class="flex items-center justify-between gap-1.5 mt-0.5">' + handleHtml + prevBadge + '</div>' +
+            '</div>';
         }).join('');
       }
 
@@ -16536,6 +16546,48 @@
     }
 
     /* ----- 문구 복사 ----- */
+    /* 인스타 계정 추출 — '@아이디' / 'instagram.com/아이디' / '아이디' 모두 처리, 실명만 적힌 경우는 null */
+    function ambmHandleOf(p) {
+      let v = String(p.influencer || '').trim();
+      const m = v.match(/instagram\.com\/([A-Za-z0-9._]+)/i) || String(p.channelUrl || '').match(/instagram\.com\/([A-Za-z0-9._]+)/i);
+      if (m && !/^(p|reel|stories)$/i.test(m[1])) return m[1];
+      v = v.replace(/^@/, '');
+      return /^[A-Za-z0-9._]+$/.test(v) ? v : null;
+    }
+    function ambmToast(msg) {
+      let t = document.getElementById('ambmToast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'ambmToast';
+        t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-lg transition-opacity';
+        document.body.appendChild(t);
+      }
+      t.textContent = msg; t.style.opacity = '1';
+      clearTimeout(t._h); t._h = setTimeout(() => { t.style.opacity = '0'; }, 1600);
+    }
+    function ambmCopyQuiet(txt, msg) {
+      const done = () => ambmToast(msg);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(done).catch(() => ambmFallbackCopy(txt, done));
+      } else ambmFallbackCopy(txt, done);
+    }
+    function ambmCopyHandle(id) {
+      const p = pplList.find(x => x.id === id); if (!p) return;
+      const h = ambmHandleOf(p); if (!h) return;
+      ambmCopyQuiet('@' + h, '@' + h + ' 복사했어요');
+    }
+    function ambmCopyAllHandles() {
+      let list = ambmPool();
+      if (ambmFilter === 'submitted') list = list.filter(ambmIsSubmitted);
+      else if (ambmFilter === 'pending') list = list.filter(p => !ambmIsSubmitted(p));
+      else if (ambmFilter === 'shipped') list = list.filter(p => ambmPlan(p).shipped);
+      const hs = list.map(ambmHandleOf).filter(Boolean);
+      const miss = list.filter(p => !ambmHandleOf(p)).map(p => p.realName || '이름 없음');
+      if (!hs.length) { alert('복사할 인스타 계정이 없습니다.'); return; }
+      ambmCopyQuiet(hs.map(h => '@' + h).join('\n'),
+        hs.length + '명 계정 복사했어요' + (miss.length ? ' · 계정 없음: ' + miss.join(', ') : ''));
+    }
+
     function ambmCopyText(txt, msg) {
       const done = () => alert(msg || '복사했습니다.');
       if (navigator.clipboard && navigator.clipboard.writeText) {
