@@ -638,9 +638,13 @@
               <button type="button" onclick="ytFillForm('contact')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold rounded-lg whitespace-nowrap">
                 <i class="fa-brands fa-youtube"></i> 유튜브에서 자동 채우기
               </button>
+              <button type="button" onclick="igFillForm('contact')" class="px-2.5 py-1 bg-fuchsia-50 hover:bg-fuchsia-100 text-fuchsia-700 border border-fuchsia-200 text-[10px] font-bold rounded-lg whitespace-nowrap">
+                <i class="fa-brands fa-instagram"></i> 인스타에서 자동 채우기
+              </button>
               <span class="text-[10px] text-slate-400">채널 주소를 넣고 누르면 구독자 · 평균 조회수 · 좋아요 · 댓글이 들어옵니다</span>
             </div>
             <div id="ytBadge_contact" class="mt-1"></div>
+            <div id="igBadge_contact" class="mt-1"></div>
           </div>
           <div>
             <label class="block text-[11px] font-bold text-slate-600 mb-1">채널</label>
@@ -820,9 +824,13 @@
               <button type="button" onclick="ytFillForm('ppl')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold rounded-lg whitespace-nowrap">
                 <i class="fa-brands fa-youtube"></i> 유튜브에서 자동 채우기
               </button>
+              <button type="button" onclick="igFillForm('ppl')" class="px-2.5 py-1 bg-fuchsia-50 hover:bg-fuchsia-100 text-fuchsia-700 border border-fuchsia-200 text-[10px] font-bold rounded-lg whitespace-nowrap">
+                <i class="fa-brands fa-instagram"></i> 인스타에서 자동 채우기
+              </button>
               <span class="text-[10px] text-slate-400">채널 주소를 넣고 누르면 구독자 · 평균 조회수 · 좋아요 · 댓글이 들어옵니다</span>
             </div>
             <div id="ytBadge_ppl" class="mt-1"></div>
+            <div id="igBadge_ppl" class="mt-1"></div>
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-1">인플루언서 이메일</label>
@@ -3017,9 +3025,13 @@
               <button type="button" onclick="ytFillForm('edit')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold rounded-lg whitespace-nowrap">
                 <i class="fa-brands fa-youtube"></i> 유튜브에서 자동 채우기
               </button>
+              <button type="button" onclick="igFillForm('edit')" class="px-2.5 py-1 bg-fuchsia-50 hover:bg-fuchsia-100 text-fuchsia-700 border border-fuchsia-200 text-[10px] font-bold rounded-lg whitespace-nowrap">
+                <i class="fa-brands fa-instagram"></i> 인스타에서 자동 채우기
+              </button>
               <span class="text-[10px] text-slate-400">채널 주소를 넣고 누르면 구독자 · 평균 조회수 · 좋아요 · 댓글이 들어옵니다</span>
             </div>
             <div id="ytBadge_edit" class="mt-1"></div>
+            <div id="igBadge_edit" class="mt-1"></div>
           </div>
           <div>
             <label class="block font-semibold text-slate-600 mb-1">이메일</label>
@@ -3524,9 +3536,13 @@
               <button type="button" onclick="ytFillForm('inf')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold rounded-lg whitespace-nowrap">
                 <i class="fa-brands fa-youtube"></i> 유튜브에서 자동 채우기
               </button>
+              <button type="button" onclick="igFillForm('inf')" class="px-2.5 py-1 bg-fuchsia-50 hover:bg-fuchsia-100 text-fuchsia-700 border border-fuchsia-200 text-[10px] font-bold rounded-lg whitespace-nowrap">
+                <i class="fa-brands fa-instagram"></i> 인스타에서 자동 채우기
+              </button>
               <span class="text-[10px] text-slate-400">채널 주소를 넣고 누르면 구독자 · 평균 조회수 · 좋아요 · 댓글이 들어옵니다</span>
             </div>
             <div id="ytBadge_inf" class="mt-1"></div>
+            <div id="igBadge_inf" class="mt-1"></div>
           </div>
           <div>
             <label class="block font-semibold text-slate-600 mb-1">이메일</label>
@@ -15559,14 +15575,80 @@
 
     function ytFormReset(key) {
       delete ytFormStats[key];
+      delete igFormStats[key];
+      const igb = document.getElementById('igBadge_' + key); if (igb) igb.innerHTML = '';
       const cfg = YT_FORMS[key];
       const badge = cfg && document.getElementById(cfg.badge);
       if (badge) badge.innerHTML = '';
     }
     function ytFormShow(key, rec) {
+      const igb = document.getElementById('igBadge_' + key); if (igb) igb.innerHTML = '';
       const cfg = YT_FORMS[key];
       const badge = cfg && document.getElementById(cfg.badge);
       if (badge) badge.innerHTML = (rec && rec.ytStats) ? ytFormBadgeHtml(rec.ytStats) : '';
+    }
+
+
+    /* ==================== 등록/수정 폼 인스타 자동 채우기 ==================== */
+    // 인스타 전용 앱스스크립트를 배포한 뒤 나온 /exec 주소를 아래에 넣어 주세요.
+    const IG_API_URL = '';
+    const IG_API_KEY = 'onsal-ig';   // 앱스스크립트 코드 맨 위 KEY와 똑같이
+    const IG_ACCOUNT_FIELD = { ppl: 'influencer', contact: 'ctInfluencer', edit: 'editModalInfluencer', inf: 'infEditInfluencer' };
+    const igFormStats = {};
+
+    function igUsernameOf(v) {
+      v = (v || '').trim();
+      const m = v.match(/instagram\.com\/([A-Za-z0-9._]+)/i);
+      if (m) return ['p', 'reel', 'reels', 'stories', 'explore', 'tv'].includes(m[1].toLowerCase()) ? '' : m[1];
+      if (/^@?[A-Za-z0-9._]{1,30}$/.test(v)) return v.replace(/^@/, '');
+      return '';
+    }
+
+    function igFormUsername(key) {
+      const cfg = YT_FORMS[key];
+      let vals = [];
+      if (cfg.single) vals.push((document.getElementById(cfg.single) || {}).value || '');
+      else vals = Array.from(document.querySelectorAll(cfg.container)).map(el => el.value || '');
+      const fromUrl = vals.map(v => /instagram\.com/i.test(v) ? igUsernameOf(v) : '').find(Boolean);
+      if (fromUrl) return fromUrl;
+      return igUsernameOf((document.getElementById(IG_ACCOUNT_FIELD[key]) || {}).value || '');
+    }
+
+    function igFormBadgeHtml(s) {
+      if (!s) return '';
+      let h = '<div class="text-[10px] font-bold text-fuchsia-700 bg-fuchsia-50 border border-fuchsia-100 rounded-lg px-2 py-1 leading-relaxed">'
+        + '<i class="fa-brands fa-instagram"></i> @' + tEsc(s.username || '') + (s.name ? ' (' + tEsc(s.name) + ')' : '') + '<br>'
+        + '팔로워 ' + fmtCount(s.followers) + ' · 게시물 ' + fmtCount(s.posts);
+      if (s.isPrivate) h += '<br><span class="text-slate-400">비공개 계정이라 게시물 반응은 볼 수 없어요</span>';
+      else if (s.sample) h += '<br>평균 좋아요 ' + (s.avgLikes != null ? fmtCount(s.avgLikes) : '숨김') + ' · 댓글 ' + fmtCount(s.avgComments)
+        + (s.engagement != null ? ' · 인터랙션율 ' + s.engagement + '%' : '')
+        + ' <span class="font-semibold text-slate-400">(최근 ' + s.sample + '개 기준)</span>';
+      return h + '</div>';
+    }
+
+    async function igFillForm(key) {
+      if (!YT_FORMS[key]) return;
+      if (!IG_API_URL) { alert('인스타 연동 주소(IG_API_URL)가 아직 설정되지 않았어요.'); return; }
+      const username = igFormUsername(key);
+      if (!username) {
+        alert('먼저 인스타 주소나 계정을 넣어 주세요.\n예) https://www.instagram.com/아이디 또는 대표 계정 칸에 @아이디');
+        return;
+      }
+      const badge = document.getElementById('igBadge_' + key);
+      if (badge) badge.innerHTML = '<span class="text-[10px] font-bold text-slate-400"><i class="fa-solid fa-spinner fa-spin"></i> 인스타에서 가져오는 중...</span>';
+      try {
+        const res = await fetch(IG_API_URL + '?key=' + encodeURIComponent(IG_API_KEY) + '&username=' + encodeURIComponent(username));
+        const st = await res.json();
+        if (!st.ok) throw new Error(st.error || '알 수 없는 오류');
+        igFormStats[key] = st;
+        const yt = document.getElementById('ytBadge_' + key);
+        const f = document.getElementById(YT_FORMS[key].followers);
+        if (f && st.followers != null && !(yt && yt.innerHTML.trim())) f.value = fmtCount(st.followers);
+        if (badge) badge.innerHTML = igFormBadgeHtml(st);
+      } catch (e) {
+        if (badge) badge.innerHTML = '';
+        alert('인스타 정보를 가져오지 못했습니다.\n\n' + e.message);
+      }
     }
 
 
