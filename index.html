@@ -17481,41 +17481,104 @@
       </div>
     </div>
   </div>
-  <!-- ==================== PPL 컨펌 요청 탭 (추가 블록) ==================== -->
+<!-- ==================== PPL 컨펌 요청 탭 (추가 블록 v3) ==================== -->
   <script>
 /* ==================================================================
-   PPL 컨펌 요청 탭  (추가 블록 · 기존 코드 수정 없음)
+   PPL 컨펌 요청 탭  (추가 블록 v3 · 기존 코드 수정 없음)
    붙여넣는 위치: index.html 맨 아래 </body> 바로 위
    ================================================================== */
 (function () {
   if (window.__cfInit) return;
   window.__cfInit = true;
 
-  const CF_BASE = { ppl: 0, pa: 0, reuse: 0, products: '', uploadPlan: '',
-                    note: '', approved: false, approvedAt: '', approvedBy: '', movedId: null };
+  /* 비용 항목 — 순서·이름을 바꾸려면 여기만 고치면 됩니다 */
+  const CF_COSTS = [
+    { k: 'branded', label: '브랜디드', type: 'branded' },
+    { k: 'shorts',  label: '숏폼',     type: 'shorts'  },
+    { k: 'ppl',     label: 'PPL',      type: 'ppl'     },
+    { k: 'reuse',   label: '2차 (PA)', type: 'reuse'   }
+  ];
+  const CF_BASE = {
+    branded: 0, shorts: 0, ppl: 0, reuse: 0,
+    products: '', uploadPlan: '', note: '', comment: '', cat: 'ppl',
+    state: '', decidedAt: '', decidedBy: '', movedId: null
+  };
+  const CF_CATS = [
+    { v: 'ppl',        label: 'PPL & 협찬' },
+    { v: 'ambassador', label: '앰버서더' },
+    { v: 'freeAmb',    label: '무상앰버서더' },
+    { v: 'supporters', label: '크리에이터' },
+    { v: 'creator',    label: '인플루언서' },
+    { v: 'microReels', label: '마이크로 릴스' },
+    { v: 'microPpl',   label: '마이크로 PPL' }
+  ];
+  const cfCatLabel = v => (CF_CATS.find(x => x.v === v) || CF_CATS[0]).label;
   let cfFilter = '대기';
 
   const esc = s => String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const won = v => (Number(v) || 0).toLocaleString();
-  const now = () => new Date().toISOString().slice(0, 16).replace('T', ' ');
+  const stamp = () => new Date().toISOString().slice(0, 16).replace('T', ' ');
 
   /* ---------- 데이터 ---------- */
-  function cfOf(c) { c.cf = Object.assign({}, CF_BASE, c.cf || {}); return c.cf; }
-  function cfTotal(f) { return (Number(f.ppl) || 0) + (Number(f.pa) || 0) + (Number(f.reuse) || 0); }
+  function cfOf(c) {
+    c.cf = Object.assign({}, CF_BASE, c.cf || {});
+    if (!c.cf.products && (c.proposalProducts || []).length) c.cf.products = c.proposalProducts.join(', ');
+    return c.cf;
+  }
+  function cfTotal(f) { return CF_COSTS.reduce((a, x) => a + (Number(f[x.k]) || 0), 0); }
   function cfPool() { return contactList.filter(c => /긍정/.test(c.reply || '')); }
 
   window.setCfFilter = function (f) { cfFilter = f; renderConfirmPage(); };
 
-  window.setCfField = function (id, k, v) {
-    const c = contactList.find(x => x.id === id); if (!c) return;
-    const f = cfOf(c);
-    f[k] = ['ppl', 'pa', 'reuse'].includes(k) ? (Number(String(v).replace(/[^\d-]/g, '')) || 0) : v;
+  /* 화면의 입력칸을 한 번에 읽어서 저장 */
+  function cfCollect() {
+    let n = 0;
+    document.querySelectorAll('#cfTableBody [data-cf-id]').forEach(el => {
+      const c = contactList.find(x => x.id === Number(el.dataset.cfId));
+      if (!c) return;
+      const f = cfOf(c);
+      const k = el.dataset.cfKey;
+      const v = CF_COSTS.some(x => x.k === k)
+        ? (Number(String(el.value).replace(/[^\d-]/g, '')) || 0)
+        : el.value;
+      if (f[k] !== v) { f[k] = v; n++; }
+    });
+    return n;
+  }
+
+  window.cfSaveNow = function (silent) {
+    const n = cfCollect();
     saveAll();
+    renderConfirmPage();
+    if (!silent) cfToast(n ? n + '개 항목을 저장했습니다.' : '변경된 내용이 없습니다. (이미 저장돼 있어요)');
+  };
+
+  window.cfTouch = function () {
+    cfCollect();
+    saveAll();
+    const btn = document.getElementById('cfSaveBtn');
+    if (btn) { btn.classList.add('ring-2', 'ring-emerald-300'); setTimeout(() => btn.classList.remove('ring-2', 'ring-emerald-300'), 600); }
     renderConfirmPage();
   };
 
-  /* ---------- 승인 → PPL & 협찬 이관 ---------- */
+  function cfToast(msg) {
+    let t = document.getElementById('cfToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'cfToast';
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;'
+        + 'padding:10px 18px;border-radius:12px;background:#0f172a;color:#fff;font-size:12px;font-weight:700;'
+        + 'box-shadow:0 10px 30px rgba(0,0,0,.25);transition:opacity .2s;font-family:Pretendard,sans-serif';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._h);
+    t._h = setTimeout(() => { t.style.opacity = '0'; }, 1800);
+  }
+
+  /* ---------- 진행 결정 → PPL & 협찬 이관 ---------- */
   function cfMakePpl(c) {
     const f = cfOf(c);
     const prods = String(f.products || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -17523,6 +17586,21 @@
     const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(String(f.uploadPlan || '').trim());
     const steps = { '진행확정': { date: new Date().toISOString().slice(0, 10), done: true, sched: false } };
     if (dateOk) steps['업로드'] = { date: f.uploadPlan.trim(), done: false, sched: true, updatedAt: Date.now() };
+
+    const types = {}, costs = {};
+    const cat = f.cat || 'ppl';
+    if (cat === 'ppl') {
+      CF_COSTS.forEach(x => {
+        const v = Number(f[x.k]) || 0;
+        if (v > 0) { types[x.type] = true; costs[x.type] = v; }
+      });
+      if (!Object.keys(types).length) types.ppl = true;
+    } else {
+      types[cat] = true;
+      costs[cat] = (cat === 'freeAmb') ? 0 : cfTotal(f);
+      const reuse = Number(f.reuse) || 0;
+      if (reuse > 0 && cat !== 'freeAmb') { types.reuse = true; costs.reuse = reuse; costs[cat] = cfTotal(f) - reuse; }
+    }
 
     const p = {
       id: id,
@@ -17536,8 +17614,8 @@
         ? [{ type: c.channelType || '인스타', account: c.influencer || '', url: c.channelUrl || '' }] : [],
       followers: c.followers || '',
       email: c.email || '',
-      types: { ppl: true, reuse: (Number(f.reuse) || 0) > 0 },
-      costs: { ppl: Number(f.ppl) || 0, pa: Number(f.pa) || 0, reuse: Number(f.reuse) || 0 },
+      types: types,
+      costs: costs,
       status: '진행확정',
       contactDate: c.contactDate || new Date().toISOString().slice(0, 10),
       targetDate: '', isCompleted: false,
@@ -17546,7 +17624,8 @@
       mcnCompany: c.source || '', mcnAgentName: '', mcnAgentPhone: '', mcnAgentEmail: '',
       receiverName: '', receiverPhone: '', postalCode: '', address: '', addressDetail: '',
       guideUrl: '',
-      notes: [f.note, dateOk ? '' : (f.uploadPlan ? '업로드 일정: ' + f.uploadPlan : ''), c.memo]
+      notes: [f.note, f.comment ? '컨펌: ' + f.comment : '',
+              dateOk ? '' : (f.uploadPlan ? '업로드 일정: ' + f.uploadPlan : ''), c.memo]
         .filter(Boolean).join(' / '),
       uploadPlanText: f.uploadPlan || '',
       seedingCount: 0, stockDeducted: false,
@@ -17556,63 +17635,71 @@
     return id;
   }
 
-  window.toggleCfApprove = function (id, on) {
+  window.setCfState = function (id, state) {
+    cfCollect();
     const c = contactList.find(x => x.id === id); if (!c) return;
     const f = cfOf(c);
+    const who = (c.realName || '무명') + (c.influencer ? ' (' + c.influencer + ')' : '');
 
-    if (on) {
-      if (!cfTotal(f)) { alert('견적 금액이 0원입니다.\n금액을 먼저 넣어 주세요.'); renderConfirmPage(); return; }
-      const who = (c.realName || '무명') + (c.influencer ? ' (' + c.influencer + ')' : '');
-      if (!confirm('[' + who + ']\n총 ' + won(cfTotal(f)) + '원\n\n승인하고 PPL & 협찬 탭으로 넘길까요?')) {
-        renderConfirmPage(); return;
-      }
-      f.movedId = cfMakePpl(c);
-      f.approved = true;
-      f.approvedAt = now();
-      f.approvedBy = (typeof WHOAMI !== 'undefined' && WHOAMI) ? WHOAMI : '';
-      c.confirmed = true;
-      c.movedId = f.movedId;
-      c.movedCat = 'PPL';
-      c.movedDate = new Date().toISOString().slice(0, 10);
-      saveAll(); renderAll();
-      alert('승인 완료\n\nPPL & 협찬 탭으로 넘어갔습니다.');
-    } else {
-      if (!confirm('승인을 취소하면 PPL & 협찬에 만들어진 건도 함께 삭제됩니다.\n계속할까요?')) {
-        renderConfirmPage(); return;
-      }
-      if (f.movedId) {
+    /* 되돌리기 */
+    if (state === '') {
+      if (f.state === 'go' && f.movedId) {
+        if (!confirm('진행 승인을 되돌리면 PPL & 협찬에 만들어진 건도 함께 삭제됩니다.\n계속할까요?')) return;
         if (typeof tombAdd === 'function') tombAdd(f.movedId);
         pplList = pplList.filter(x => x.id !== f.movedId);
       }
-      f.approved = false; f.movedId = null; f.approvedAt = ''; f.approvedBy = '';
+      f.state = ''; f.movedId = null; f.decidedAt = ''; f.decidedBy = '';
       c.confirmed = false; c.movedId = null; c.movedCat = ''; c.movedDate = '';
       saveAll(); renderAll();
+      return;
     }
+
+    if (state === 'go') {
+      if (!cfTotal(f) && f.cat !== 'freeAmb') { alert('견적 금액이 0원입니다.\n브랜디드 · 숏폼 · PPL · 2차(PA) 중 하나는 넣어 주세요.\n\n무상 건이면 이관 카테고리를 무상앰버서더로 바꿔 주세요.'); return; }
+      if (!confirm('[' + who + ']\n총 ' + won(cfTotal(f)) + '원\n\n진행으로 승인하고 [' + cfCatLabel(f.cat) + '] 으로 넘길까요?')) return;
+      f.movedId = cfMakePpl(c);
+      c.confirmed = true; c.movedId = f.movedId; c.movedCat = cfCatLabel(f.cat);
+      c.movedDate = new Date().toISOString().slice(0, 10);
+    } else {
+      if (!confirm('[' + who + ']\n\n미진행으로 처리할까요?\n(PPL & 협찬으로 넘어가지 않습니다)')) return;
+      if (f.movedId) {
+        if (typeof tombAdd === 'function') tombAdd(f.movedId);
+        pplList = pplList.filter(x => x.id !== f.movedId);
+        f.movedId = null;
+      }
+      c.confirmed = false; c.movedId = null; c.movedCat = ''; c.movedDate = '';
+    }
+
+    f.state = state;
+    f.decidedAt = stamp();
+    f.decidedBy = (typeof WHOAMI !== 'undefined' && WHOAMI) ? WHOAMI : '';
+    saveAll(); renderAll();
+    cfToast(state === 'go' ? 'PPL & 협찬으로 넘겼습니다.' : '미진행으로 처리했습니다.');
   };
 
   /* ---------- 이관 알림 ---------- */
   window.cfDismissAlarm = function () {
-    localStorage.setItem('onsal_cfAlarmSeen', now());
+    localStorage.setItem('onsal_cfAlarmSeen', stamp());
     renderConfirmPage();
   };
 
   function cfAlarmHtml() {
     const seen = localStorage.getItem('onsal_cfAlarmSeen') || '';
-    const done = cfPool().filter(c => cfOf(c).approved && cfOf(c).approvedAt)
-      .sort((a, b) => (cfOf(b).approvedAt || '').localeCompare(cfOf(a).approvedAt || ''));
-    const fresh = done.filter(c => (cfOf(c).approvedAt || '') > seen);
+    const done = cfPool().filter(c => cfOf(c).state === 'go' && cfOf(c).decidedAt)
+      .sort((a, b) => (cfOf(b).decidedAt || '').localeCompare(cfOf(a).decidedAt || ''));
     if (!done.length) return '';
+    const fresh = done.filter(c => (cfOf(c).decidedAt || '') > seen);
 
     const line = c => {
       const f = cfOf(c);
       return '<div class="flex flex-wrap items-center gap-2 text-[11px] py-1">'
-        + '<span class="font-bold text-slate-500 whitespace-nowrap">' + esc(f.approvedAt) + '</span>'
+        + '<span class="font-bold text-slate-500 whitespace-nowrap">' + esc(f.decidedAt) + '</span>'
         + '<span class="font-black text-slate-900">' + esc(c.realName || '무명') + '</span>'
         + '<span class="text-slate-500">' + esc(c.influencer || '') + '</span>'
         + '<span class="font-bold text-emerald-700">' + won(cfTotal(f)) + '원</span>'
         + '<span class="text-slate-400">→ PPL &amp; 협찬 이관</span>'
-        + (f.approvedBy ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">'
-            + esc(f.approvedBy) + ' 승인</span>' : '')
+        + (f.decidedBy ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">'
+            + esc(f.decidedBy) + ' 승인</span>' : '')
         + '</div>';
     };
 
@@ -17636,116 +17723,198 @@
     if (!body) return;
 
     const pool = cfPool();
-    const wait = pool.filter(c => !cfOf(c).approved);
-    const done = pool.filter(c => cfOf(c).approved);
+    const wait = pool.filter(c => !cfOf(c).state);
+    const go = pool.filter(c => cfOf(c).state === 'go');
+    const no = pool.filter(c => cfOf(c).state === 'no');
 
     const alarm = document.getElementById('cfAlarm');
     if (alarm) alarm.innerHTML = cfAlarmHtml();
 
     const sum = document.getElementById('cfSummary');
     if (sum) {
-      const amt = wait.reduce((a, c) => a + cfTotal(cfOf(c)), 0);
+      const amtWait = wait.reduce((a, c) => a + cfTotal(cfOf(c)), 0);
+      const amtGo = go.reduce((a, c) => a + cfTotal(cfOf(c)), 0);
       const card = (l, v, s, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
         + '<span class="text-[11px] text-slate-500 font-semibold">' + l + '</span>'
         + '<div class="text-2xl font-black text-' + color + '-600 mt-0.5">' + v + '</div>'
         + '<div class="text-[11px] text-slate-500 font-semibold">' + s + '</div></div>';
-      sum.innerHTML = card('컨펌 대기', wait.length + '건', '회신 긍정 건', 'amber')
-        + card('대기 금액 합계', won(amt) + '원', 'PPL + PA + 2차활용', 'slate')
-        + card('승인 완료', done.length + '건', 'PPL & 협찬 이관됨', 'emerald')
+      sum.innerHTML = card('컨펌 대기', wait.length + '건', won(amtWait) + '원', 'amber')
+        + card('진행 승인', go.length + '건', won(amtGo) + '원 · PPL 이관', 'emerald')
+        + card('미진행', no.length + '건', '승인 보류 · 반려', 'rose')
         + card('전체', pool.length + '건', '회신 - 긍정', 'slate');
     }
 
-    ['대기', '승인완료', '전체'].forEach(x => {
+    const FILTERS = [['대기', 'amber'], ['진행', 'emerald'], ['미진행', 'rose'], ['전체', 'slate']];
+    FILTERS.forEach(([x, color]) => {
       const el = document.getElementById('cffilter-' + x);
       if (el) el.className = (x === cfFilter)
-        ? 'px-3 py-1.5 rounded-lg bg-white text-amber-700 shadow-xs'
+        ? 'px-3 py-1.5 rounded-lg bg-white text-' + color + '-700 shadow-xs'
         : 'px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800';
     });
 
     let list = pool;
     if (cfFilter === '대기') list = wait;
-    else if (cfFilter === '승인완료') list = done;
+    else if (cfFilter === '진행') list = go;
+    else if (cfFilter === '미진행') list = no;
 
     const badge = document.getElementById('navConfirmBadge');
     if (badge) { badge.textContent = wait.length; badge.classList.toggle('hidden', wait.length === 0); }
     const hc = document.getElementById('cfHeaderCount');
     if (hc) hc.textContent = list.length + '건';
 
+    const colspan = 6 + CF_COSTS.length;
     if (!list.length) {
-      body.innerHTML = '<tr><td colspan="10" class="py-12 text-center text-slate-400">'
+      body.innerHTML = '<tr><td colspan="' + colspan + '" class="py-12 text-center text-slate-400">'
         + '해당하는 건이 없습니다.<br><b>컨택 리스트</b>에서 회신 상태를 <b>회신 - 긍정</b>으로 바꾸면 여기로 올라옵니다.</td></tr>';
       return;
     }
 
-    const num = (id, k, v) => '<input type="number" value="' + (v || '') + '" placeholder="0" '
-      + 'onchange="setCfField(' + id + ', \'' + k + '\', this.value)" '
-      + 'class="w-full px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg text-right font-bold">';
+    const inp = (id, k, v, extra, cls) => '<input value="' + esc(v) + '" data-cf-id="' + id + '" data-cf-key="' + k + '" '
+      + 'onchange="cfTouch()" ' + (extra || '') + ' class="' + (cls || 'w-full px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg') + '">';
+    const num = (id, k, v) => '<input type="number" value="' + (v || '') + '" placeholder="0" data-cf-id="' + id + '" data-cf-key="' + k + '" '
+      + 'onchange="cfTouch()" class="w-full px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg text-right font-bold">';
 
     body.innerHTML = list.map(c => {
       const f = cfOf(c);
       const t = cfTotal(f);
       const bcls = c.brand === '온살' ? 'bg-pink-100 text-pink-700' : 'bg-skyblue-100 text-skyblue-700';
-      const lock = f.approved;
+      const rowCls = f.state === 'go' ? 'bg-emerald-50/40' : (f.state === 'no' ? 'bg-rose-50/30 opacity-70' : 'hover:bg-amber-50/30');
 
-      return '<tr class="' + (lock ? 'bg-emerald-50/40' : 'hover:bg-amber-50/30') + ' transition align-top">'
-        + '<td class="py-3 px-3 text-center">'
-        + '<input type="checkbox" ' + (lock ? 'checked' : '') + ' onchange="toggleCfApprove(' + c.id + ', this.checked)" '
-        + 'class="accent-emerald-600 w-6 h-6 cursor-pointer" title="부장님 승인">'
-        + (lock ? '<div class="text-[9px] font-bold text-emerald-700 mt-1">승인</div>' : '') + '</td>'
+      let act;
+      if (f.state === 'go') {
+        act = '<div class="text-[11px] font-black text-emerald-700"><i class="fa-solid fa-circle-check"></i> 진행</div>'
+          + '<div class="text-[10px] font-bold text-emerald-600">' + esc(cfCatLabel(f.cat)) + '</div>'
+          + '<div class="text-[10px] text-slate-500">' + esc(f.decidedAt) + '</div>'
+          + (f.decidedBy ? '<div class="text-[10px] text-slate-400">' + esc(f.decidedBy) + '</div>' : '')
+          + '<div class="flex gap-1 justify-end mt-1">'
+          + '<button onclick="switchMainPage(\'' + cfPageOf(f.cat) + '\')" class="px-2 py-1 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-[10px] font-bold rounded-lg">열기</button>'
+          + '<button onclick="setCfState(' + c.id + ', \'\')" class="px-2 py-1 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-bold rounded-lg">취소</button></div>';
+      } else if (f.state === 'no') {
+        act = '<div class="text-[11px] font-black text-rose-600"><i class="fa-solid fa-circle-xmark"></i> 미진행</div>'
+          + '<div class="text-[10px] text-slate-500">' + esc(f.decidedAt) + '</div>'
+          + (f.decidedBy ? '<div class="text-[10px] text-slate-400">' + esc(f.decidedBy) + '</div>' : '')
+          + '<button onclick="setCfState(' + c.id + ', \'\')" class="mt-1 px-2 py-1 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-[10px] font-bold rounded-lg">되돌리기</button>';
+      } else {
+        act = '<select data-cf-id="' + c.id + '" data-cf-key="cat" onchange="cfTouch()" '
+          + 'class="w-full mb-1 px-2 py-1 text-[10px] font-bold border border-slate-200 rounded-lg bg-white">'
+          + CF_CATS.map(x => '<option value="' + x.v + '"' + ((f.cat || 'ppl') === x.v ? ' selected' : '') + '>' + x.label + '</option>').join('')
+          + '</select>'
+          + '<div class="flex gap-1 justify-end">'
+          + '<button onclick="setCfState(' + c.id + ', \'go\')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black rounded-lg">진행</button>'
+          + '<button onclick="setCfState(' + c.id + ', \'no\')" class="px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 text-[11px] font-black rounded-lg">미진행</button>'
+          + '</div><div class="text-[10px] text-slate-400 mt-1">부장님 승인</div>';
+      }
 
+      return '<tr class="' + rowCls + ' transition align-top">'
         + '<td class="py-3 px-3"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ' + bcls + '">' + esc(c.brand) + '</span>'
         + '<div class="font-black text-slate-900 mt-1">' + esc(c.realName || '무명') + '</div>'
         + (c.channelUrl
-            ? '<a href="' + esc(c.channelUrl) + '" target="_blank" rel="noopener" class="text-[11px] text-emerald-700 hover:underline">'
-              + esc(c.influencer || '') + '</a>'
+            ? '<a href="' + esc(c.channelUrl) + '" target="_blank" rel="noopener" class="text-[11px] text-emerald-700 hover:underline">' + esc(c.influencer || '') + '</a>'
             : '<div class="text-[11px] text-slate-500">' + esc(c.influencer || '') + '</div>')
-        + (c.followers ? '<div class="text-[10px] text-slate-400">팔로워 ' + esc(c.followers) + '</div>' : '') + '</td>'
+        + (c.followers ? '<div class="text-[10px] text-slate-400">팔로워 ' + esc(c.followers) + '</div>' : '')
+        + '<button onclick="cfEditContact(' + c.id + ')" class="mt-1 text-[10px] font-bold text-slate-500 hover:text-emerald-700 underline decoration-dotted">컨택 정보 수정</button></td>'
 
-        + '<td class="py-3 px-3 min-w-[160px]">'
-        + '<input value="' + esc(f.products || (c.proposalProducts || []).join(', ')) + '" list="cfProductList" '
-        + 'placeholder="제품명 (쉼표로 여러 개)" onchange="setCfField(' + c.id + ', \'products\', this.value)" '
-        + 'class="w-full px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg"></td>'
+        + '<td class="py-3 px-3 min-w-[170px]">'
+        + inp(c.id, 'products', f.products, 'list="cfProductList" placeholder="제품명 (쉼표로 여러 개)"')
+        + '<div class="text-[10px] text-slate-400 mt-0.5">제안 제품이 들어와 있어요 · 수정 가능</div></td>'
 
-        + '<td class="py-3 px-3 w-[108px]">' + num(c.id, 'ppl', f.ppl) + '</td>'
-        + '<td class="py-3 px-3 w-[108px]">' + num(c.id, 'pa', f.pa) + '</td>'
-        + '<td class="py-3 px-3 w-[108px]">' + num(c.id, 'reuse', f.reuse) + '</td>'
+        + CF_COSTS.map(x => '<td class="py-3 px-3 w-[104px]">' + num(c.id, x.k, f[x.k]) + '</td>').join('')
+
         + '<td class="py-3 px-3 text-right w-[110px]"><span class="font-black ' + (t ? 'text-slate-900' : 'text-slate-300') + '">'
         + won(t) + '원</span></td>'
 
-        + '<td class="py-3 px-3 w-[140px]">'
-        + '<input value="' + esc(f.uploadPlan) + '" placeholder="12월 中 / 2026-12-15" '
-        + 'onchange="setCfField(' + c.id + ', \'uploadPlan\', this.value)" '
-        + 'class="w-full px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg"></td>'
+        + '<td class="py-3 px-3 w-[140px]">' + inp(c.id, 'uploadPlan', f.uploadPlan, 'placeholder="12월 中 / 2026-12-15"') + '</td>'
 
-        + '<td class="py-3 px-3 min-w-[170px]">'
-        + '<textarea rows="2" placeholder="특이사항 · 협의 내용" onchange="setCfField(' + c.id + ', \'note\', this.value)" '
+        + '<td class="py-3 px-3 min-w-[160px]">'
+        + '<textarea rows="2" data-cf-id="' + c.id + '" data-cf-key="note" onchange="cfTouch()" placeholder="특이사항 · 협의 내용" '
         + 'class="w-full px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg">' + esc(f.note) + '</textarea></td>'
 
-        + '<td class="py-3 px-3 text-right whitespace-nowrap">'
-        + (lock
-            ? '<div class="text-[11px] font-bold text-emerald-700"><i class="fa-solid fa-circle-check"></i> 이관 완료</div>'
-              + '<div class="text-[10px] text-slate-500">' + esc(f.approvedAt) + '</div>'
-              + (f.approvedBy ? '<div class="text-[10px] text-slate-400">' + esc(f.approvedBy) + ' 승인</div>' : '')
-              + '<button onclick="switchMainPage(\'ppl\')" class="mt-1 px-2 py-1 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-[10px] font-bold rounded-lg">PPL에서 보기</button>'
-            : '<div class="text-[11px] font-bold text-amber-700">컨펌 대기</div>'
-              + '<button onclick="openContactEdit(' + c.id + ')" class="mt-1 px-2 py-1 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-[10px] font-bold rounded-lg">컨택 정보 수정</button>')
-        + '</td></tr>';
+        + '<td class="py-3 px-3 min-w-[160px]">'
+        + '<textarea rows="2" data-cf-id="' + c.id + '" data-cf-key="comment" onchange="cfTouch()" placeholder="컨펌 코멘트 (승인·반려 사유)" '
+        + 'class="w-full px-2 py-1.5 text-[11px] border border-violet-200 bg-violet-50/30 rounded-lg">' + esc(f.comment) + '</textarea></td>'
+
+        + '<td class="py-3 px-3 text-right whitespace-nowrap">' + act + '</td>'
+        + '</tr>';
     }).join('');
 
     const dl = document.getElementById('cfProductList');
     if (dl) dl.innerHTML = (products || []).map(p => '<option value="' + esc(p.name) + '">').join('');
   };
 
+  window.cfPageOf = function (cat) {
+    return ({ ppl: 'ppl', ambassador: 'amb', freeAmb: 'amb', supporters: 'sup',
+              creator: 'creator', microReels: 'micro', microPpl: 'micro' })[cat] || 'ppl';
+  };
+
+  /* ---------- 컨택 리스트의 '진행 확정' 칸을 컨펌 요청 안내로 교체 ---------- */
+  function cfPatchContactTable() {
+    const tb = document.getElementById('contactTableBody');
+    if (!tb) return;
+    const head = document.querySelector('#page-contact thead tr');
+    if (head && head.children[7] && head.children[7].dataset.cfHead !== '1') {
+      head.children[7].textContent = '컨펌 승인';
+      head.children[7].dataset.cfHead = '1';
+    }
+    Array.from(tb.rows).forEach(tr => {
+      const cb = tr.querySelector('.contact-select');
+      if (!cb || !tr.cells[7]) return;
+      const c = contactList.find(x => String(x.id) === String(cb.value));
+      if (!c) return;
+      const f = cfOf(c);
+      let html;
+      if (!/긍정/.test(c.reply || '')) {
+        html = '<div class="text-[10px] text-slate-400 text-center leading-tight">회신을 <b>긍정</b>으로<br>바꾸면 컨펌 요청으로</div>';
+      } else if (f.state === 'go') {
+        html = '<div class="text-[11px] font-bold text-emerald-700 text-center"><i class="fa-solid fa-circle-check"></i> 승인 · '
+          + esc(cfCatLabel(f.cat)) + '</div>'
+          + '<button onclick="switchMainPage(\'' + cfPageOf(f.cat) + '\')" class="mt-1 w-full px-2 py-1 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-[10px] font-bold rounded-lg">열기</button>';
+      } else if (f.state === 'no') {
+        html = '<div class="text-[11px] font-bold text-rose-600 text-center"><i class="fa-solid fa-circle-xmark"></i> 미진행</div>';
+      } else {
+        html = '<button onclick="switchMainPage(\'confirm\')" class="w-full px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg text-[11px]">'
+          + '<i class="fa-solid fa-file-signature"></i> 컨펌 요청으로</button>';
+      }
+      tr.cells[7].innerHTML = html;
+    });
+  }
+  window.cfPatchContactTable = cfPatchContactTable;
+
+  const _renderContact = window.renderContactList;
+  if (typeof _renderContact === 'function') {
+    window.renderContactList = function () {
+      const r = _renderContact.apply(this, arguments);
+      try { cfPatchContactTable(); } catch (e) { console.warn('컨택 리스트 패치 실패', e); }
+      return r;
+    };
+  }
+
+  /* 컨택 수정 창 — 숨겨진 페이지 안에 있어 안 열리던 문제 해결 */
+  window.cfEditContact = function (id) {
+    const m = document.getElementById('contactEditModal');
+    if (m && m.parentElement !== document.body) document.body.appendChild(m);
+    if (typeof openContactEdit === 'function') openContactEdit(id);
+    else alert('컨택 수정 창을 찾지 못했습니다.');
+  };
+
   window.exportConfirmExcel = function () {
+    cfCollect();
+    const LBL = { '': '대기', go: '진행', no: '미진행' };
     const rows = cfPool().map(c => {
       const f = cfOf(c);
-      return {
+      const o = {
         '브랜드': c.brand || '', '본명': c.realName || '', '계정': c.influencer || '',
-        '팔로워': c.followers || '', '진행 제품': f.products || (c.proposalProducts || []).join(', '),
-        'PPL 견적': Number(f.ppl) || 0, 'PA': Number(f.pa) || 0, '2차활용': Number(f.reuse) || 0,
-        '합계': cfTotal(f), '업로드 일정': f.uploadPlan || '', '특이사항': f.note || '',
-        '승인': f.approved ? 'O' : '', '승인일시': f.approvedAt || '', '승인자': f.approvedBy || ''
+        '팔로워': c.followers || '', '진행 제품': f.products || ''
       };
+      CF_COSTS.forEach(x => { o[x.label] = Number(f[x.k]) || 0; });
+      o['합계'] = cfTotal(f);
+      o['업로드 일정'] = f.uploadPlan || '';
+      o['특이사항'] = f.note || '';
+      o['컨펌 코멘트'] = f.comment || '';
+      o['이관 카테고리'] = cfCatLabel(f.cat);
+      o['승인'] = LBL[f.state] || '대기';
+      o['결정일시'] = f.decidedAt || '';
+      o['결정자'] = f.decidedBy || '';
+      return o;
     });
     if (!rows.length) { alert('내보낼 건이 없습니다.'); return; }
     downloadSheet(rows, 'PPL컨펌요청_' + new Date().toISOString().slice(0, 10));
@@ -17763,6 +17932,7 @@
 
   const pageC = document.getElementById('page-contact');
   if (pageC && !document.getElementById('page-confirm')) {
+    const th = (t, cls) => '<th class="py-3 px-3 ' + (cls || '') + '">' + t + '</th>';
     const m = document.createElement('main');
     m.id = 'page-confirm';
     m.setAttribute('data-page', '1');
@@ -17770,7 +17940,8 @@
     m.innerHTML =
       '<div class="bg-amber-50/60 border border-amber-200 rounded-2xl px-5 py-3.5 text-xs text-amber-900">'
       + '<b>PPL 컨펌 요청</b> · 컨택 리스트에서 회신 상태가 <b>회신 - 긍정</b>인 사람이 자동으로 올라옵니다. '
-      + '견적과 일정을 채운 뒤, <b>승인 체크</b>를 하면 <b>PPL &amp; 협찬</b> 탭으로 넘어갑니다.</div>'
+      + '견적과 일정을 채운 뒤 맨 오른쪽에서 <b>이관 카테고리</b>를 고르고 <b>진행 / 미진행</b>을 누르면 됩니다. '
+      + '<b>여기서 진행을 눌러야만</b> 해당 탭으로 넘어갑니다.</div>'
 
       + '<div id="cfAlarm"></div>'
       + '<div id="cfSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>'
@@ -17780,34 +17951,39 @@
       + '<div><h2 class="text-base font-bold text-slate-800 flex items-center gap-2">'
       + '<i class="fa-solid fa-file-signature text-amber-500"></i> 컨펌 요청 목록'
       + '<span id="cfHeaderCount" class="text-xs font-bold px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">0건</span></h2>'
-      + '<p class="text-xs text-slate-500">금액은 입력하면 바로 저장돼요. 승인 체크는 되돌릴 수 있습니다.</p></div>'
+      + '<p class="text-xs text-slate-500">칸을 벗어나면 자동 저장되고, <b>저장</b> 버튼으로 한 번에 저장할 수도 있어요.</p></div>'
       + '<div class="flex flex-wrap items-center gap-2">'
-      + '<div class="flex p-1 bg-amber-50 rounded-xl border border-amber-100 text-xs font-bold">'
+      + '<div class="flex p-1 bg-slate-100 rounded-xl text-xs font-bold">'
       + '<button onclick="setCfFilter(\'대기\')" id="cffilter-대기" class="px-3 py-1.5 rounded-lg bg-white text-amber-700 shadow-xs">대기</button>'
-      + '<button onclick="setCfFilter(\'승인완료\')" id="cffilter-승인완료" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">승인완료</button>'
+      + '<button onclick="setCfFilter(\'진행\')" id="cffilter-진행" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">진행</button>'
+      + '<button onclick="setCfFilter(\'미진행\')" id="cffilter-미진행" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">미진행</button>'
       + '<button onclick="setCfFilter(\'전체\')" id="cffilter-전체" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800">전체</button>'
       + '</div>'
+      + '<button onclick="cfSaveNow()" id="cfSaveBtn" class="px-4 py-2 bg-slate-900 hover:bg-slate-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-1.5">'
+      + '<i class="fa-solid fa-floppy-disk"></i> 저장</button>'
       + '<button onclick="exportConfirmExcel()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-1.5">'
-      + '<i class="fa-solid fa-file-arrow-down"></i> 엑셀 다운로드</button>'
+      + '<i class="fa-solid fa-file-arrow-down"></i> 엑셀</button>'
       + '</div></div>'
 
-      + '<div class="overflow-x-auto custom-scrollbar"><table class="w-full text-left text-xs">'
+      + '<div class="overflow-x-auto custom-scrollbar"><table class="w-full text-left text-xs" style="min-width:1240px">'
       + '<thead class="bg-amber-50/60 text-slate-600 font-semibold border-y border-amber-100"><tr>'
-      + '<th class="py-3 px-3 text-center w-16">승인</th>'
-      + '<th class="py-3 px-3">브랜드 / 인플루언서</th>'
-      + '<th class="py-3 px-3">진행 제품</th>'
-      + '<th class="py-3 px-3 text-right">PPL 견적</th>'
-      + '<th class="py-3 px-3 text-right">PA</th>'
-      + '<th class="py-3 px-3 text-right">2차활용</th>'
-      + '<th class="py-3 px-3 text-right">합계</th>'
-      + '<th class="py-3 px-3">업로드 일정</th>'
-      + '<th class="py-3 px-3">특이사항</th>'
-      + '<th class="py-3 px-3 text-right">상태</th>'
+      + th('브랜드 / 인플루언서')
+      + th('진행 제품')
+      + CF_COSTS.map(x => th(x.label, 'text-right')).join('')
+      + th('합계', 'text-right')
+      + th('업로드 일정')
+      + th('특이사항')
+      + th('컨펌 코멘트')
+      + th('승인', 'text-right')
       + '</tr></thead><tbody id="cfTableBody" class="divide-y divide-slate-100"></tbody></table></div>'
       + '<datalist id="cfProductList"></datalist>'
       + '</section>';
     pageC.insertAdjacentElement('afterend', m);
   }
+
+  /* 컨택 수정 창을 페이지 밖으로 빼 두기 (숨김 페이지 안이라 안 열리던 문제) */
+  const cem = document.getElementById('contactEditModal');
+  if (cem && cem.parentElement !== document.body) document.body.appendChild(cem);
 
   /* ---------- 기존 함수 감싸기 ---------- */
   const _switch = window.switchMainPage;
@@ -17834,18 +18010,12 @@
   window.renderAll = function () {
     const r = _renderAll.apply(this, arguments);
     try { renderConfirmPage(); } catch (e) { console.warn('컨펌 요청 화면 그리기 실패', e); }
+    try { cfPatchContactTable(); } catch (e) { }
     return r;
   };
 
-  const _total = window.totalCostOf;
-  if (typeof _total === 'function') {
-    window.totalCostOf = function (p) {
-      return _total(p) + (((p && p.costs) || {}).pa || 0);
-    };
-  }
-
   try { renderConfirmPage(); } catch (e) { }
-  console.log('%cPPL 컨펌 요청 탭이 준비됐습니다.', 'color:#d97706;font-weight:bold');
+  console.log('%cPPL 컨펌 요청 탭 v3 준비 완료', 'color:#d97706;font-weight:bold');
 })();
   </script>
 </body>
