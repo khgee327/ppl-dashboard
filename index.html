@@ -18018,5 +18018,159 @@
   console.log('%cPPL 컨펌 요청 탭 v3 준비 완료', 'color:#d97706;font-weight:bold');
 })();
   </script>
+  <!-- ==================== 권한 분리 (추가 블록) ==================== -->
+  <script>
+/* ==================================================================
+   권한 분리 (추가 블록) · 기존 코드 수정 없음
+   붙여넣는 위치: index.html 맨 아래 </body> 바로 위
+   ------------------------------------------------------------------
+   · 비밀번호 확인을 앱스스크립트에서 합니다 (소스에 비번 없음)
+   · 편집자는 변경 이력 · 예산 · 입금 데이터를 아예 내려받지 못합니다
+   ================================================================== */
+(function () {
+  if (window.__authInit) return;
+  window.__authInit = true;
+
+  const PW_KEY = 'onsal_pw';
+  const getPw = () => localStorage.getItem(PW_KEY) || '';
+
+  /* ---------- 서버로 가는 요청에 비밀번호 붙이기 ---------- */
+  const _fetch = window.fetch;
+  window.fetch = function (url, opt) {
+    try {
+      if (typeof url === 'string' && typeof SYNC_URL === 'string' && url.indexOf(SYNC_URL) === 0) {
+        const pw = getPw();
+        if (pw && url.indexOf('action=login') < 0 && url.indexOf('&pw=') < 0) {
+          const isPost = opt && opt.method && String(opt.method).toUpperCase() === 'POST';
+          if (!isPost) {
+            url += '&pw=' + encodeURIComponent(pw);
+          } else if (opt && typeof opt.body === 'string') {
+            try {
+              const b = JSON.parse(opt.body);
+              b.pw = pw;
+              opt = Object.assign({}, opt, { body: JSON.stringify(b) });
+            } catch (e) { }
+          }
+        }
+      }
+    } catch (e) { }
+    return _fetch(url, opt);
+  };
+
+  /* ---------- 로그인 ---------- */
+  async function askServer(pw) {
+    const url = SYNC_URL + '?key=' + encodeURIComponent(SYNC_KEY)
+      + '&action=login&pw=' + encodeURIComponent(pw) + '&t=' + Date.now();
+    const res = await _fetch(url);
+    return await res.json();
+  }
+
+  window.authGate = function () {
+    const box = document.getElementById('authGate');
+    if (!box) return true;
+
+    if (ROLE && WHOAMI && getPw()) {
+      authHide();
+      applyRole();
+      verifyLater();
+      return true;
+    }
+
+    const nameEl = document.getElementById('authName');
+    const pwEl = document.getElementById('authPw');
+    const msgEl = document.getElementById('authMsg');
+    const goBtn = document.getElementById('authGo');
+    nameEl.value = WHOAMI || '';
+
+    let busy = false;
+    const tryIn = async () => {
+      if (busy) return;
+      const nm = (nameEl.value || '').trim();
+      const pw = pwEl.value || '';
+      if (!nm) { msgEl.textContent = '이름을 적어주세요.'; nameEl.focus(); return; }
+      if (!pw) { msgEl.textContent = '비밀번호를 적어주세요.'; pwEl.focus(); return; }
+
+      busy = true;
+      msgEl.style.color = '#64748b';
+      msgEl.textContent = '확인 중...';
+      goBtn.disabled = true;
+
+      let j = null;
+      try { j = await askServer(pw); } catch (e) { j = null; }
+
+      busy = false;
+      goBtn.disabled = false;
+      msgEl.style.color = '#dc2626';
+
+      if (!j) { msgEl.textContent = '서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.'; return; }
+      if (!j.ok || !j.role) { msgEl.textContent = '비밀번호가 맞지 않습니다.'; pwEl.value = ''; pwEl.focus(); return; }
+
+      ROLE = j.role;
+      WHOAMI = nm;
+      localStorage.setItem('onsal_role', ROLE);
+      localStorage.setItem('onsal_user', WHOAMI);
+      localStorage.setItem(PW_KEY, pw);
+
+      authHide();
+      applyRole();
+      try { auditPush('로그인', '접속', WHOAMI, null, [], null); } catch (e) { }
+      bootApp();
+    };
+
+    goBtn.onclick = tryIn;
+    [nameEl, pwEl].forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') tryIn(); }));
+    setTimeout(() => (WHOAMI ? pwEl : nameEl).focus(), 100);
+    return false;
+  };
+
+  /* 저장된 권한이 아직 유효한지 서버에 다시 확인 */
+  async function verifyLater() {
+    try {
+      const j = await askServer(getPw());
+      if (!j || !j.ok || !j.role) {
+        alert('비밀번호가 바뀌었습니다. 다시 로그인해 주세요.');
+        localStorage.removeItem('onsal_role');
+        localStorage.removeItem('onsal_user');
+        localStorage.removeItem(PW_KEY);
+        location.reload();
+        return;
+      }
+      if (j.role !== ROLE) {
+        ROLE = j.role;
+        localStorage.setItem('onsal_role', ROLE);
+        applyRole();
+      }
+    } catch (e) { /* 오프라인이면 그대로 둡니다 */ }
+  }
+
+  /* ---------- 로그아웃 때 비밀번호도 지우기 ---------- */
+  const _logout = window.authLogout;
+  window.authLogout = function () {
+    if (!confirm('로그아웃할까요?\n데이터는 그대로 남습니다.')) return;
+    localStorage.removeItem('onsal_role');
+    localStorage.removeItem('onsal_user');
+    localStorage.removeItem(PW_KEY);
+    location.reload();
+  };
+
+  /* ---------- 편집자 화면에서 관리자 데이터 흔적 지우기 ---------- */
+  const _applyRole = window.applyRole;
+  window.applyRole = function () {
+    const r = _applyRole.apply(this, arguments);
+    if (!isAdmin()) {
+      try {
+        ['onsal_budgets', 'onsal_launchBudgets', 'onsal_auditLog'].forEach(k => localStorage.removeItem(k));
+        if (typeof budgets !== 'undefined') budgets = [];
+        if (typeof launchBudgets !== 'undefined') launchBudgets = [];
+        if (typeof auditLog !== 'undefined') auditLog = [];
+      } catch (e) { }
+    }
+    return r;
+  };
+
+  console.log('%c권한 분리 적용됨 · 비밀번호는 서버에서 확인합니다', 'color:#0ea5e9;font-weight:bold');
+})();
+
+  </script>
 </body>
 </html>
