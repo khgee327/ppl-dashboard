@@ -18175,22 +18175,39 @@
 </body>
 <script>
 (function () {
-  if (window.__cfHideGo) return;
-  window.__cfHideGo = true;
+  if (window.__cfHideGo2) return;
+  window.__cfHideGo2 = true;
+
+  // PPL & 협찬에 이미 등록된 컨택인지 (상태가 날아가도 이건 남음)
+  const moved = c => (pplList || []).some(p => p.fromConfirm && p.fromContactId === c.id);
 
   const _render = window.renderConfirmPage;
   window.renderConfirmPage = function () {
-    // 승인(진행)된 건은 목록 자체에서 제외
-    const hidden = [];
+    const hid = [];
     (contactList || []).forEach(c => {
-      if (c.cf && c.cf.state === 'go') { hidden.push([c, c.reply]); c.reply = '__cf_hidden__'; }
+      if ((c.cf && c.cf.state === 'go') || moved(c)) { hid.push([c, c.reply]); c.reply = '__hidden__'; }
     });
     try { return _render.apply(this, arguments); }
-    finally { hidden.forEach(([c, r]) => c.reply = r); }
+    finally { hid.forEach(([c, r]) => c.reply = r); }
+  };
+
+  // 승인 시 상태를 못 지켜도 목록에서는 빠지도록
+  const _set = window.setCfState;
+  window.setCfState = function (id, state) {
+    if (state === 'go') {
+      const c = (contactList || []).find(x => x.id === id);
+      if (c && moved(c)) {
+        alert(`[${c.realName || ''}] 이미 PPL & 협찬에 등록되어 있습니다.`);
+        renderConfirmPage(); return;
+      }
+    }
+    const r = _set.apply(this, arguments);
+    try { renderConfirmPage(); } catch (e) {}
+    return r;
   };
 
   try { renderConfirmPage(); } catch (e) {}
-  console.log('%c승인 건 숨김 적용됨', 'color:#059669;font-weight:bold');
+  console.log('%c승인 건 숨김 v2 적용됨', 'color:#059669;font-weight:bold');
 })();
 </script>
 </html>
