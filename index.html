@@ -17485,7 +17485,8 @@
   <script>
 /* ==================================================================
    PPL 컨펌 요청 탭  (추가 블록 v3 · 기존 코드 수정 없음)
-   붙여넣는 위치: index.html 맨 아래 </body> 바로 위
+   붙여넣는 위치: index.html 맨 아래
+바로 위
    ================================================================== */
 (function () {
   if (window.__cfInit) return;
@@ -18022,7 +18023,8 @@
   <script>
 /* ==================================================================
    권한 분리 (추가 블록) · 기존 코드 수정 없음
-   붙여넣는 위치: index.html 맨 아래 </body> 바로 위
+   붙여넣는 위치: index.html 맨 아래
+바로 위
    ------------------------------------------------------------------
    · 비밀번호 확인을 앱스스크립트에서 합니다 (소스에 비번 없음)
    · 편집자는 변경 이력 · 예산 · 입금 데이터를 아예 내려받지 못합니다
@@ -18172,42 +18174,192 @@
 })();
 
   </script>
-</body>
-<script>
+
+  <!-- ============ 승인 건 숨김 + 중복 승인 차단 (추가 블록 v3) ============ -->
+  <script>
+/* ==================================================================
+   승인 건 숨김 + 중복 승인 차단  (추가 블록 v3 · 기존 코드 수정 없음)
+   ------------------------------------------------------------------
+   · PPL & 협찬으로 넘어간 건은 컨펌 요청 목록에서 완전히 사라집니다
+   · 판정 기준은 cf.state 가 아니라 "PPL 목록에 실제로 있는지" 입니다
+     (동기화로 cf.state 가 날아가도 안전)
+   · 넘어간 내역은 상단 이관 알림에 그대로 남습니다
+   ================================================================== */
 (function () {
-  if (window.__cfHideGo2) return;
-  window.__cfHideGo2 = true;
+  if (window.__cfHideGo3) return;
+  window.__cfHideGo3 = true;
 
-  // PPL & 협찬에 이미 등록된 컨택인지 (상태가 날아가도 이건 남음)
-  const moved = c => (pplList || []).some(p => p.fromConfirm && p.fromContactId === c.id);
+  const CAT = {
+    ppl: 'PPL & 협찬', ambassador: '앰버서더', freeAmb: '무상앰버서더',
+    supporters: '크리에이터', creator: '인플루언서',
+    microReels: '마이크로 릴스', microPpl: '마이크로 PPL'
+  };
+  const label = v => CAT[v] || CAT.ppl;
+  const esc = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const won = v => (Number(v) || 0).toLocaleString();
+  const pageOf = c => (typeof cfPageOf === 'function') ? cfPageOf(c) : 'ppl';
 
-  const _render = window.renderConfirmPage;
-  window.renderConfirmPage = function () {
-    const hid = [];
-    (contactList || []).forEach(c => {
-      if ((c.cf && c.cf.state === 'go') || moved(c)) { hid.push([c, c.reply]); c.reply = '__hidden__'; }
+  /* 이 컨택이 만들어 낸 PPL 레코드 */
+  const movedRec = c => (window.pplList || []).find(p => p.fromConfirm && p.fromContactId === c.id);
+  const isMoved = c => !!movedRec(c);
+  const sumCost = f => ['branded', 'shorts', 'ppl', 'reuse'].reduce((a, k) => a + (Number(f && f[k]) || 0), 0);
+
+  /* ---------- 날아간 cf.state 복구 ---------- */
+  function repair(silent) {
+    let n = 0;
+    (window.contactList || []).forEach(c => {
+      const p = movedRec(c);
+      if (!p) return;
+      c.cf = c.cf || {};
+      if (c.cf.state !== 'go') {
+        c.cf.state = 'go';
+        c.cf.movedId = p.id;
+        if (!c.cf.decidedAt)
+          c.cf.decidedAt = new Date(p.id).toISOString().slice(0, 16).replace('T', ' ');
+        c.confirmed = true; c.movedId = p.id;
+        n++;
+      } else if (c.cf.movedId !== p.id) { c.cf.movedId = p.id; n++; }
     });
-    try { return _render.apply(this, arguments); }
-    finally { hid.forEach(([c, r]) => c.reply = r); }
+    if (n && !silent) { try { saveAll(); } catch (e) { } }
+    return n;
+  }
+
+  /* ---------- 이관 알림 (숨긴 건도 여기엔 남습니다) ---------- */
+  window.cfDismissAlarm = function () {
+    localStorage.setItem('onsal_cfAlarmSeen', new Date().toISOString().slice(0, 16).replace('T', ' '));
+    renderConfirmPage();
   };
 
-  // 승인 시 상태를 못 지켜도 목록에서는 빠지도록
-  const _set = window.setCfState;
-  window.setCfState = function (id, state) {
-    if (state === 'go') {
-      const c = (contactList || []).find(x => x.id === id);
-      if (c && moved(c)) {
-        alert(`[${c.realName || ''}] 이미 PPL & 협찬에 등록되어 있습니다.`);
-        renderConfirmPage(); return;
+  function alarmHtml(list) {
+    if (!list.length) return '';
+    const seen = localStorage.getItem('onsal_cfAlarmSeen') || '';
+    const fresh = list.filter(x => (x.at || '') > seen);
+    const line = x =>
+      '<div class="flex flex-wrap items-center gap-2 text-[11px] py-1">'
+      + '<span class="font-bold text-slate-500 whitespace-nowrap">' + esc(x.at) + '</span>'
+      + '<span class="font-black text-slate-900">' + esc(x.name) + '</span>'
+      + '<span class="text-slate-500">' + esc(x.acct) + '</span>'
+      + (x.amt ? '<span class="font-bold text-emerald-700">' + won(x.amt) + '원</span>' : '')
+      + '<span class="text-slate-400">→ ' + esc(x.cat) + ' 이관</span>'
+      + (x.by ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">'
+          + esc(x.by) + ' 승인</span>' : '')
+      + '<button onclick="switchMainPage(\'' + x.page + '\')" '
+      + 'class="ml-auto px-2 py-0.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-[10px] font-bold rounded-lg">열기</button>'
+      + '</div>';
+
+    return '<div class="rounded-2xl border ' + (fresh.length ? 'border-emerald-300 bg-emerald-50/70' : 'border-slate-200 bg-white') + ' px-5 py-3.5">'
+      + '<div class="flex flex-wrap items-center justify-between gap-2 mb-1">'
+      + '<div class="text-xs font-black ' + (fresh.length ? 'text-emerald-800' : 'text-slate-600') + '">'
+      + '<i class="fa-solid fa-paper-plane"></i> 승인 완료 · 넘어간 건 ' + list.length + '건'
+      + (fresh.length ? ' <span class="ml-1 text-[10px] font-black px-1.5 py-0.5 rounded-full bg-emerald-600 text-white">새로 '
+          + fresh.length + '건</span>' : '')
+      + '</div>'
+      + (fresh.length ? '<button onclick="cfDismissAlarm()" class="text-[11px] font-bold text-slate-500 hover:text-slate-800">확인했어요</button>' : '')
+      + '</div>'
+      + list.slice(0, 12).map(line).join('')
+      + (list.length > 12 ? '<div class="text-[10px] text-slate-400 pt-1">외 ' + (list.length - 12) + '건</div>' : '')
+      + '</div>';
+  }
+
+  /* ---------- 요약 카드 ---------- */
+  function summaryHtml(wait, no, done) {
+    const amtW = wait.reduce((a, c) => a + sumCost(c.cf), 0);
+    const amtG = done.reduce((a, x) => a + (x.amt || 0), 0);
+    const card = (l, v, s, color) => '<div class="bg-' + color + '-50/60 p-4 rounded-2xl border border-' + color + '-100">'
+      + '<span class="text-[11px] text-slate-500 font-semibold">' + l + '</span>'
+      + '<div class="text-2xl font-black text-' + color + '-600 mt-0.5">' + v + '</div>'
+      + '<div class="text-[11px] text-slate-500 font-semibold">' + s + '</div></div>';
+    return card('컨펌 대기', wait.length + '건', won(amtW) + '원', 'amber')
+      + card('승인 완료', done.length + '건', won(amtG) + '원 · 목록에서 숨김', 'emerald')
+      + card('미진행', no.length + '건', '승인 보류 · 반려', 'rose')
+      + card('처리할 건', (wait.length + no.length) + '건', '지금 목록에 보이는 수', 'slate');
+  }
+
+  /* ---------- renderConfirmPage 감싸기 ---------- */
+  const _render = window.renderConfirmPage;
+  window.renderConfirmPage = function () {
+    repair(true);
+
+    /* '진행' 탭은 비게 되므로 대기 탭으로 돌립니다 (reply 손대기 전에) */
+    try {
+      const on = document.querySelector('#cffilter-진행');
+      if (on && /bg-white/.test(on.className) && typeof setCfFilter === 'function') {
+        on.remove();
+        return setCfFilter('대기');
       }
-    }
-    const r = _set.apply(this, arguments);
-    try { renderConfirmPage(); } catch (e) {}
+    } catch (e) { }
+
+    /* 승인된 건을 목록 계산에서 잠시 빼 둡니다 (데이터는 그대로) */
+    const hid = [], done = [];
+    (window.contactList || []).forEach(c => {
+      if (!/긍정/.test(c.reply || '')) return;
+      const p = movedRec(c);
+      if (!p) return;
+      const f = c.cf || {};
+      done.push({
+        name: c.realName || '무명', acct: c.influencer || '',
+        amt: sumCost(f), cat: label(f.cat), page: pageOf(f.cat),
+        at: f.decidedAt || new Date(p.id).toISOString().slice(0, 16).replace('T', ' '),
+        by: f.decidedBy || ''
+      });
+      hid.push([c, c.reply]);
+      c.reply = '__cf_moved__';
+    });
+    done.sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+
+    let r;
+    try { r = _render.apply(this, arguments); }
+    finally { hid.forEach(([c, v]) => c.reply = v); }
+
+    /* 알림 · 요약 · 필터 버튼 다시 그리기 */
+    try {
+      const pool = (window.contactList || []).filter(c => /긍정/.test(c.reply || '') && !isMoved(c));
+      const wait = pool.filter(c => !(c.cf && c.cf.state === 'no'));
+      const no = pool.filter(c => c.cf && c.cf.state === 'no');
+
+      const al = document.getElementById('cfAlarm');
+      if (al) al.innerHTML = alarmHtml(done);
+
+      const sm = document.getElementById('cfSummary');
+      if (sm) sm.innerHTML = summaryHtml(wait, no, done);
+
+      const gb = document.getElementById('cffilter-진행');
+      if (gb) gb.remove();
+
+      const bd = document.getElementById('navConfirmBadge');
+      if (bd) { bd.textContent = wait.length; bd.classList.toggle('hidden', wait.length === 0); }
+    } catch (e) { console.warn('컨펌 요약 갱신 실패', e); }
+
     return r;
   };
 
-  try { renderConfirmPage(); } catch (e) {}
-  console.log('%c승인 건 숨김 v2 적용됨', 'color:#059669;font-weight:bold');
+  /* ---------- 중복 승인 차단 ---------- */
+  const _set = window.setCfState;
+  window.setCfState = function (id, state) {
+    if (state === 'go') {
+      const c = (window.contactList || []).find(x => x.id === id);
+      const p = c && movedRec(c);
+      if (p) {
+        alert('[' + (c.realName || '') + '] 이미 ' + label(c.cf && c.cf.cat) + '에 등록되어 있습니다.\n중복 등록을 막았습니다.');
+        repair(); renderConfirmPage();
+        return;
+      }
+    }
+    const r = _set.apply(this, arguments);
+    try { renderConfirmPage(); } catch (e) { }
+    return r;
+  };
+
+  /* ---------- 처음 한 번 복구 ---------- */
+  try {
+    const n = repair();
+    try { renderConfirmPage(); } catch (e) { }
+    console.log('%c승인 건 숨김 v3 적용됨' + (n ? ' · 상태 복구 ' + n + '건' : ''),
+      'color:#059669;font-weight:bold');
+  } catch (e) { console.warn(e); }
 })();
-</script>
+
+  </script>
+</body>
 </html>
