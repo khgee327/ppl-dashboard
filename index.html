@@ -18173,21 +18173,24 @@
 
   </script>
 </body>
-  <script>
+<script>
 (function () {
-  const _set = window.setCfState;
-  window.setCfState = function (id, state) {
-    if (state === 'go') {
-      const old = (pplList || []).filter(p => p.fromConfirm && p.fromContactId === id);
-      if (old.length) {
-        const c = (contactList || []).find(x => x.id === id);
-        alert(`[${c?.realName || ''}] 이미 PPL & 협찬에 ${old.length}건 등록되어 있습니다.\n중복 등록을 막았습니다.`);
-        if (c) { c.cf = c.cf || {}; c.cf.state = 'go'; c.cf.movedId = old[0].id; saveAll(); renderAll(); }
-        return;
-      }
-    }
-    return _set.apply(this, arguments);
+  if (window.__cfHideGo) return;
+  window.__cfHideGo = true;
+
+  const _render = window.renderConfirmPage;
+  window.renderConfirmPage = function () {
+    // 승인(진행)된 건은 목록 자체에서 제외
+    const hidden = [];
+    (contactList || []).forEach(c => {
+      if (c.cf && c.cf.state === 'go') { hidden.push([c, c.reply]); c.reply = '__cf_hidden__'; }
+    });
+    try { return _render.apply(this, arguments); }
+    finally { hidden.forEach(([c, r]) => c.reply = r); }
   };
+
+  try { renderConfirmPage(); } catch (e) {}
+  console.log('%c승인 건 숨김 적용됨', 'color:#059669;font-weight:bold');
 })();
 </script>
 </html>
